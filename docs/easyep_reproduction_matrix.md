@@ -37,6 +37,13 @@ cd /home/jovyan/wangtonghan/EASYEP
 bash scripts/run_v4_full_reproduction_gpus_4_7.sh
 ```
 
+该入口强制把 `/mnt/docker_data/v4-converted` 作为 MP=4 与两套剪枝产物的规范
+根目录；即使当前终端还保留错误的
+`CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converte`，也不会再次向错误目录转换。
+若规范目录没有 MP=4 shard、但相邻错误目录中恰好存在一套完整四分片，脚本只在
+同一文件系统内执行原子 rename（inode 不变），不会复制约 168 GB 权重。若两个
+目录都完整，只复用规范目录并报告另一份，不自动删除任何数据。
+
 该脚本顺序执行本地 HF→FP4/MP=4 转换、统计采集、mask 生成、两套 checkpoint
 物化、各两次 load/generate 验收、矩阵 dry-run 和正式评测。任一步失败都会立即
 停止并指出 `stage`；完整 MP=4 和已完成 checkpoint 会被验证后复用，部分 MP=4
@@ -50,6 +57,11 @@ bash scripts/run_v4_full_reproduction_gpus_4_7.sh
 
 只希望走到矩阵 dry-run 时设置 `DRY_RUN_ONLY=1`。若资源检查低于默认保守阈值，
 先人工确认磁盘/内存，再显式设置 `ALLOW_LOW_RESOURCES=1`，不要盲目绕过。
+
+每次模型加载前还会只读检查物理 GPU 4–7。任一卡已有显存占用超过 2048 MiB
+时，脚本列出 `nvidia-smi` PID/命令并在启动新进程前退出，不会擅自终止共享
+服务器上的任务。由本仓库启动的 SGLang 服务会进入独立进程组，退出时对整个
+进程组执行 TERM、超时后 KILL，避免再次遗留 TP worker。
 
 可以单独完成 V4 calibration/probe：
 
@@ -93,11 +105,10 @@ bash scripts/validate_v4_pruned_checkpoints_gpus_4_7.sh
 
 ## 运行三组 checkpoint
 
-把经过独立 load/generate/reload 验证的两个剪枝 checkpoint 放入仓库的
-`models/` 目录，使用以下固定布局：
+一键入口生成的两个 checkpoint 位于持久化 artifact 根目录，固定布局为：
 
 ```text
-models/
+/mnt/docker_data/v4-converted/
 ├── v4-prune25-keep192/
 │   ├── config.json
 │   ├── model.safetensors.index.json

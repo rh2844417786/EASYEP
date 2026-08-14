@@ -167,11 +167,21 @@ weights. Existing statistics, masks, and completed checkpoint shards are reused.
 For the current four-H100 server, the local conversion, statistics, pruning,
 reload validation, and evaluation sequence is also available as one fail-fast
 command. It stores MP=4 and both pruned checkpoints below
-`/mnt/docker_data/v4-converted` by default and never downloads or installs:
+`/mnt/docker_data/v4-converted` and never downloads or installs. That path is
+canonical: a stale `CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converte` override
+is ignored. A sole complete checkpoint in the typo directory is adopted by a
+same-filesystem rename, not copied:
 
 ```bash
 bash scripts/run_v4_full_reproduction_gpus_4_7.sh
 ```
+
+Before every V4 model launch, a read-only gate requires physical GPUs 4–7 to
+be exclusive (at most 2048 MiB of pre-existing memory each). Busy processes
+are reported by PID and the run stops before conversion or model loading; the
+script never kills an unknown shared-server workload. SGLang services started
+by the repository run in their own process group and are stopped as a group so
+TP workers do not remain after the test.
 
 If the official V4 statistics collector reports that
 `fast_hadamard_transform` is missing, use the repair-and-resume wrapper. It

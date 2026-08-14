@@ -90,6 +90,11 @@ echo "Samples: ${CALIBRATION_LIMIT}"
 echo "Downloads/installers/conversion: disabled"
 echo "Log: ${LOG_PATH}"
 
+GPU_LIST="${GPU_LIST}" \
+  MAX_PREEXISTING_GPU_MEMORY_MIB="${MAX_PREEXISTING_GPU_MEMORY_MIB:-2048}" \
+  bash "${SCRIPT_DIR}/check_v4_gpus_idle.sh" || \
+  fail "GPUs 4..7 are not exclusive; statistics collection was not started"
+
 "${V4_PYTHON}" -c \
   "import datasets, safetensors, torch, transformers; from fast_hadamard_transform import hadamard_transform; x=torch.randn(2,512,device='cuda:0',dtype=torch.bfloat16); y=hadamard_transform(x,scale=x.size(-1)**-0.5); assert y.shape==x.shape and torch.isfinite(y).all(); torch.cuda.synchronize(); print('runtime dependencies: OK')" || \
   fail "V4 runtime is missing a working torch/datasets/safetensors/transformers/fast_hadamard_transform dependency; run scripts/repair_and_resume_v4_full_reproduction.sh"

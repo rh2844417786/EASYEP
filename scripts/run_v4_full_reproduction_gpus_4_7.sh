@@ -12,7 +12,11 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 FULL_MODEL_PATH="${FULL_MODEL_PATH:-/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash}"
 V4_INFERENCE_DIR="${V4_INFERENCE_DIR:-${FULL_MODEL_PATH}/inference}"
 ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/docker_data/v4-converted}"
-CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}}"
+REQUESTED_CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}}"
+# The converted MP=4 shards and both pruned products intentionally share this
+# one canonical persistent root.  This also neutralizes a stale exported typo
+# such as /mnt/docker_data/v4-converte from an earlier terminal session.
+CONVERTED_CKPT_PATH="${ARTIFACT_ROOT}"
 PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune25-keep192}"
 PRUNE50_MODEL_PATH="${PRUNE50_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune50-keep128}"
 RESULTS_ROOT="${RESULTS_ROOT:-${REPO_ROOT}/results/easyep_reproduction}"
@@ -25,6 +29,7 @@ REPEATS="${REPEATS:-5}"
 WORKERS="${WORKERS:-1}"
 MAX_TOKENS="${MAX_TOKENS:-32768}"
 DRY_RUN_ONLY="${DRY_RUN_ONLY:-0}"
+MP4_STORAGE_PREFLIGHT_ONLY="${MP4_STORAGE_PREFLIGHT_ONLY:-0}"
 
 # The official converter retains all MP output state dictionaries in host RAM
 # before writing them. These conservative gates can be explicitly overridden.
@@ -60,22 +65,161 @@ trap on_error ERR
   fail "MIN_AVAILABLE_RAM_GIB must be an integer"
 [[ "${ALLOW_DUPLICATE_MP4}" =~ ^[01]$ ]] || \
   fail "ALLOW_DUPLICATE_MP4 must be 0 or 1"
-
-mp4_path_note=""
-root_mp4_complete=1
-for rank in 0 1 2 3; do
-  [[ -s "${ARTIFACT_ROOT}/model${rank}-mp4.safetensors" ]] || \
-    root_mp4_complete=0
-done
-legacy_nested_path="${ARTIFACT_ROOT%/}/mp4-fp4"
-if [[ "${CONVERTED_CKPT_PATH%/}" == "${legacy_nested_path}" && \
-      "${root_mp4_complete}" == "1" && "${ALLOW_DUPLICATE_MP4}" == "0" ]]; then
-  CONVERTED_CKPT_PATH="${ARTIFACT_ROOT}"
-  mp4_path_note="Detected existing MP=4 shards in the artifact root; reusing them instead of the legacy nested path."
-fi
+[[ "${MP4_STORAGE_PREFLIGHT_ONLY}" =~ ^[01]$ ]] || \
+  fail "MP4_STORAGE_PREFLIGHT_ONLY must be 0 or 1"
 
 mkdir -p "${ARTIFACT_ROOT}" "$(dirname "${MASTER_LOG}")" "${RESULTS_ROOT}"
-exec > >(tee "${MASTER_LOG}") 2>&1
+if [[ "${MP4_STORAGE_PREFLIGHT_ONLY}" == "1" ]]; then
+  # A plain redirect keeps this filesystem-only diagnostic usable in minimal
+  # shells where /dev/fd process substitution is unavailable.
+  exec >"${MASTER_LOG}" 2>&1
+else
+  exec > >(tee "${MASTER_LOG}") 2>&1
+fi
+
+[[ -x "${V4_PYTHON}" ]] || fail "V4 Python is not executable: ${V4_PYTHON}"
+[[ -w "${ARTIFACT_ROOT}" ]] || fail "artifact root is not writable: ${ARTIFACT_ROOT}"
+
+mp4_shard_count() {
+  local root="$1"
+  local shards
+  shopt -s nullglob
+  shards=("${root}"/model*-mp4.safetensors)
+  shopt -u nullglob
+  echo "${#shards[@]}"
+}
+
+mp4_path_complete() {
+  local root="$1"
+  local rank
+  [[ "$(mp4_shard_count "${root}")" -eq 4 ]] || return 1
+  for rank in 0 1 2 3; do
+    [[ -s "${root}/model${rank}-mp4.safetensors" ]] || return 1
+  done
+}
+
+append_unique_dir() {
+  local candidate="$1"
+  local existing
+  for existing in "${existing_mp4_dirs[@]:-}"; do
+    [[ "${existing%/}" == "${candidate%/}" ]] && return 0
+  done
+  existing_mp4_dirs+=("${candidate%/}")
+}
+
+discover_existing_mp4_dirs() {
+  local artifact_parent marker
+  artifact_parent="$(dirname "${ARTIFACT_ROOT%/}")"
+  existing_mp4_dirs=()
+  shopt -s nullglob
+  for marker in \
+    "${ARTIFACT_ROOT%/}"/model*-mp4.safetensors \
+    "${ARTIFACT_ROOT%/}"/*/model*-mp4.safetensors \
+    "${artifact_parent%/}"/*/model*-mp4.safetensors; do
+    append_unique_dir "$(dirname "${marker}")"
+  done
+  shopt -u nullglob
+}
+
+relocate_mp4_without_copying() {
+  local source_root="$1"
+  local target_root="$2"
+  echo "Adopting the complete MP=4 checkpoint from ${source_root}."
+  echo "The four shards will be renamed into ${target_root}; no model bytes will be copied."
+  "${V4_PYTHON}" - "${source_root}" "${target_root}" <<'PY'
+import os
+from pathlib import Path
+import sys
+
+source = Path(sys.argv[1])
+target = Path(sys.argv[2])
+target.mkdir(parents=True, exist_ok=True)
+if source.stat().st_dev != target.stat().st_dev:
+    raise SystemExit(
+        f"refusing cross-filesystem relocation (which could copy data): {source} -> {target}"
+    )
+for rank in range(4):
+    src = source / f"model{rank}-mp4.safetensors"
+    dst = target / src.name
+    if dst.exists():
+        raise SystemExit(f"refusing to overwrite existing target shard: {dst}")
+    if not src.is_file() or src.stat().st_size == 0:
+        raise SystemExit(f"missing or empty source shard: {src}")
+for rank in range(4):
+    src = source / f"model{rank}-mp4.safetensors"
+    dst = target / src.name
+    os.rename(src, dst)
+    print(f"renamed without copying: {src} -> {dst}")
+PY
+}
+
+mp4_path_is_adoptable() {
+  local candidate="${1%/}"
+  local requested="${REQUESTED_CONVERTED_CKPT_PATH%/}"
+  local legacy_nested="${ARTIFACT_ROOT%/}/mp4-fp4"
+  local known_typo=""
+  if [[ "${ARTIFACT_ROOT}" == *d ]]; then
+    known_typo="${ARTIFACT_ROOT%d}"
+  fi
+  [[ "${candidate}" == "${requested}" && "${requested}" != "${ARTIFACT_ROOT%/}" ]] || \
+    [[ "${candidate}" == "${legacy_nested}" ]] || \
+    [[ -n "${known_typo}" && "${candidate}" == "${known_typo%/}" ]]
+}
+
+mp4_path_notes=()
+if [[ "${REQUESTED_CONVERTED_CKPT_PATH%/}" != "${ARTIFACT_ROOT%/}" ]]; then
+  mp4_path_notes+=(
+    "Ignored CONVERTED_CKPT_PATH=${REQUESTED_CONVERTED_CKPT_PATH}; the canonical path is ${ARTIFACT_ROOT}."
+  )
+fi
+
+discover_existing_mp4_dirs
+complete_mp4_dirs=()
+partial_mp4_dirs=()
+for candidate in "${existing_mp4_dirs[@]:-}"; do
+  [[ -n "${candidate}" ]] || continue
+  if mp4_path_complete "${candidate}"; then
+    complete_mp4_dirs+=("${candidate}")
+  else
+    partial_mp4_dirs+=("${candidate}")
+  fi
+done
+
+canonical_count="$(mp4_shard_count "${ARTIFACT_ROOT}")"
+if [[ "${canonical_count}" -ne 0 ]] && ! mp4_path_complete "${ARTIFACT_ROOT}"; then
+  fail "partial MP=4 output found in canonical path ${ARTIFACT_ROOT}; inspect it manually before continuing"
+fi
+
+if ! mp4_path_complete "${ARTIFACT_ROOT}" && [[ "${ALLOW_DUPLICATE_MP4}" == "0" ]]; then
+  if [[ "${#complete_mp4_dirs[@]}" -eq 1 ]]; then
+    source_mp4_dir="${complete_mp4_dirs[0]}"
+    mp4_path_is_adoptable "${source_mp4_dir}" || \
+      fail "the only complete checkpoint is at an unrelated sibling path ${source_mp4_dir}; refusing to relocate it automatically"
+    CURRENT_STAGE="adopt-existing-mp4"
+    relocate_mp4_without_copying "${source_mp4_dir}" "${ARTIFACT_ROOT}"
+    mp4_path_notes+=(
+      "Reused the already complete checkpoint from ${source_mp4_dir} via same-filesystem rename."
+    )
+  elif [[ "${#complete_mp4_dirs[@]}" -gt 1 ]]; then
+    printf 'Complete MP=4 candidates:\n' >&2
+    printf '  %s\n' "${complete_mp4_dirs[@]}" >&2
+    fail "multiple complete checkpoints exist while the canonical path is empty; refusing to choose or copy one automatically"
+  elif [[ "${#partial_mp4_dirs[@]}" -ne 0 ]]; then
+    printf 'Partial MP=4 candidates:\n' >&2
+    printf '  %s\n' "${partial_mp4_dirs[@]}" >&2
+    fail "partial converted checkpoints exist; refusing to start another large conversion"
+  fi
+fi
+
+discover_existing_mp4_dirs
+for candidate in "${existing_mp4_dirs[@]:-}"; do
+  [[ -n "${candidate}" ]] || continue
+  if [[ "${candidate%/}" != "${ARTIFACT_ROOT%/}" ]] && mp4_path_complete "${candidate}"; then
+    mp4_path_notes+=(
+      "WARNING: another complete MP=4 checkpoint remains at ${candidate}; it was not copied or deleted."
+    )
+  fi
+done
 
 export FULL_MODEL_PATH V4_INFERENCE_DIR ARTIFACT_ROOT CONVERTED_CKPT_PATH
 export PRUNE25_MODEL_PATH PRUNE50_MODEL_PATH RESULTS_ROOT V4_PYTHON GPU_LIST
@@ -90,15 +234,21 @@ echo "Physical GPUs: ${GPU_LIST}"
 echo "Full HF model: ${FULL_MODEL_PATH}"
 echo "Official inference: ${V4_INFERENCE_DIR}"
 echo "MP=4 FP4: ${CONVERTED_CKPT_PATH}"
-[[ -z "${mp4_path_note}" ]] || echo "${mp4_path_note}"
+for note in "${mp4_path_notes[@]:-}"; do
+  [[ -z "${note}" ]] || echo "${note}"
+done
 echo "Prune 25%: ${PRUNE25_MODEL_PATH}"
 echo "Prune 50%: ${PRUNE50_MODEL_PATH}"
 echo "Results: ${RESULTS_ROOT}/${RUN_ID}"
 echo "Downloads/installers: disabled"
 echo "Master log: ${MASTER_LOG}"
 
-[[ -x "${V4_PYTHON}" ]] || fail "V4 Python is not executable: ${V4_PYTHON}"
-[[ -w "${ARTIFACT_ROOT}" ]] || fail "artifact root is not writable: ${ARTIFACT_ROOT}"
+if [[ "${MP4_STORAGE_PREFLIGHT_ONLY}" == "1" ]]; then
+  CURRENT_STAGE="complete"
+  echo "PASS: canonical MP=4 storage preflight completed; no GPU/model operation was run."
+  exit 0
+fi
+
 [[ -f "${FULL_MODEL_PATH}/config.json" ]] || \
   fail "full model config is missing: ${FULL_MODEL_PATH}/config.json"
 [[ -f "${FULL_MODEL_PATH}/model.safetensors.index.json" ]] || \
@@ -110,6 +260,13 @@ echo "Master log: ${MASTER_LOG}"
 [[ -f "$(dirname "${V4_INFERENCE_DIR}")/encoding/encoding_dsv4.py" ]] || \
   fail "official encoding/encoding_dsv4.py is missing beside ${V4_INFERENCE_DIR}"
 
+CURRENT_STAGE="gpu-idle-preflight"
+GPU_LIST="${GPU_LIST}" \
+  MAX_PREEXISTING_GPU_MEMORY_MIB="${MAX_PREEXISTING_GPU_MEMORY_MIB:-2048}" \
+  bash "${SCRIPT_DIR}/check_v4_gpus_idle.sh" || \
+  fail "GPUs 4..7 are not exclusive; no conversion, collection, or server was started"
+
+CURRENT_STAGE="runtime-dependency-preflight"
 CUDA_VISIBLE_DEVICES="${GPU_LIST}" "${V4_PYTHON}" -c \
   "import datasets, safetensors, torch, transformers; from fast_hadamard_transform import hadamard_transform; assert hasattr(torch, 'float4_e2m1fn_x2'); x=torch.randn(2,512,device='cuda:0',dtype=torch.bfloat16); y=hadamard_transform(x,scale=x.size(-1)**-0.5); assert y.shape==x.shape and torch.isfinite(y).all(); torch.cuda.synchronize(); print('V4 conversion/probe dependencies: OK')" || \
   fail "V4 runtime lacks a working torch FP4, datasets, safetensors, transformers, or fast_hadamard_transform CUDA dependency; run scripts/repair_and_resume_v4_full_reproduction.sh"
@@ -150,13 +307,6 @@ if [[ "${#mp4_shards[@]}" -eq 4 ]]; then
 elif [[ "${#mp4_shards[@]}" -ne 0 ]]; then
   fail "partial MP=4 output found in ${CONVERTED_CKPT_PATH}; use a fresh path or inspect it manually"
 else
-  shopt -s nullglob
-  root_mp4_shards=("${ARTIFACT_ROOT}"/model*-mp4.safetensors)
-  shopt -u nullglob
-  if [[ "${CONVERTED_CKPT_PATH%/}" != "${ARTIFACT_ROOT%/}" && \
-        "${#root_mp4_shards[@]}" -ne 0 && "${ALLOW_DUPLICATE_MP4}" == "0" ]]; then
-    fail "refusing duplicate MP=4 conversion: ${#root_mp4_shards[@]} shard(s) already exist in ${ARTIFACT_ROOT}; use that checkpoint or set ALLOW_DUPLICATE_MP4=1 explicitly"
-  fi
   CURRENT_STAGE="resource-check-before-conversion"
   available_kib="$(df -Pk "${ARTIFACT_ROOT}" | awk 'NR==2 {print $4}')"
   required_kib="$((MIN_FREE_GIB * 1024 * 1024))"

@@ -25,6 +25,7 @@ SMOKE_TIMEOUT="${SMOKE_TIMEOUT:-1800}"
 LOG_DIR="${LOG_DIR:-${REPO_ROOT}/logs}"
 STREAM_LOGS="${STREAM_LOGS:-0}"
 SERVER_PID=""
+SERVER_PGID=""
 LOG_TAIL_PID=""
 SMOKE_OUTPUT=""
 NVCC_VERSION=""
@@ -39,11 +40,23 @@ cleanup() {
     kill "${LOG_TAIL_PID}" 2>/dev/null || true
     wait "${LOG_TAIL_PID}" 2>/dev/null || true
   fi
-  if [[ -n "${SERVER_PID}" ]] && kill -0 "${SERVER_PID}" 2>/dev/null; then
-    echo "Stopping diagnostic server (PID ${SERVER_PID})..."
-    kill "${SERVER_PID}" 2>/dev/null || true
+  if [[ -n "${SERVER_PGID}" ]] && kill -0 -- "-${SERVER_PGID}" 2>/dev/null; then
+    echo "Stopping diagnostic server process group (PGID ${SERVER_PGID})..."
+    kill -TERM -- "-${SERVER_PGID}" 2>/dev/null || true
+    for ((attempt = 0; attempt < 30; attempt++)); do
+      kill -0 -- "-${SERVER_PGID}" 2>/dev/null || break
+      sleep 1
+    done
+    if kill -0 -- "-${SERVER_PGID}" 2>/dev/null; then
+      echo "Server process group did not stop after 30s; sending SIGKILL." >&2
+      kill -KILL -- "-${SERVER_PGID}" 2>/dev/null || true
+    fi
+  fi
+  if [[ -n "${SERVER_PID}" ]]; then
     wait "${SERVER_PID}" 2>/dev/null || true
   fi
+  SERVER_PID=""
+  SERVER_PGID=""
 }
 trap cleanup EXIT
 trap 'exit 130' INT
@@ -57,6 +70,11 @@ export V4_RUNTIME_VALIDATOR_LIB_ONLY=1
 source "${SCRIPT_DIR}/validate_v4_flash_runtime.sh"
 unset V4_RUNTIME_VALIDATOR_LIB_ONLY
 validate_v4_flash_runtime
+
+GPU_LIST="${GPU_LIST}" \
+  MAX_PREEXISTING_GPU_MEMORY_MIB="${MAX_PREEXISTING_GPU_MEMORY_MIB:-2048}" \
+  bash "${SCRIPT_DIR}/check_v4_gpus_idle.sh" || \
+  fail "GPUs 4..7 are not exclusive; no SGLang process was started"
 
 SGLANG_VERSION="${V4_VALIDATED_SGLANG_VERSION}"
 SGLANG_MODULE="${V4_VALIDATED_SGLANG_MODULE}"
@@ -197,7 +215,9 @@ echo "Shared-expert fusion: disabled (required by EASY-EP compact expert storage
 echo "Downloads: disabled; HF_HUB_OFFLINE=${HF_HUB_OFFLINE}, TRANSFORMERS_OFFLINE=${TRANSFORMERS_OFFLINE}"
 echo "Timeouts: startup=${STARTUP_TIMEOUT}s, scheduler-watchdog=${WATCHDOG_TIMEOUT}s, smoke-http=${SMOKE_TIMEOUT}s"
 
-"${V4_PYTHON}" -m sglang.launch_server \
+"${V4_PYTHON}" -c \
+  'import os, sys; os.setsid(); os.execv(sys.executable, [sys.executable, *sys.argv[1:]])' \
+  -m sglang.launch_server \
   --trust-remote-code \
   --model-path "${MODEL_PATH}" \
   --tp "${TP_SIZE}" \
@@ -215,6 +235,7 @@ echo "Timeouts: startup=${STARTUP_TIMEOUT}s, scheduler-watchdog=${WATCHDOG_TIMEO
   --disable-shared-experts-fusion \
   "$@" >"${LOG_FILE}" 2>&1 &
 SERVER_PID=$!
+SERVER_PGID="${SERVER_PID}"
 
 echo "Waiting up to ${STARTUP_TIMEOUT}s for /v1/models (PID ${SERVER_PID})..."
 if [[ "${STREAM_LOGS}" == "1" ]]; then
@@ -233,7 +254,6 @@ while (( SECONDS < deadline )); do
   if ! kill -0 "${SERVER_PID}" 2>/dev/null; then
     server_status=0
     wait "${SERVER_PID}" 2>/dev/null || server_status=$?
-    SERVER_PID=""
     if [[ -n "${LOG_TAIL_PID}" ]] && kill -0 "${LOG_TAIL_PID}" 2>/dev/null; then
       kill "${LOG_TAIL_PID}" 2>/dev/null || true
       wait "${LOG_TAIL_PID}" 2>/dev/null || true

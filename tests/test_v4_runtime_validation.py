@@ -7,6 +7,7 @@ import hashlib
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import textwrap
 import unittest
@@ -21,6 +22,8 @@ STATISTICS_COLLECTOR = (
 PRUNED_PREPARER = REPO_ROOT / "scripts" / "prepare_v4_pruned_checkpoints.sh"
 FULL_PIPELINE = REPO_ROOT / "scripts" / "run_v4_full_reproduction_gpus_4_7.sh"
 FHT_REPAIR_RESUME = REPO_ROOT / "scripts" / "repair_and_resume_v4_full_reproduction.sh"
+GPU_IDLE_CHECK = REPO_ROOT / "scripts" / "check_v4_gpus_idle.sh"
+REPRODUCTION_RUNNER = REPO_ROOT / "evaluation" / "run_reproduction_matrix.py"
 VENDORED_FHT = REPO_ROOT / "third_party" / "fast-hadamard-transform"
 
 
@@ -144,6 +147,58 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn('--watchdog-timeout "${WATCHDOG_TIMEOUT}"', launcher)
         self.assertIn('--disable-shared-experts-fusion', launcher)
         self.assertIn('--timeout "${SMOKE_TIMEOUT}"', launcher)
+        self.assertIn("check_v4_gpus_idle.sh", launcher)
+        self.assertIn("os.setsid()", launcher)
+        self.assertIn('kill -TERM -- "-${SERVER_PGID}"', launcher)
+        self.assertIn('kill -KILL -- "-${SERVER_PGID}"', launcher)
+
+    def test_gpu_idle_gate_reports_busy_process_without_killing_it(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake_bin = root / "bin"
+            fake_bin.mkdir()
+            self._write_executable(
+                fake_bin / "nvidia-smi",
+                """\
+                #!/usr/bin/env bash
+                if [[ "$*" == *"--query-compute-apps="* ]]; then
+                  echo '2771319, python, 42840'
+                elif [[ "${FAKE_BUSY:-0}" == "1" ]]; then
+                  printf '4, 42840\\n5, 42700\\n6, 42720\\n7, 42000\\n'
+                else
+                  printf '4, 730\\n5, 730\\n6, 730\\n7, 730\\n'
+                fi
+                """,
+            )
+            env = os.environ.copy()
+            env["PATH"] = f"{fake_bin}:{env['PATH']}"
+            env["GPU_LIST"] = "4,5,6,7"
+
+            idle = subprocess.run(
+                ["bash", str(GPU_IDLE_CHECK)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertEqual(idle.returncode, 0, idle.stdout)
+            self.assertIn("GPU exclusivity check: PASS", idle.stdout)
+
+            env["FAKE_BUSY"] = "1"
+            busy = subprocess.run(
+                ["bash", str(GPU_IDLE_CHECK)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertEqual(busy.returncode, 2, busy.stdout)
+            self.assertIn("PID 2771319", busy.stdout)
+            self.assertIn("no process was terminated", busy.stdout)
 
     def test_statistics_collector_is_offline_and_restricted_to_gpus_4_7(self) -> None:
         collector = STATISTICS_COLLECTOR.read_text(encoding="utf-8")
@@ -153,6 +208,7 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("HF_HUB_OFFLINE=1", collector)
         self.assertIn("TRANSFORMERS_OFFLINE=1", collector)
         self.assertIn('"${V4_PYTHON}" -m torch.distributed.run', collector)
+        self.assertIn("check_v4_gpus_idle.sh", collector)
         for forbidden in ("apt install", "pip install", "uv pip", "curl ", "wget "):
             self.assertNotIn(forbidden, collector)
 
@@ -172,9 +228,10 @@ class V4RuntimeValidationTests(unittest.TestCase):
             pipeline,
         )
         self.assertIn(
-            'CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}}"',
+            'REQUESTED_CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}}"',
             pipeline,
         )
+        self.assertIn('CONVERTED_CKPT_PATH="${ARTIFACT_ROOT}"', pipeline)
         self.assertIn(
             'PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune25-keep192}"',
             pipeline,
@@ -187,8 +244,11 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("--expert-dtype fp4", pipeline)
         self.assertIn("validate_mp4", pipeline)
         self.assertIn('ALLOW_DUPLICATE_MP4="${ALLOW_DUPLICATE_MP4:-0}"', pipeline)
-        self.assertIn("refusing duplicate MP=4 conversion", pipeline)
-        self.assertIn("Detected existing MP=4 shards in the artifact root", pipeline)
+        self.assertIn("relocate_mp4_without_copying", pipeline)
+        self.assertIn("refusing cross-filesystem relocation", pipeline)
+        self.assertIn("os.rename(src, dst)", pipeline)
+        self.assertIn("check_v4_gpus_idle.sh", pipeline)
+        self.assertIn("Ignored CONVERTED_CKPT_PATH=", pipeline)
         self.assertIn(
             'DRY_RUN=1 bash "${SCRIPT_DIR}/run_easyep_reproduction.sh"',
             pipeline,
@@ -212,6 +272,52 @@ class V4RuntimeValidationTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, pipeline)
 
+    def test_full_pipeline_adopts_typo_checkpoint_without_copying(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            canonical = root / "v4-converted"
+            typo = root / "v4-converte"
+            typo.mkdir()
+            original_inodes: dict[str, int] = {}
+            for rank in range(4):
+                shard = typo / f"model{rank}-mp4.safetensors"
+                shard.write_bytes(f"rank-{rank}".encode())
+                original_inodes[shard.name] = shard.stat().st_ino
+
+            env = os.environ.copy()
+            env.update(
+                {
+                    "ARTIFACT_ROOT": str(canonical),
+                    "CONVERTED_CKPT_PATH": str(typo),
+                    "RESULTS_ROOT": str(root / "results"),
+                    "MASTER_LOG": str(root / "storage-preflight.log"),
+                    "V4_PYTHON": sys.executable,
+                    "MP4_STORAGE_PREFLIGHT_ONLY": "1",
+                }
+            )
+            result = subprocess.run(
+                ["bash", str(FULL_PIPELINE)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            output = result.stdout + (root / "storage-preflight.log").read_text(
+                encoding="utf-8"
+            )
+
+            self.assertEqual(result.returncode, 0, output)
+            self.assertIn("Ignored CONVERTED_CKPT_PATH=", output)
+            self.assertIn("renamed without copying", output)
+            self.assertIn("no GPU/model operation was run", output)
+            for name, inode in original_inodes.items():
+                adopted = canonical / name
+                self.assertTrue(adopted.is_file(), output)
+                self.assertEqual(adopted.stat().st_ino, inode)
+                self.assertFalse((typo / name).exists())
+
     def test_full_pipeline_preflights_official_hadamard_dependency(self) -> None:
         pipeline = FULL_PIPELINE.read_text(encoding="utf-8")
         collector = STATISTICS_COLLECTOR.read_text(encoding="utf-8")
@@ -220,6 +326,19 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("from fast_hadamard_transform import hadamard_transform", collector)
         self.assertIn("repair_and_resume_v4_full_reproduction.sh", pipeline)
         self.assertIn("repair_and_resume_v4_full_reproduction.sh", collector)
+
+    def test_evaluation_runner_checks_gpu_exclusivity_before_server_launch(self) -> None:
+        runner = REPRODUCTION_RUNNER.read_text(encoding="utf-8")
+
+        self.assertIn(
+            'GPU_IDLE_CHECK = REPO_ROOT / "scripts" / "check_v4_gpus_idle.sh"',
+            runner,
+        )
+        self.assertIn("require_idle_gpus(args.gpu_list)", runner)
+        self.assertLess(
+            runner.index("require_idle_gpus(args.gpu_list)"),
+            runner.index("process = subprocess.Popen(", runner.index("def run_variant(")),
+        )
 
     def test_fht_repair_installs_only_when_cuda_validation_fails(self) -> None:
         repair = FHT_REPAIR_RESUME.read_text(encoding="utf-8")

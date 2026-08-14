@@ -35,6 +35,7 @@ from urllib.request import urlopen
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EVAL_CLIENT = REPO_ROOT / "evaluation" / "run_sglang.py"
 SMOKE_CLIENT = REPO_ROOT / "scripts" / "smoke_v4_server.py"
+GPU_IDLE_CHECK = REPO_ROOT / "scripts" / "check_v4_gpus_idle.sh"
 DEFAULT_DATASETS = ("AIME24", "hmmt_feb_2025", "AIME25")
 INDEXED_EXPERT_KEY = re.compile(
     r"^(?:model\.)?layers\.(?P<layer>\d+)\.(?:ffn|mlp)\.experts\."
@@ -571,6 +572,28 @@ def port_is_free(port: int) -> bool:
         return sock.connect_ex(("127.0.0.1", port)) != 0
 
 
+def require_idle_gpus(gpu_list: str) -> None:
+    env = os.environ.copy()
+    env["GPU_LIST"] = gpu_list
+    completed = subprocess.run(
+        ["bash", str(GPU_IDLE_CHECK)],
+        cwd=REPO_ROOT,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        timeout=30,
+        check=False,
+    )
+    output = completed.stdout.strip()
+    if output:
+        print(output, flush=True)
+    if completed.returncode != 0:
+        raise RuntimeError(
+            "selected GPUs are not exclusive; no evaluation server was started"
+        )
+
+
 def fetch_models(port: int, timeout: float = 3.0) -> dict[str, Any]:
     with urlopen(f"http://127.0.0.1:{port}/v1/models", timeout=timeout) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -747,6 +770,7 @@ def run_variant(
             print(f"[{spec.name}] already passed; reusing {result_path}")
             return previous
 
+    require_idle_gpus(args.gpu_list)
     if not port_is_free(args.port):
         raise RuntimeError(f"port {args.port} is already in use")
 
