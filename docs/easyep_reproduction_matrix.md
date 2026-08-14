@@ -27,15 +27,18 @@ MTP 层保持原样，不计入上述 43 个主干层的 slot 比例。报告中
 
 ## 先生成 25%/50% mask
 
-完成 `deepseek_v4_flash_reproduction.md` 的 V4 calibration/probe 后运行：
+可以单独完成 V4 calibration/probe：
 
 ```bash
 cd /home/jovyan/wangtonghan/EASYEP
-TOKEN_STATS=expert_statistics/token_information/aime_v4.jsonl \
-  bash scripts/prepare_easyep_masks_25_50.sh
+export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
+bash scripts/collect_v4_easyep_statistics_gpus_4_7.sh
 ```
 
-脚本生成两个 mask、共享 score tensor 和带 SHA-256/运行时间的 manifest。
+采集脚本只使用本地模型、官方 inference 代码、已有 MP=4 转换权重和仓库内
+AIME23 数据，并限制物理 GPU 4–7；它不会下载、安装或转换权重。随后物化入口
+会自动生成两个 mask、共享 score tensor 和带 SHA-256/运行时间的 manifest。
 它会把前三行强制恢复为 256 个 1，仅对第 3–42 层保留 192/128 个专家。
 mask 不是物理 checkpoint；下一步必须执行物理裁剪。
 
@@ -44,11 +47,15 @@ mask 不是物理 checkpoint；下一步必须执行物理裁剪。
 ```bash
 cd /home/jovyan/wangtonghan/EASYEP
 export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
 bash scripts/prepare_v4_pruned_checkpoints.sh
 ```
 
 该入口先对两个计划做只读 dry-run 和磁盘空间估算，再为 SGLang 0.5.16 应用
 版本/源码锚点校验的 mask-routing 补丁，最后逐 shard 写入并验证两个 checkpoint。
+若统计尚不存在，它会先自动调用上述 GPU 4–7 采集脚本；统计、mask 或已完成
+shard 存在时直接复用，不重复计算。
 中断后重复同一命令会复用已完成且 header key 完全匹配的 shard。它不会执行
 `apt`、`pip`、`uv`、`curl`、`wget` 或模型下载。
 

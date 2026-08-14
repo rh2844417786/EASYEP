@@ -155,8 +155,14 @@ prune only dynamic layers 3–42 with the dedicated, resumable entrypoint:
 
 ```bash
 export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
 bash scripts/prepare_v4_pruned_checkpoints.sh
 ```
+
+If the V4 statistics are absent, this entrypoint first collects them on physical
+GPUs 4–7 from local files. It does not download dependencies/models or convert
+weights. Existing statistics, masks, and completed checkpoint shards are reused.
 
 This writes the 192- and 128-expert dynamic-layer checkpoints under `models/`,
 keeps every 256-row router weight/bias and hash `tid2eid` tensor unchanged, and

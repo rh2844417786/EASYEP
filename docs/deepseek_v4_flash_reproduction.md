@@ -202,6 +202,17 @@ torchrun --nproc-per-node=8 pruning/inf_v4.py \
 
 ## 7. Gate 4：生成 expert mask
 
+若使用物理 GPU 4–7 且已有 MP=4 转换权重，可由脚本自动完成 Gate 2/3：
+
+```bash
+V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference \
+CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted \
+  bash scripts/collect_v4_easyep_statistics_gpus_4_7.sh
+```
+
+该脚本启用 Hugging Face 离线模式，不执行安装、下载或权重转换；已有 calibration
+目录和统计 JSONL 会被复用/续跑。
+
 ```bash
 TOKEN_STATS=expert_statistics/token_information/aime_v4.jsonl \
   bash scripts/prepare_easyep_masks_25_50.sh

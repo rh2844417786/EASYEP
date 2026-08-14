@@ -9,6 +9,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 V4_PYTHON="${V4_PYTHON:-/opt/sglang-v4/bin/python}"
 FULL_MODEL_PATH="${FULL_MODEL_PATH:-/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash}"
 TOKEN_STATS="${TOKEN_STATS:-${REPO_ROOT}/expert_statistics/token_information/aime_v4.jsonl}"
+AUTO_COLLECT_STATS="${AUTO_COLLECT_STATS:-1}"
 MASK25="${MASK25:-${REPO_ROOT}/expert_statistics/expert_mask/aime_v4_prune25_keep192.json}"
 MASK50="${MASK50:-${REPO_ROOT}/expert_statistics/expert_mask/aime_v4_prune50_keep128.json}"
 PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-${REPO_ROOT}/models/v4-prune25-keep192}"
@@ -50,8 +51,17 @@ export HF_HUB_DISABLE_TELEMETRY=1
   fail "the active V4 runtime needs torch and safetensors; no installer was run"
 
 if [[ ! -f "${MASK25}" || ! -f "${MASK50}" ]]; then
-  [[ -f "${TOKEN_STATS}" ]] || \
-    fail "V4 token statistics are missing: ${TOKEN_STATS}; complete calibration/probe first"
+  if [[ ! -f "${TOKEN_STATS}" ]]; then
+    [[ "${AUTO_COLLECT_STATS}" == "1" ]] || \
+      fail "V4 token statistics are missing: ${TOKEN_STATS}; AUTO_COLLECT_STATS=0"
+    echo "V4 token statistics are missing; starting the offline GPUs 4..7 collector..."
+    TOKEN_STATS="${TOKEN_STATS}" \
+      V4_PYTHON="${V4_PYTHON}" \
+      FULL_MODEL_PATH="${FULL_MODEL_PATH}" \
+      bash "${SCRIPT_DIR}/collect_v4_easyep_statistics_gpus_4_7.sh"
+  else
+    echo "V4 token statistics already exist; no collection is needed: ${TOKEN_STATS}"
+  fi
   TOKEN_STATS="${TOKEN_STATS}" V4_PYTHON="${V4_PYTHON}" \
     bash "${SCRIPT_DIR}/prepare_easyep_masks_25_50.sh"
 fi

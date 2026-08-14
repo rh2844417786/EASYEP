@@ -14,6 +14,10 @@ import unittest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = REPO_ROOT / "scripts" / "validate_v4_flash_runtime.sh"
 FOUR_GPU_LAUNCHER = REPO_ROOT / "scripts" / "test_v4_flash_gpus_4_7.sh"
+STATISTICS_COLLECTOR = (
+    REPO_ROOT / "scripts" / "collect_v4_easyep_statistics_gpus_4_7.sh"
+)
+PRUNED_PREPARER = REPO_ROOT / "scripts" / "prepare_v4_pruned_checkpoints.sh"
 
 
 class V4RuntimeValidationTests(unittest.TestCase):
@@ -136,6 +140,24 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn('--watchdog-timeout "${WATCHDOG_TIMEOUT}"', launcher)
         self.assertIn('--disable-shared-experts-fusion', launcher)
         self.assertIn('--timeout "${SMOKE_TIMEOUT}"', launcher)
+
+    def test_statistics_collector_is_offline_and_restricted_to_gpus_4_7(self) -> None:
+        collector = STATISTICS_COLLECTOR.read_text(encoding="utf-8")
+
+        self.assertIn('GPU_LIST="${GPU_LIST:-4,5,6,7}"', collector)
+        self.assertIn('[[ "${GPU_LIST}" == "4,5,6,7" ]]', collector)
+        self.assertIn("HF_HUB_OFFLINE=1", collector)
+        self.assertIn("TRANSFORMERS_OFFLINE=1", collector)
+        self.assertIn('"${V4_PYTHON}" -m torch.distributed.run', collector)
+        for forbidden in ("apt install", "pip install", "uv pip", "curl ", "wget "):
+            self.assertNotIn(forbidden, collector)
+
+    def test_pruned_preparer_auto_collects_only_when_statistics_are_missing(self) -> None:
+        preparer = PRUNED_PREPARER.read_text(encoding="utf-8")
+
+        self.assertIn('if [[ ! -f "${TOKEN_STATS}" ]]', preparer)
+        self.assertIn("collect_v4_easyep_statistics_gpus_4_7.sh", preparer)
+        self.assertIn("V4 token statistics already exist", preparer)
 
 
 if __name__ == "__main__":
