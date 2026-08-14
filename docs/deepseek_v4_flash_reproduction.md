@@ -203,12 +203,12 @@ torchrun --nproc-per-node=8 pruning/inf_v4.py \
 ## 7. Gate 4：生成 expert mask
 
 ```bash
-python pruning/expert_selection.py \
-  --input-file expert_statistics/token_information/aime_v4.jsonl \
-  --output-file expert_statistics/expert_information/aime_v4.pt \
-  --expert-mask expert_statistics/expert_mask/aime_v4_128.json \
-  --num-experts 256 --target-number 128 --num-samples 25
+TOKEN_STATS=expert_statistics/token_information/aime_v4.jsonl \
+  bash scripts/prepare_easyep_masks_25_50.sh
 ```
+
+该入口分别生成动态层 keep-192/keep-128 mask，并把前三个 hash 层强制设为
+全 1。不要直接使用会把 43 层统一裁成 128 的旧命令。
 
 混合域：
 
@@ -221,21 +221,61 @@ python pruning/expert_selection_mix_domain.py \
 
 新实现不再固定 58 层，并修复了混合域脚本中 `w` 未定义、`--target-number` 被忽略、零分母及 shape 不一致等问题。
 
-## 8. 尚未完成的 V4 关卡
+## 8. Gate 5：保留 hash 层，物理裁剪后 40 层
 
-生成 V4 mask 还不等于完成论文复现。以下两项需要单独实现并做一致性测试：
+本仓库采用论文式 mask 路由，不裁剪 router 参数：
 
-1. **当前 SGLang 的 V4 quick-mask 路由**：动态 router 层可以在 top-k 前屏蔽专家；前三个 hash 层不能简单套用同一操作。旧 `sglang_full` 补丁不可复用。
-2. **真实物理剪枝**：需要支持“hash 层保留 256、其余层保留 128”的异构专家数，或提出并验证 token→expert 重映射策略；同时修改 checkpoint loader、MoE kernel layout 和配置语义。
+- layer 0–2：保留全部 256 个专家、gate weight 和 `tid2eid`；
+- layer 3–42：只删除未保留的专家权重，并把保留专家连续重编号到 0–191 或
+  0–127；gate weight 和 correction bias 仍完整保留 256 行；
+- MTP：保持原样；
+- config：全局 `n_routed_experts` 保持 256，写入完整的
+  `easyep_expert_mask_by_layer` 和带哈希的 `easyep_pruning` provenance；
+- runtime：对 SGLang 0.5.16 做版本/源码锚点校验；动态层先用 mask 从完整
+  router logits/correction bias 选择保留列，再执行 TopK，紧凑 ID 与物理专家
+  一一对应。运行时关闭 shared-expert fusion、EPLB、redundant experts 和 CUDA
+  graph，并限定普通 TP 路径（不启用 MoE A2A backend）。
 
-在这两项完成前，可以报告“V4 原模型基线”和“V4 calibration mask/稳定性”，但不能报告“V4 EASY-EP 已完成 2× 参数压缩或部署吞吐提升”。根目录 `model_prune.py` 仍可用于无 hash-router 的 V3/R1 checkpoint，并会自动更新 `n_routed_experts` 与 index metadata。
+生成两个 checkpoint：
+
+```bash
+cd /home/jovyan/wangtonghan/EASYEP
+export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+bash scripts/prepare_v4_pruned_checkpoints.sh
+```
+
+入口会在写权重前检查 43×256 的源 expert key、前三行 mask 全 1、后 40 行
+分别恰好 192/128、所有 shard header 与 index 一致，并估算磁盘空间。逐 shard
+写入使用临时文件和原子替换；中断后可复用已验证 shard。最终 index/config 在
+权重完成后才写入，并再次验证 key 集、总 tensor 字节数和计划指纹。
+
+在正式矩阵前，让两个产物各执行两次独立的 load/generate/stop（第二次即 reload
+验证）：
+
+```bash
+bash scripts/validate_v4_pruned_checkpoints_gpus_4_7.sh
+```
+
+该验收固定使用物理 GPU 4–7，关闭 shared-expert fusion，并为每次启动保存完整
+日志和自动摘要。只有脚本最终输出 `PASS`，才进入评测矩阵。
+
+恢复未修改的 SGLang 文件：
+
+```bash
+/opt/sglang-v4/bin/python \
+  scripts/patch_sglang_v4_heterogeneous_experts.py --restore
+```
+
+代码和 checkpoint 结构检查不等于 H100 推理通过。必须继续执行下面的 load、
+generate、停止后 reload 验收，才能把数值标为 V4 物理剪枝结果。
 
 ## 9. 结果验收顺序
 
 1. smoke 请求成功，保存服务版本、完整启动命令和 GPU 拓扑；
 2. 三个数据集未剪枝基线完成，保存 JSONL、时延与显存峰值；
 3. V4 probe 一条样本 43 层齐全，无 NaN/Inf；
-4. 25 条 calibration 生成 mask，检查每层恰好 128 个 1；
-5. quick-mask 实现后先比较“mask 全 1”与原服务逐 token logits/生成一致性；
-6. 再评测 mask=128；
-7. 只有真实删权重模型成功 load、generate、reload 且输出可复现后，才测 TTFT、TPOT、吞吐、P99 与峰值 HBM。
+4. 25 条 calibration 生成 mask，检查前三层 256 个 1，后 40 层为 192/128；
+5. 两个物理 checkpoint 通过 index、shape、完整 router 字段、mask 和 provenance 验证；
+6. 192 模型 load/generate/stop/reload 成功，再对 128 模型执行同样验收；
+7. 三组评测矩阵完成后才比较准确率、运行时间、checkpoint bytes 与峰值 HBM；
+8. TP=4 结果不外推为论文 TP=8 的 TTFT、TPOT、P99 或 goodput 结论。

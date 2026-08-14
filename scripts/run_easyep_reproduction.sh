@@ -43,6 +43,8 @@ done
 [[ -x "${V4_PYTHON}" ]] || fail "V4 Python is not executable: ${V4_PYTHON}"
 command -v "${EVAL_PYTHON}" >/dev/null 2>&1 || \
   fail "evaluation Python was not found: ${EVAL_PYTHON}"
+"${V4_PYTHON}" "${SCRIPT_DIR}/patch_sglang_v4_heterogeneous_experts.py" --check || \
+  fail "apply the checked SGLang patch with: ${V4_PYTHON} ${SCRIPT_DIR}/patch_sglang_v4_heterogeneous_experts.py --apply"
 
 export MODEL_PATH="${FULL_MODEL_PATH}"
 export V4_PYTHON
@@ -76,8 +78,5 @@ args=(
 [[ -n "${RUN_ID}" ]] && args+=(--run-id "${RUN_ID}")
 [[ "${CONTINUE_ON_ERROR:-0}" == "1" ]] && args+=(--continue-on-error)
 [[ "${DRY_RUN:-0}" == "1" ]] && args+=(--dry-run)
-[[ "${ALLOW_HASH_ROUTED_PRUNED_CHECKPOINTS:-0}" == "1" ]] && \
-  args+=(--allow-hash-routed-pruned-checkpoints)
-
 exec "${eval_python_path}" "${REPO_ROOT}/evaluation/run_reproduction_matrix.py" \
   "${args[@]}" "$@"

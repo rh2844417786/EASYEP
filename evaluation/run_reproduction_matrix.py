@@ -19,6 +19,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import signal
 import socket
 import statistics
@@ -35,13 +36,26 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 EVAL_CLIENT = REPO_ROOT / "evaluation" / "run_sglang.py"
 SMOKE_CLIENT = REPO_ROOT / "scripts" / "smoke_v4_server.py"
 DEFAULT_DATASETS = ("AIME24", "hmmt_feb_2025", "AIME25")
+INDEXED_EXPERT_KEY = re.compile(
+    r"^(?:model\.)?layers\.(?P<layer>\d+)\.(?:ffn|mlp)\.experts\."
+    r"(?P<expert>\d+)\."
+)
+INDEXED_GATE_KEY = re.compile(
+    r"^(?:model\.)?layers\.(?P<layer>\d+)\.(?:ffn|mlp)\.gate\."
+    r"(?P<field>weight|bias|tid2eid)$"
+)
 
 
 @dataclass(frozen=True)
 class CheckpointInfo:
     path: str
+    global_routed_experts: int
     routed_experts: int
     hash_layers: int
+    hash_routed_experts: int
+    expert_counts_by_layer: tuple[int, ...]
+    main_layer_slot_prune_fraction: float
+    pruning_scope: str | None
     indexed_tensors: int
     shard_count: int
     checkpoint_bytes: int
@@ -75,6 +89,121 @@ def load_json(path: Path) -> dict[str, Any]:
     return value
 
 
+def _validate_indexed_expert_ids(
+    weight_map: dict[str, Any], expert_counts: list[int], index_path: Path
+) -> None:
+    observed = [set() for _ in expert_counts]
+    for key in weight_map:
+        match = INDEXED_EXPERT_KEY.match(str(key))
+        if match is None:
+            continue
+        layer = int(match.group("layer"))
+        if 0 <= layer < len(expert_counts):
+            observed[layer].add(int(match.group("expert")))
+
+    for layer, expected_count in enumerate(expert_counts):
+        expected = set(range(expected_count))
+        if observed[layer] != expected:
+            missing = sorted(expected - observed[layer])
+            extra = sorted(observed[layer] - expected)
+            raise ValueError(
+                f"{index_path} layer {layer} expert ids do not match config; "
+                f"missing={missing[:8]}, extra={extra[:8]}"
+            )
+
+
+def _validate_indexed_router_fields(
+    weight_map: dict[str, Any], num_layers: int, hash_layers: int, index_path: Path
+) -> None:
+    fields = [set() for _ in range(num_layers)]
+    for key in weight_map:
+        match = INDEXED_GATE_KEY.match(str(key))
+        if match is None:
+            continue
+        layer = int(match.group("layer"))
+        if 0 <= layer < num_layers:
+            fields[layer].add(match.group("field"))
+    for layer in range(num_layers):
+        required = {"weight", "tid2eid"} if layer < hash_layers else {"weight", "bias"}
+        if not required.issubset(fields[layer]):
+            raise ValueError(
+                f"{index_path} layer {layer} is missing full router fields "
+                f"{sorted(required - fields[layer])}"
+            )
+
+
+def _validate_pruning_provenance(
+    path: Path,
+    metadata: dict[str, Any],
+    expert_counts: list[int],
+    global_experts: int,
+    hash_layers: int,
+) -> None:
+    dynamic_experts = expert_counts[hash_layers]
+    expected_dynamic_prune = 1.0 - dynamic_experts / global_experts
+    expected_main_prune = 1.0 - sum(expert_counts) / (
+        len(expert_counts) * global_experts
+    )
+    exact_fields = {
+        "format_version": 1,
+        "scope": "dynamic_moe_layers_only",
+        "hash_layers_preserved": True,
+        "hash_layer_ids": list(range(hash_layers)),
+        "dynamic_layer_ids": list(range(hash_layers, len(expert_counts))),
+        "original_experts_per_layer": global_experts,
+        "target_dynamic_experts_per_layer": dynamic_experts,
+        "router_parameters_pruned": False,
+        "router_mask_applied_at_runtime": True,
+        "mtp_pruned": False,
+    }
+    for field, expected in exact_fields.items():
+        if metadata.get(field) != expected:
+            raise ValueError(
+                f"{path / 'config.json'} easyep_pruning.{field} must be {expected!r}"
+            )
+    for field, expected in (
+        ("dynamic_layer_prune_fraction", expected_dynamic_prune),
+        ("main_layer_slot_prune_fraction", expected_main_prune),
+    ):
+        try:
+            observed = float(metadata[field])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(
+                f"{path / 'config.json'} has invalid easyep_pruning.{field}"
+            ) from exc
+        if not math.isclose(observed, expected, rel_tol=0.0, abs_tol=1e-12):
+            raise ValueError(
+                f"{path / 'config.json'} easyep_pruning.{field}={observed}, "
+                f"expected {expected}"
+            )
+
+    plan_fingerprint = metadata.get("plan_fingerprint")
+    mask_sha256 = metadata.get("mask_sha256")
+    for field, value in (
+        ("plan_fingerprint", plan_fingerprint),
+        ("mask_sha256", mask_sha256),
+    ):
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+            raise ValueError(
+                f"{path / 'config.json'} easyep_pruning.{field} is not a SHA-256"
+            )
+
+    manifest_path = path / "easyep_pruning_manifest.json"
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"pruned checkpoint manifest is missing: {manifest_path}")
+    manifest = load_json(manifest_path)
+    if manifest.get("plan_fingerprint") != plan_fingerprint:
+        raise ValueError(f"{manifest_path} plan fingerprint does not match config")
+    if (
+        manifest.get("router_parameters_pruned") is not False
+        or manifest.get("router_mask_applied_at_runtime") is not True
+    ):
+        raise ValueError(f"{manifest_path} does not preserve the full router")
+    layout = manifest.get("layout")
+    if not isinstance(layout, dict) or layout.get("counts_by_layer") != expert_counts:
+        raise ValueError(f"{manifest_path} per-layer expert counts do not match config")
+
+
 def inspect_checkpoint(path: Path) -> CheckpointInfo:
     path = path.expanduser().resolve()
     config_path = path / "config.json"
@@ -88,15 +217,74 @@ def inspect_checkpoint(path: Path) -> CheckpointInfo:
     index_bytes = index_path.read_bytes()
     config = json.loads(config_bytes)
     index = json.loads(index_bytes)
-    routed_experts = int(config.get("n_routed_experts", 0) or 0)
-    if routed_experts < 1:
+    global_routed_experts = int(config.get("n_routed_experts", 0) or 0)
+    if global_routed_experts < 1:
         raise ValueError(f"{config_path} has no positive n_routed_experts")
     hash_layers = int(
         config.get("num_hash_layers", config.get("n_hash_layers", 0)) or 0
     )
+    num_layers = int(config.get("num_hidden_layers", config.get("n_layers", 0)) or 0)
+    if num_layers < 1 or not 0 <= hash_layers < num_layers:
+        raise ValueError(
+            f"{config_path} has invalid layer counts: layers={num_layers}, "
+            f"hash_layers={hash_layers}"
+        )
+    raw_mask = config.get("easyep_expert_mask_by_layer")
+    if raw_mask is None:
+        expert_counts = [global_routed_experts] * num_layers
+    else:
+        if not isinstance(raw_mask, list) or len(raw_mask) != num_layers:
+            raise ValueError(
+                f"{config_path} easyep_expert_mask_by_layer must have {num_layers} rows"
+            )
+        expert_counts = []
+        for layer, row in enumerate(raw_mask):
+            if not isinstance(row, list) or len(row) != global_routed_experts:
+                raise ValueError(
+                    f"{config_path} mask layer {layer} must have "
+                    f"{global_routed_experts} entries"
+                )
+            if any(value not in (0, 1, 0.0, 1.0, False, True) for value in row):
+                raise ValueError(f"{config_path} mask layer {layer} is not binary")
+            expert_counts.append(sum(int(value) for value in row))
+    if any(
+        value != global_routed_experts for value in expert_counts[:hash_layers]
+    ):
+        raise ValueError(
+            f"{config_path} prunes a hash layer; layers 0..{hash_layers - 1} "
+            f"must retain {global_routed_experts} experts"
+        )
+    dynamic_counts = set(expert_counts[hash_layers:])
+    if len(dynamic_counts) != 1:
+        raise ValueError(
+            f"{config_path} must use one uniform expert count for dynamic layers; "
+            f"found {sorted(dynamic_counts)}"
+        )
+    routed_experts = next(iter(dynamic_counts))
+    pruning_metadata = config.get("easyep_pruning")
+    if routed_experts != global_routed_experts:
+        if not isinstance(pruning_metadata, dict):
+            raise ValueError(
+                f"{config_path} has a pruning mask without easyep_pruning provenance"
+            )
+        if (
+            pruning_metadata.get("scope") != "dynamic_moe_layers_only"
+            or pruning_metadata.get("hash_layers_preserved") is not True
+            or pruning_metadata.get("mtp_pruned") is not False
+        ):
+            raise ValueError(f"{config_path} has invalid EASY-EP V4 pruning provenance")
+        _validate_pruning_provenance(
+            path,
+            pruning_metadata,
+            expert_counts,
+            global_routed_experts,
+            hash_layers,
+        )
     weight_map = index.get("weight_map")
     if not isinstance(weight_map, dict) or not weight_map:
         raise ValueError(f"{index_path} has no non-empty weight_map")
+    _validate_indexed_expert_ids(weight_map, expert_counts, index_path)
+    _validate_indexed_router_fields(weight_map, num_layers, hash_layers, index_path)
 
     shard_names = sorted(set(str(name) for name in weight_map.values()))
     missing = [name for name in shard_names if not (path / name).is_file()]
@@ -108,8 +296,21 @@ def inspect_checkpoint(path: Path) -> CheckpointInfo:
     fingerprint = sha256_parts((config_bytes, b"\0", index_bytes))[:20]
     return CheckpointInfo(
         path=str(path),
+        global_routed_experts=global_routed_experts,
         routed_experts=routed_experts,
         hash_layers=hash_layers,
+        hash_routed_experts=(
+            expert_counts[0] if hash_layers else routed_experts
+        ),
+        expert_counts_by_layer=tuple(expert_counts),
+        main_layer_slot_prune_fraction=round(
+            1.0 - sum(expert_counts) / (num_layers * global_routed_experts), 10
+        ),
+        pruning_scope=(
+            pruning_metadata.get("scope")
+            if isinstance(pruning_metadata, dict)
+            else None
+        ),
         indexed_tensors=len(weight_map),
         shard_count=len(shard_names),
         checkpoint_bytes=checkpoint_bytes,
@@ -121,8 +322,6 @@ def build_variant_specs(
     full_model: Path,
     prune25_model: Path,
     prune50_model: Path,
-    *,
-    allow_hash_routed_pruned_checkpoints: bool = False,
 ) -> list[VariantSpec]:
     checkpoints = [
         inspect_checkpoint(full_model),
@@ -130,6 +329,11 @@ def build_variant_specs(
         inspect_checkpoint(prune50_model),
     ]
     original_experts = checkpoints[0].routed_experts
+    if any(
+        value != checkpoints[0].global_routed_experts
+        for value in checkpoints[0].expert_counts_by_layer
+    ):
+        raise ValueError("full checkpoint is already mask-pruned")
     expected_counts = [
         original_experts,
         original_experts * 3 // 4,
@@ -148,22 +352,16 @@ def build_variant_specs(
     ):
         if checkpoint.routed_experts != expected:
             raise ValueError(
-                f"{name} must have n_routed_experts={expected} "
-                f"({fraction:.0%} pruning from {original_experts}), found "
+                f"{name} must have {expected} experts in dynamic layers 3..42 "
+                f"({fraction:.0%} dynamic-layer pruning from {original_experts}), found "
                 f"{checkpoint.routed_experts} in {checkpoint.path}"
             )
-        if (
-            fraction > 0
-            and (checkpoints[0].hash_layers > 0 or checkpoint.hash_layers > 0)
-            and not allow_hash_routed_pruned_checkpoints
-        ):
-            raise ValueError(
-                f"{name} is hash-routed ({checkpoint.hash_layers} hash layers). "
-                "This repository has not implemented a validated V4 token-to-expert "
-                "remap or heterogeneous expert layout, so it cannot claim physical "
-                "V4 pruning. Only use --allow-hash-routed-pruned-checkpoints after "
-                "a separately validated runtime/checkpoint implementation exists."
-            )
+        if checkpoint.global_routed_experts != checkpoints[0].global_routed_experts:
+            raise ValueError(f"{name} changed the global/hash expert count")
+        if checkpoint.hash_layers != checkpoints[0].hash_layers:
+            raise ValueError(f"{name} changed the hash-layer count")
+        if fraction > 0 and checkpoint.pruning_scope != "dynamic_moe_layers_only":
+            raise ValueError(f"{name} is not a validated dynamic-layer-only checkpoint")
         specs.append(VariantSpec(name, fraction, expected, checkpoint))
 
     resolved_paths = [item.checkpoint.path for item in specs]
@@ -457,6 +655,7 @@ def server_command(args: argparse.Namespace, spec: VariantSpec) -> list[str]:
         "--watchdog-timeout",
         str(args.watchdog_timeout),
         "--disable-custom-all-reduce",
+        "--disable-shared-experts-fusion",
     ]
 
 
@@ -716,6 +915,10 @@ def comparison_rows(results: list[dict[str, Any]], datasets: list[str]) -> list[
             "status": result["status"],
             "prune_percent": round(float(result["prune_fraction"]) * 100),
             "routed_experts": checkpoint["routed_experts"],
+            "hash_routed_experts": checkpoint["hash_routed_experts"],
+            "main_layer_slot_prune_percent": round(
+                float(checkpoint["main_layer_slot_prune_fraction"]) * 100, 6
+            ),
             "checkpoint_gib": round(checkpoint["checkpoint_bytes"] / 2**30, 6),
             "startup_seconds": result.get("startup_seconds"),
             "smoke_seconds": result.get("smoke_seconds"),
@@ -757,7 +960,9 @@ def write_summary(run_dir: Path, manifest: dict[str, Any], results: list[dict[st
         "Variant",
         "Status",
         "Prune",
-        "Experts",
+        "Dynamic experts",
+        "Hash experts",
+        "Main slots pruned",
         "Checkpoint GiB",
         *datasets,
         "Macro Acc.",
@@ -783,6 +988,8 @@ def write_summary(run_dir: Path, manifest: dict[str, Any], results: list[dict[st
             row["status"],
             f"{row['prune_percent']}%",
             str(row["routed_experts"]),
+            str(row["hash_routed_experts"]),
+            f"{row['main_layer_slot_prune_percent']}%",
             str(row["checkpoint_gib"]),
             *[str(row.get(f"{name}_accuracy")) for name in datasets],
             str(row.get("macro_accuracy")),
@@ -798,7 +1005,7 @@ def write_summary(run_dir: Path, manifest: dict[str, Any], results: list[dict[st
             "",
             "This matrix reports accuracy, request latency, wall time, checkpoint bytes, and HBM telemetry.",
             "It does not by itself establish TTFT, TPOT, P99, goodput, or the paper's 8-GPU throughput claim.",
-            "Hash-routed V4 checkpoints are rejected by default until routing remap and loading are validated.",
+            "V4 hash layers 0..2 keep all 256 experts; only dynamic layers 3..42 are physically pruned.",
             "",
         ]
     )
@@ -851,11 +1058,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--monitor-interval", type=float, default=2.0)
     parser.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--continue-on-error", action="store_true")
-    parser.add_argument(
-        "--allow-hash-routed-pruned-checkpoints",
-        action="store_true",
-        help="advanced override; does not implement or validate V4 hash remapping",
-    )
     parser.add_argument("--dry-run", action="store_true")
     return parser
 
@@ -938,7 +1140,6 @@ def main() -> int:
         args.full_model,
         args.prune25_model,
         args.prune50_model,
-        allow_hash_routed_pruned_checkpoints=args.allow_hash_routed_pruned_checkpoints,
     )
     run_id = args.run_id or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     run_dir = args.results_root.expanduser().resolve() / run_id

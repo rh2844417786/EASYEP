@@ -61,7 +61,7 @@ class V4RuntimeValidationTests(unittest.TestCase):
             """\
             #!/usr/bin/env bash
             if [[ "${1:-}" == "-m" ]]; then
-              echo '--moe-runner-backend --reasoning-parser --tool-call-parser --watchdog-timeout --disable-custom-all-reduce'
+              echo '--moe-runner-backend --reasoning-parser --tool-call-parser --watchdog-timeout --disable-custom-all-reduce --disable-shared-experts-fusion'
             elif [[ "${1:-}" == "-c" ]]; then
               echo '/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py'
             else
@@ -134,6 +134,7 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn('WATCHDOG_TIMEOUT="${WATCHDOG_TIMEOUT:-1800}"', launcher)
         self.assertIn('SMOKE_TIMEOUT="${SMOKE_TIMEOUT:-1800}"', launcher)
         self.assertIn('--watchdog-timeout "${WATCHDOG_TIMEOUT}"', launcher)
+        self.assertIn('--disable-shared-experts-fusion', launcher)
         self.assertIn('--timeout "${SMOKE_TIMEOUT}"', launcher)
 
 

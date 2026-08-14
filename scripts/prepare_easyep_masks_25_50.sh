@@ -10,6 +10,8 @@ V4_PYTHON="${V4_PYTHON:-/opt/sglang-v4/bin/python}"
 TOKEN_STATS="${TOKEN_STATS:-${REPO_ROOT}/expert_statistics/token_information/aime_v4.jsonl}"
 OUTPUT_DIR="${OUTPUT_DIR:-${REPO_ROOT}/expert_statistics/expert_mask}"
 NUM_EXPERTS="${NUM_EXPERTS:-256}"
+NUM_LAYERS="${NUM_LAYERS:-43}"
+HASH_LAYERS="${HASH_LAYERS:-3}"
 NUM_SAMPLES="${NUM_SAMPLES:-25}"
 SAMPLE_STRATEGY="${SAMPLE_STRATEGY:-longest}"
 SEED="${SEED:-42}"
@@ -24,6 +26,8 @@ fail() {
   fail "probe statistics not found: ${TOKEN_STATS}; complete Gate 2/3 in docs/deepseek_v4_flash_reproduction.md first"
 [[ "${NUM_EXPERTS}" == "256" ]] || \
   fail "this reproduction protocol expects the repository's 256-expert checkpoint"
+[[ "${NUM_LAYERS}" == "43" && "${HASH_LAYERS}" == "3" ]] || \
+  fail "this V4-Flash protocol requires 43 layers with the first 3 hash layers preserved"
 
 mkdir -p "${OUTPUT_DIR}"
 scores_file="${OUTPUT_DIR}/aime_v4_scores.pt"
@@ -67,16 +71,31 @@ mask_paths = [(Path(mask25_name), 192, 25), (Path(mask50_name), 128, 50)]
 records = []
 for path, expected_keep, prune_percent in mask_paths:
     mask = json.loads(path.read_text(encoding="utf-8"))
-    if not mask or any(len(row) != 256 for row in mask):
-        raise SystemExit(f"{path} must have non-empty rows of 256 experts")
+    if len(mask) != 43 or any(len(row) != 256 for row in mask):
+        raise SystemExit(f"{path} must have 43 rows of 256 experts")
+    # The first three layers use frozen token-id -> expert-id hash tables.
+    # Preserve every expert there; only layers 3..42 are pruning candidates.
+    for layer in range(3):
+        mask[layer] = [1] * 256
+    path.write_text(
+        json.dumps(mask, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     counts = [sum(1 for value in row if value == 1) for row in mask]
-    if any(count != expected_keep for count in counts):
-        raise SystemExit(f"{path} keep counts are invalid: {sorted(set(counts))}")
+    if counts[:3] != [256, 256, 256]:
+        raise SystemExit(f"{path} modified a hash-routed layer")
+    if any(count != expected_keep for count in counts[3:]):
+        raise SystemExit(
+            f"{path} dynamic-layer keep counts are invalid: {sorted(set(counts[3:]))}"
+        )
     records.append(
         {
             "path": str(path),
-            "prune_percent": prune_percent,
-            "keep_experts_per_layer": expected_keep,
+            "dynamic_layer_prune_percent": prune_percent,
+            "hash_layers_preserved": [0, 1, 2],
+            "dynamic_layers_pruned": list(range(3, 43)),
+            "hash_layer_experts": 256,
+            "dynamic_layer_experts": expected_keep,
+            "main_layer_slot_prune_percent": (1 - sum(counts) / (43 * 256)) * 100,
             "layers": len(mask),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         }
@@ -91,8 +110,8 @@ manifest = {
     "masks": records,
     "physical_pruned_checkpoints_created": False,
     "warning": (
-        "Masks are not pruned checkpoints. DeepSeek-V4 hash routing needs a validated "
-        "token-to-expert remap or heterogeneous expert runtime before evaluation."
+        "Masks are not pruned checkpoints. Layers 0..2 remain at 256 experts; "
+        "layers 3..42 require the validated EASY-EP mask-routing runtime."
     ),
 }
 output = Path(mask25_name).parent / "aime_v4_mask_manifest.json"
@@ -101,6 +120,6 @@ print(f"mask manifest: {output}")
 PY
 
 echo "Generated:"
-echo "  25% prune mask (keep 192/256): ${mask25}"
-echo "  50% prune mask (keep 128/256): ${mask50}"
+echo "  25% dynamic-layer mask (layers 0..2 keep 256; layers 3..42 keep 192): ${mask25}"
+echo "  50% dynamic-layer mask (layers 0..2 keep 256; layers 3..42 keep 128): ${mask50}"
 echo "These are masks only; no V4 checkpoint was physically pruned."

@@ -14,13 +14,16 @@
 EASY-EP 协议选择 25 条样本生成 mask，不能把它混入上述测试集。其他 Arrow
 数据暂未接入仓库评分器，因此本矩阵不虚构 GPQA、代码或 Agent 指标。
 
-对 256 个 routed experts，三个变体必须是：
+V4 前 3 个 hash-MoE 层不剪，后 40 个动态 MoE 层按 EASY-EP mask 剪枝：
 
-| 变体 | 剪枝率 | 每层保留专家 |
-|---|---:|---:|
-| full | 0% | 256 |
-| prune25 | 25% | 192 |
-| prune50 | 50% | 128 |
+| 变体 | 动态层剪枝率 | hash 层 0–2 | 动态层 3–42 | 43 层 expert slots 实际减少 |
+|---|---:|---:|---:|---:|
+| full | 0% | 256 | 256 | 0% |
+| prune25 | 25% | 256 | 192 | 23.2558% |
+| prune50 | 50% | 256 | 128 | 46.5116% |
+
+MTP 层保持原样，不计入上述 43 个主干层的 slot 比例。报告中的 `25%/50%`
+始终指后 40 个动态层的目标剪枝率，不宣称整个 checkpoint 字节数同比减少。
 
 ## 先生成 25%/50% mask
 
@@ -33,8 +36,29 @@ TOKEN_STATS=expert_statistics/token_information/aime_v4.jsonl \
 ```
 
 脚本生成两个 mask、共享 score tensor 和带 SHA-256/运行时间的 manifest。
-mask 不是物理剪枝 checkpoint。当前仓库仍不支持 V4 hash-router 的安全物理
-剪枝；不得把完整模型配上不同名称重复评测。
+它会把前三行强制恢复为 256 个 1，仅对第 3–42 层保留 192/128 个专家。
+mask 不是物理 checkpoint；下一步必须执行物理裁剪。
+
+## 生成两个物理 checkpoint
+
+```bash
+cd /home/jovyan/wangtonghan/EASYEP
+export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+bash scripts/prepare_v4_pruned_checkpoints.sh
+```
+
+该入口先对两个计划做只读 dry-run 和磁盘空间估算，再为 SGLang 0.5.16 应用
+版本/源码锚点校验的 mask-routing 补丁，最后逐 shard 写入并验证两个 checkpoint。
+中断后重复同一命令会复用已完成且 header key 完全匹配的 shard。它不会执行
+`apt`、`pip`、`uv`、`curl`、`wget` 或模型下载。
+
+生成结束后先做结构检查以及两个产物各两次 load/generate 验收：
+
+```bash
+bash scripts/validate_v4_pruned_checkpoints_gpus_4_7.sh
+```
+
+第二次独立启动用于验证 reload；任一 checkpoint 未通过时不要启动完整矩阵。
 
 ## 运行三组 checkpoint
 
@@ -73,17 +97,12 @@ REPEATS=5 WORKERS=1 MAX_TOKENS=32768 \
 续跑会校验 Git commit、三个 checkpoint 指纹和全部科学参数；任何一项变化时会
 拒绝把新旧结果写进同一个目录，此时应使用新的 `RUN_ID`。
 
-V4 checkpoint 包含 hash layers 时，矩阵默认拒绝 pruned 变体。这是安全门禁，
-不是需要随手关闭的报错。只有在另一个实现中完成并验证 hash token→expert
-重映射、checkpoint loader 和 MoE kernel layout 后，才可显式设置：
-
-```bash
-ALLOW_HASH_ROUTED_PRUNED_CHECKPOINTS=1 \
-  bash scripts/run_easyep_reproduction.sh
-```
-
-该开关只表示“用户提供的外部实现已验证”，本仓库不会因此自动获得 V4 剪枝
-能力。
+矩阵会核对 `easyep_expert_mask_by_layer`、物理 expert ID 和
+`easyep_pruning` provenance，拒绝前三个 hash 层少于 256 个专家、动态层数量
+不统一、router 字段缺失或只是改名/复制的 checkpoint。router weight/bias 始终
+保持 256 行；运行时按 mask 选列并映射到紧凑专家 ID。服务端固定关闭
+shared-expert fusion、EPLB、redundant experts、CUDA graph 和 MoE A2A backend，
+使用普通 TP=4。
 
 ## 保存内容
 

@@ -115,6 +115,7 @@ write_summary() {
     echo "SGLang watchdog timeout: ${WATCHDOG_TIMEOUT}s"
     echo "Smoke HTTP timeout: ${SMOKE_TIMEOUT}s"
     echo "Custom AllReduce: disabled"
+    echo "Shared-expert fusion: disabled"
     echo "HF Hub offline: ${HF_HUB_OFFLINE}"
     echo "Transformers offline: ${TRANSFORMERS_OFFLINE}"
     echo "NCCL_IB_DISABLE: ${NCCL_IB_DISABLE}"
@@ -192,6 +193,7 @@ export TORCH_NCCL_BLOCKING_WAIT="${TORCH_NCCL_BLOCKING_WAIT:-1}"
 
 echo "NCCL: IB_DISABLE=${NCCL_IB_DISABLE}, SOCKET_IFNAME=${NCCL_SOCKET_IFNAME}, CUMEM_HOST_ENABLE=${NCCL_CUMEM_HOST_ENABLE}"
 echo "Custom AllReduce: disabled (v0.5.16 tvm-ffi JIT compile workaround)"
+echo "Shared-expert fusion: disabled (required by EASY-EP compact expert storage)"
 echo "Downloads: disabled; HF_HUB_OFFLINE=${HF_HUB_OFFLINE}, TRANSFORMERS_OFFLINE=${TRANSFORMERS_OFFLINE}"
 echo "Timeouts: startup=${STARTUP_TIMEOUT}s, scheduler-watchdog=${WATCHDOG_TIMEOUT}s, smoke-http=${SMOKE_TIMEOUT}s"
 
@@ -210,6 +212,7 @@ echo "Timeouts: startup=${STARTUP_TIMEOUT}s, scheduler-watchdog=${WATCHDOG_TIMEO
   --max-running-requests 1 \
   --watchdog-timeout "${WATCHDOG_TIMEOUT}" \
   --disable-custom-all-reduce \
+  --disable-shared-experts-fusion \
   "$@" >"${LOG_FILE}" 2>&1 &
 SERVER_PID=$!
 

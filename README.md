@@ -150,6 +150,24 @@ metadata automatically. It deliberately refuses DeepSeek-V4 checkpoints with
 hash-routed layers because deleting experts without remapping the token-to-expert
 table would corrupt routing.
 
+For DeepSeek-V4-Flash, preserve the first three hash-MoE layers and physically
+prune only dynamic layers 3–42 with the dedicated, resumable entrypoint:
+
+```bash
+export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+bash scripts/prepare_v4_pruned_checkpoints.sh
+```
+
+This writes the 192- and 128-expert dynamic-layer checkpoints under `models/`,
+keeps every 256-row router weight/bias and hash `tid2eid` tensor unchanged, and
+physically removes only unretained expert weights. The SGLang 0.5.16 patch
+applies each EASY-EP mask before TopK and maps selected router IDs onto the
+compact expert weights. H100 load/generate/reload remains a required test.
+
+```bash
+bash scripts/validate_v4_pruned_checkpoints_gpus_4_7.sh
+```
+
 ---
 
 #### Deploy the Pruned Model
