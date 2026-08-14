@@ -52,7 +52,7 @@ GPU_INVENTORY="$(nvidia-smi --query-gpu=index,name,memory.free \
   --format=csv,noheader,nounits)" || fail "nvidia-smi failed"
 for gpu_index in 4 5 6 7; do
   if ! awk -F, -v expected="${gpu_index}" \
-    '{ index=$1; gsub(/[[:space:]]/, "", index); if (index == expected) found=1 } END { exit !found }' \
+    '{ gpu_id=$1; gsub(/[[:space:]]/, "", gpu_id); if (gpu_id == expected) found=1 } END { exit !found }' \
     <<<"${GPU_INVENTORY}"; then
     fail "physical GPU ${gpu_index} was not reported by nvidia-smi"
   fi
