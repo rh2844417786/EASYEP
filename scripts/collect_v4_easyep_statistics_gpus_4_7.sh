@@ -91,8 +91,8 @@ echo "Downloads/installers/conversion: disabled"
 echo "Log: ${LOG_PATH}"
 
 "${V4_PYTHON}" -c \
-  "import datasets, safetensors, torch, transformers; print('runtime dependencies: OK')" || \
-  fail "V4 runtime is missing torch/datasets/safetensors/transformers; no installer was run"
+  "import datasets, safetensors, torch, transformers; from fast_hadamard_transform import hadamard_transform; x=torch.randn(2,512,device='cuda:0',dtype=torch.bfloat16); y=hadamard_transform(x,scale=x.size(-1)**-0.5); assert y.shape==x.shape and torch.isfinite(y).all(); torch.cuda.synchronize(); print('runtime dependencies: OK')" || \
+  fail "V4 runtime is missing a working torch/datasets/safetensors/transformers/fast_hadamard_transform dependency; run scripts/repair_and_resume_v4_full_reproduction.sh"
 
 if [[ ! -d "${V4_CALIBRATION}" ]]; then
   echo "Retokenizing the local AIME23 calibration set with the local V4 tokenizer..."

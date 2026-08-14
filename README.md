@@ -173,6 +173,17 @@ command. It stores MP=4 and both pruned checkpoints below
 bash scripts/run_v4_full_reproduction_gpus_4_7.sh
 ```
 
+If the official V4 statistics collector reports that
+`fast_hadamard_transform` is missing, use the repair-and-resume wrapper. It
+first runs a real CUDA Hadamard operation, skips installation when that passes,
+and otherwise installs only `fast-hadamard-transform` into `/opt/sglang-v4`.
+It never reinstalls CUDA, PyTorch, or SGLang, then resumes the command above and
+reuses complete MP=4 shards:
+
+```bash
+bash scripts/repair_and_resume_v4_full_reproduction.sh
+```
+
 Unless its output paths are overridden, the manual
 `prepare_v4_pruned_checkpoints.sh` command above writes the 192- and 128-expert
 dynamic-layer checkpoints under `models/`. It keeps every 256-row router

@@ -19,6 +19,7 @@ STATISTICS_COLLECTOR = (
 )
 PRUNED_PREPARER = REPO_ROOT / "scripts" / "prepare_v4_pruned_checkpoints.sh"
 FULL_PIPELINE = REPO_ROOT / "scripts" / "run_v4_full_reproduction_gpus_4_7.sh"
+FHT_REPAIR_RESUME = REPO_ROOT / "scripts" / "repair_and_resume_v4_full_reproduction.sh"
 
 
 class V4RuntimeValidationTests(unittest.TestCase):
@@ -205,6 +206,28 @@ class V4RuntimeValidationTests(unittest.TestCase):
             "huggingface-cli download",
         ):
             self.assertNotIn(forbidden, pipeline)
+
+    def test_full_pipeline_preflights_official_hadamard_dependency(self) -> None:
+        pipeline = FULL_PIPELINE.read_text(encoding="utf-8")
+        collector = STATISTICS_COLLECTOR.read_text(encoding="utf-8")
+
+        self.assertIn("from fast_hadamard_transform import hadamard_transform", pipeline)
+        self.assertIn("from fast_hadamard_transform import hadamard_transform", collector)
+        self.assertIn("repair_and_resume_v4_full_reproduction.sh", pipeline)
+        self.assertIn("repair_and_resume_v4_full_reproduction.sh", collector)
+
+    def test_fht_repair_installs_only_when_cuda_validation_fails(self) -> None:
+        repair = FHT_REPAIR_RESUME.read_text(encoding="utf-8")
+
+        self.assertIn('if check_fht >/dev/null 2>&1; then', repair)
+        self.assertIn("no download or installation is needed", repair)
+        self.assertIn("uv pip install", repair)
+        self.assertIn("--no-build-isolation", repair)
+        self.assertIn("--no-deps", repair)
+        self.assertIn('"fast-hadamard-transform==${FHT_VERSION}"', repair)
+        self.assertIn("run_v4_full_reproduction_gpus_4_7.sh", repair)
+        for forbidden in ("apt install", "apt-get install", "conda install"):
+            self.assertNotIn(forbidden, repair)
 
 
 if __name__ == "__main__":

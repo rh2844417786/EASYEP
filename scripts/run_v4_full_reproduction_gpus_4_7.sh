@@ -93,9 +93,9 @@ echo "Master log: ${MASTER_LOG}"
 [[ -f "$(dirname "${V4_INFERENCE_DIR}")/encoding/encoding_dsv4.py" ]] || \
   fail "official encoding/encoding_dsv4.py is missing beside ${V4_INFERENCE_DIR}"
 
-"${V4_PYTHON}" -c \
-  "import datasets, safetensors, torch, transformers; assert hasattr(torch, 'float4_e2m1fn_x2'); print('V4 conversion/probe dependencies: OK')" || \
-  fail "V4 runtime lacks torch FP4, datasets, safetensors, or transformers; no installer was run"
+CUDA_VISIBLE_DEVICES="${GPU_LIST}" "${V4_PYTHON}" -c \
+  "import datasets, safetensors, torch, transformers; from fast_hadamard_transform import hadamard_transform; assert hasattr(torch, 'float4_e2m1fn_x2'); x=torch.randn(2,512,device='cuda:0',dtype=torch.bfloat16); y=hadamard_transform(x,scale=x.size(-1)**-0.5); assert y.shape==x.shape and torch.isfinite(y).all(); torch.cuda.synchronize(); print('V4 conversion/probe dependencies: OK')" || \
+  fail "V4 runtime lacks a working torch FP4, datasets, safetensors, transformers, or fast_hadamard_transform CUDA dependency; run scripts/repair_and_resume_v4_full_reproduction.sh"
 
 echo "Artifact filesystem:"
 df -h "${ARTIFACT_ROOT}"
