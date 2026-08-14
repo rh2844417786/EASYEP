@@ -24,6 +24,30 @@
 
 ## 3. Gate 0：先验证原始 V4 服务
 
+### 3.1 先采集当前 Docker 环境
+
+若不确定当前容器是否具备 SGLang、PyTorch/CUDA、启动参数及模型文件依赖，
+先运行零第三方依赖的采集器。它只读取白名单信息，并在目标 GPU 上执行一个
+64×64 FP16 矩阵乘；不会加载模型权重：
+
+```bash
+cd /path/to/easy-ep
+export MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+python3 tools/v4_environment_report.py \
+  --gpus 4,5,6,7 \
+  --output reports/v4_environment.md
+```
+
+即使缺少 SGLang、Torch 或 `nvidia-smi`，采集器也会尽量完成并生成 Markdown，
+默认不会因 `FAIL` 检查返回非零退出码。需要在自动化中把缺失依赖视为失败时，
+追加 `--strict`；不希望初始化 CUDA 时可追加 `--skip-cuda-smoke`。
+
+把生成的 `reports/v4_environment.md` 完整发回后，再决定使用现有容器、修复
+依赖，还是切换固定版本的 SGLang 镜像。报告不会输出完整环境变量、认证状态、
+Docker inspect 或模型权重，并会遮盖常见令牌格式。
+
+### 3.2 启动原始 V4 服务
+
 服务器上需要一次拿到全部 8 张 H100，而不是只暴露 GPU 4–7：
 
 ```bash
