@@ -1,0 +1,64 @@
+DeepSeek-V4-Flash validation/test wrapper summary
+================================================
+Result: PASSED
+Exit status: 0
+Automatic downloads/installations: disabled
+Full wrapper log: /home/jovyan/wangtonghan/EASYEP/logs/v4_validate_and_test_20260814_071817.log
+
+Last 60 log lines
+-----------------
+DeepSeek-V4-Flash runtime validation (read-only)
+Downloads/installers: disabled
+Hugging Face/Transformers offline mode: enabled
+Active transfer/install process check: none detected
+Physical GPUs: 4,5,6,7 are present
+CUDA compiler: NVCC 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+Python runtime: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+PyTorch: 2.11.0+cu130; CUDA build: 13.0; visible GPUs: 4
+Local model: config plus 46 indexed shard(s) present
+SGLang CLI: required DeepSeek-V4 launch options are available
+Validation passed. No apt, curl, wget, pip, uv, or model download command was executed.
+WARNING: this is an unverified TP=4 feasibility test, not the 8-GPU baseline.
+Physical GPUs: 4,5,6,7 (inside SGLang they appear as cuda:0..3)
+Python: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+NVCC: 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+CUDA_HOME: /usr/local/cuda-13.0
+Model: /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_071852.log
+Summary: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_071852_summary.txt
+Selected GPU inventory:
+  4, NVIDIA H100 80GB HBM3, 81079
+  5, NVIDIA H100 80GB HBM3, 81079
+  6, NVIDIA H100 80GB HBM3, 81079
+  7, NVIDIA H100 80GB HBM3, 81079
+NCCL: IB_DISABLE=1, SOCKET_IFNAME=lo, CUMEM_HOST_ENABLE=0
+Custom AllReduce: disabled (v0.5.16 tvm-ffi JIT compile workaround)
+Downloads: disabled; HF_HUB_OFFLINE=1, TRANSFORMERS_OFFLINE=1
+Timeouts: startup=3600s, scheduler-watchdog=1800s, smoke-http=1800s
+Waiting up to 3600s for /v1/models (PID 23246)...
+Full log streaming is disabled; set STREAM_LOGS=1 to enable it.
+Still waiting: 61s elapsed; GPU memory:
+4, 41342 MiB, 39738 MiB
+5, 41390 MiB, 39690 MiB
+6, 41390 MiB, 39690 MiB
+7, 41150 MiB, 39930 MiB
+Service is ready; sending the smoke request...
+{
+  "ok": true,
+  "model": "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash",
+  "elapsed_seconds": 14.546,
+  "content": "READY",
+  "reasoning_content": null,
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 12,
+    "completion_tokens": 3,
+    "prompt_tokens_details": null,
+    "reasoning_tokens": 0
+  }
+}
+Summary report: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_071852_summary.txt
+Four-GPU smoke test passed. Full server log: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_071852.log
+Stopping diagnostic server (PID 23246)...

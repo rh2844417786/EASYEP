@@ -1,0 +1,10 @@
+DeepSeek-V4-Flash pruned-checkpoint acceptance
+Hash layers 0..2: 256 experts, unchanged
+Dynamic layers 3..42: 192 or 128 experts
+Router weight/bias: 256 rows, masked before TopK
+Load/generate passes per checkpoint: 2
+Physical GPUs: 4,5,6,7
+Downloads/installers: disabled
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_pruned_acceptance_20260814_084628.log
+ERROR: EASY-EP mask-routing patch is incomplete in /opt/sglang-v4/lib/python3.11/site-packages/sglang/srt/configs/deepseek_v4.py
+ERROR: the SGLang 0.5.16 EASY-EP mask-routing patch is not active

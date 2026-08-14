@@ -1,0 +1,13 @@
+DeepSeek-V4-Flash physical pruning
+Hash layers 0..2: preserve 256/256 experts
+Dynamic layers 3..42: materialize 192/256 and 128/256 experts
+Router weight/bias: preserve all 256 rows; apply EASY-EP mask at runtime
+Input: /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+25% output: /home/jovyan/wangtonghan/EASYEP/models/v4-prune25-keep192
+50% output: /home/jovyan/wangtonghan/EASYEP/models/v4-prune50-keep128
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_materialize_pruned_20260814_085425.log
+Downloads/installers: disabled
+torch: 2.11.0+cu130
+safetensors: 0.8.0
+V4 token statistics are missing; starting the offline GPUs 4..7 collector...
+ERROR: missing MP=4 converted shard: /mnt/docker_data/v4-converted/model0-mp4.safetensors
