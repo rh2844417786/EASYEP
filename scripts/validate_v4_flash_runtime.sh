@@ -176,6 +176,7 @@ v4_validate_sglang_cli() {
     --moe-runner-backend \
     --reasoning-parser \
     --tool-call-parser \
+    --watchdog-timeout \
     --disable-custom-all-reduce; do
     if ! grep -q -- "${required_flag}" <<<"${help_text}"; then
       v4_validation_fail "SGLang ${EXPECTED_SGLANG_VERSION:-0.5.16} lacks required option ${required_flag}." || return 1

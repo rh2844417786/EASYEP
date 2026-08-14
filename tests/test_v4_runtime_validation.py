@@ -13,6 +13,7 @@ import unittest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = REPO_ROOT / "scripts" / "validate_v4_flash_runtime.sh"
+FOUR_GPU_LAUNCHER = REPO_ROOT / "scripts" / "test_v4_flash_gpus_4_7.sh"
 
 
 class V4RuntimeValidationTests(unittest.TestCase):
@@ -60,7 +61,7 @@ class V4RuntimeValidationTests(unittest.TestCase):
             """\
             #!/usr/bin/env bash
             if [[ "${1:-}" == "-m" ]]; then
-              echo '--moe-runner-backend --reasoning-parser --tool-call-parser --disable-custom-all-reduce'
+              echo '--moe-runner-backend --reasoning-parser --tool-call-parser --watchdog-timeout --disable-custom-all-reduce'
             elif [[ "${1:-}" == "-c" ]]; then
               echo '/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py'
             else
@@ -126,6 +127,14 @@ class V4RuntimeValidationTests(unittest.TestCase):
             self.assertIn("Active transfer/install process", result.stdout)
             self.assertIn("Refusing to overlap", result.stdout)
             self.assertFalse(marker.exists(), result.stdout)
+
+    def test_four_gpu_launcher_extends_first_jit_timeouts(self) -> None:
+        launcher = FOUR_GPU_LAUNCHER.read_text(encoding="utf-8")
+
+        self.assertIn('WATCHDOG_TIMEOUT="${WATCHDOG_TIMEOUT:-1800}"', launcher)
+        self.assertIn('SMOKE_TIMEOUT="${SMOKE_TIMEOUT:-1800}"', launcher)
+        self.assertIn('--watchdog-timeout "${WATCHDOG_TIMEOUT}"', launcher)
+        self.assertIn('--timeout "${SMOKE_TIMEOUT}"', launcher)
 
 
 if __name__ == "__main__":

@@ -105,6 +105,10 @@ bash scripts/repair_and_test_v4_flash_gpus_4_7.sh
 PyTorch CUDA 13、四张目标 GPU、SGLang 启动参数以及本地权重索引和全部分片。
 任一条件缺失都只报错，不自动修复。启动前还强制设置
 `HF_HUB_OFFLINE=1`、`TRANSFORMERS_OFFLINE=1`，避免缺失权重时转为联网下载。
+四卡首次 forward 还可能触发耗时的 DeepGEMM JIT。测试入口将 SGLang hard
+watchdog 和 smoke HTTP timeout 都设为 1800 秒，避免默认 300 秒 watchdog
+在 kernel 即将完成时主动终止服务；可分别用 `WATCHDOG_TIMEOUT` 和
+`SMOKE_TIMEOUT` 覆盖。
 
 验证与测试总日志写入 `logs/v4_validate_and_test_*.log`，入口摘要写入
 `logs/v4_validate_and_test_*_summary.txt`，SGLang 测试结果仍写入独立的

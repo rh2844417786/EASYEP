@@ -20,6 +20,8 @@ PORT="${PORT:-60000}"
 CONTEXT_LENGTH="${CONTEXT_LENGTH:-8192}"
 MEM_FRACTION_STATIC="${MEM_FRACTION_STATIC:-0.80}"
 STARTUP_TIMEOUT="${STARTUP_TIMEOUT:-3600}"
+WATCHDOG_TIMEOUT="${WATCHDOG_TIMEOUT:-1800}"
+SMOKE_TIMEOUT="${SMOKE_TIMEOUT:-1800}"
 LOG_DIR="${LOG_DIR:-${REPO_ROOT}/logs}"
 STREAM_LOGS="${STREAM_LOGS:-0}"
 SERVER_PID=""
@@ -110,6 +112,8 @@ write_summary() {
     echo "TP: ${TP_SIZE}"
     echo "Context length: ${CONTEXT_LENGTH}"
     echo "Memory fraction static: ${MEM_FRACTION_STATIC}"
+    echo "SGLang watchdog timeout: ${WATCHDOG_TIMEOUT}s"
+    echo "Smoke HTTP timeout: ${SMOKE_TIMEOUT}s"
     echo "Custom AllReduce: disabled"
     echo "HF Hub offline: ${HF_HUB_OFFLINE}"
     echo "Transformers offline: ${TRANSFORMERS_OFFLINE}"
@@ -143,6 +147,13 @@ write_summary() {
     grep -Eai \
       'traceback|error|exception|failed|killed|out of memory|oom|ninja: build stopped|nccl warn|server is ready|loading.*weight|load.*model|memory' \
       "${LOG_FILE}" | tail -n 60 || true
+    if grep -q 'Scheduler watchdog timeout' "${LOG_FILE}"; then
+      echo
+      echo "Detected diagnosis"
+      echo "------------------"
+      echo "SGLang scheduler watchdog expired during a forward batch."
+      echo "Increase WATCHDOG_TIMEOUT/SMOKE_TIMEOUT for first-run JIT, then retry."
+    fi
     echo
     echo "Last 40 full-log lines"
     echo "----------------------"
@@ -182,6 +193,7 @@ export TORCH_NCCL_BLOCKING_WAIT="${TORCH_NCCL_BLOCKING_WAIT:-1}"
 echo "NCCL: IB_DISABLE=${NCCL_IB_DISABLE}, SOCKET_IFNAME=${NCCL_SOCKET_IFNAME}, CUMEM_HOST_ENABLE=${NCCL_CUMEM_HOST_ENABLE}"
 echo "Custom AllReduce: disabled (v0.5.16 tvm-ffi JIT compile workaround)"
 echo "Downloads: disabled; HF_HUB_OFFLINE=${HF_HUB_OFFLINE}, TRANSFORMERS_OFFLINE=${TRANSFORMERS_OFFLINE}"
+echo "Timeouts: startup=${STARTUP_TIMEOUT}s, scheduler-watchdog=${WATCHDOG_TIMEOUT}s, smoke-http=${SMOKE_TIMEOUT}s"
 
 "${V4_PYTHON}" -m sglang.launch_server \
   --trust-remote-code \
@@ -196,6 +208,7 @@ echo "Downloads: disabled; HF_HUB_OFFLINE=${HF_HUB_OFFLINE}, TRANSFORMERS_OFFLIN
   --mem-fraction-static "${MEM_FRACTION_STATIC}" \
   --context-length "${CONTEXT_LENGTH}" \
   --max-running-requests 1 \
+  --watchdog-timeout "${WATCHDOG_TIMEOUT}" \
   --disable-custom-all-reduce \
   "$@" >"${LOG_FILE}" 2>&1 &
 SERVER_PID=$!
@@ -262,7 +275,7 @@ echo "Service is ready; sending the smoke request..."
 smoke_status=0
 SMOKE_OUTPUT="$("${V4_PYTHON}" "${REPO_ROOT}/scripts/smoke_v4_server.py" \
   --base-url "http://127.0.0.1:${PORT}/v1" \
-  --timeout 600 2>&1)" || smoke_status=$?
+  --timeout "${SMOKE_TIMEOUT}" 2>&1)" || smoke_status=$?
 printf '%s\n' "${SMOKE_OUTPUT}"
 if [[ "${smoke_status}" != "0" ]]; then
   write_summary "SMOKE_FAILED" "running" "${smoke_status}"
