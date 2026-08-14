@@ -1,0 +1,135 @@
+DeepSeek-V4-Flash dependency repair and full-pipeline resume
+Python: /opt/sglang-v4/bin/python
+CUDA_HOME: /usr/local/cuda-13.0
+Physical GPUs: 4,5,6,7
+Target dependency: fast-hadamard-transform==1.1.0
+CUDA/PyTorch/SGLang reinstall: disabled
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_fht_repair_and_resume_20260814_104221.log
+fast_hadamard_transform is missing or its CUDA extension is unusable.
+Installing only fast-hadamard-transform==1.1.0 into /opt/sglang-v4/bin/python...
+Prebuilt GitHub wheel lookup: disabled; forcing the local CUDA /usr/local/cuda-13.0 source build.
+Using Python 3.11.15 environment at: /opt/sglang-v4
+Resolved 1 package in 151ms
+   Building fast-hadamard-transform==1.1.0
+  × Failed to build `fast-hadamard-transform==1.1.0`
+  ├─▶ The build backend returned an error
+  ╰─▶ Call to `setuptools.build_meta:__legacy__.build_wheel` failed (exit status: 1)
+
+      [stdout]
+
+
+      torch.__version__  = 2.11.0+cu130
+
+
+      running bdist_wheel
+      running build
+      running build_py
+      creating build/lib.linux-x86_64-cpython-311/fast_hadamard_transform
+      copying fast_hadamard_transform/__init__.py -> build/lib.linux-x86_64-cpython-311/fast_hadamard_transform
+      copying fast_hadamard_transform/fast_hadamard_transform_interface.py -> build/lib.linux-x86_64-cpython-311/fast_hadamard_transform
+      running build_ext
+      building 'fast_hadamard_transform_cuda' extension
+      creating /root/.cache/uv/sdists-v9/index/3ba65c4f41aac3a1/fast-hadamard-transform/1.1.0/c6kBVZ94xD-E_yi_/src/build/temp.linux-x86_64-cpython-311/csrc
+      ninja: error: '/root/.cache/uv/sdists-v9/index/3ba65c4f41aac3a1/fast-hadamard-transform/1.1.0/c6kBVZ94xD-E_yi_/src/csrc/fast_hadamard_transform.cpp', needed
+      by '/root/.cache/uv/sdists-v9/index/3ba65c4f41aac3a1/fast-hadamard-transform/1.1.0/c6kBVZ94xD-E_yi_/src/build/temp.linux-x86_64-cpython-311/csrc/fast_hadamard_transform.o',
+      missing and no known rule to make it
+
+      [stderr]
+      /opt/sglang-v4/lib/python3.11/site-packages/setuptools/_vendor/wheel/bdist_wheel.py:4: FutureWarning: The 'wheel' package is no longer the canonical
+      location of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated
+      version of this command.
+        warn(
+      /opt/sglang-v4/lib/python3.11/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+
+              License :: OSI Approved :: BSD License
+
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+
+      !!
+        self._finalize_license_expression()
+      Traceback (most recent call last):
+        File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2774, in _run_ninja_build
+          subprocess.run(
+        File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/subprocess.py", line 571, in run
+          raise CalledProcessError(retcode, process.args,
+      subprocess.CalledProcessError: Command '['ninja', '-v', '-j', '8']' returned non-zero exit status 1.
+
+      The above exception was the direct cause of the following exception:
+
+      Traceback (most recent call last):
+        File "<string>", line 11, in <module>
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/build_meta.py", line 438, in build_wheel
+          return _build(['bdist_wheel'])
+                 ^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/build_meta.py", line 429, in _build
+          return self._build_with_temp_dir(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/build_meta.py", line 410, in _build_with_temp_dir
+          self.run_setup()
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/build_meta.py", line 520, in run_setup
+          super().run_setup(setup_script=setup_script)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/build_meta.py", line 317, in run_setup
+          exec(code, locals())
+        File "<string>", line 238, in <module>
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/__init__.py", line 117, in setup
+          return distutils.core.setup(**attrs)  # type: ignore[return-value]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/core.py", line 186, in setup
+          return run_commands(dist)
+                 ^^^^^^^^^^^^^^^^^^
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/core.py", line 202, in run_commands
+          dist.run_commands()
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/dist.py", line 1000, in run_commands
+          self.run_command(cmd)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/dist.py", line 1107, in run_command
+          super().run_command(command)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/dist.py", line 1019, in run_command
+          cmd_obj.run()
+        File "<string>", line 213, in run
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/command/bdist_wheel.py", line 370, in run
+          self.run_command("build")
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/cmd.py", line 341, in run_command
+          self.distribution.run_command(command)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/dist.py", line 1107, in run_command
+          super().run_command(command)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/dist.py", line 1019, in run_command
+          cmd_obj.run()
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/command/build.py", line 135, in run
+          self.run_command(cmd_name)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/cmd.py", line 341, in run_command
+          self.distribution.run_command(command)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/dist.py", line 1107, in run_command
+          super().run_command(command)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/dist.py", line 1019, in run_command
+          cmd_obj.run()
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/command/build_ext.py", line 97, in run
+          _build_ext.run(self)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/command/build_ext.py", line 367, in run
+          self.build_extensions()
+        File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 1184, in build_extensions
+          build_ext.build_extensions(self)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/command/build_ext.py", line 483, in build_extensions
+          self._build_extensions_serial()
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/command/build_ext.py", line 509, in _build_extensions_serial
+          self.build_extension(ext)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/command/build_ext.py", line 262, in build_extension
+          _build_ext.build_extension(self, ext)
+        File "/opt/sglang-v4/lib/python3.11/site-packages/setuptools/_distutils/command/build_ext.py", line 564, in build_extension
+          objects = self.compiler.compile(
+                    ^^^^^^^^^^^^^^^^^^^^^^
+        File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 924, in unix_wrap_ninja_compile
+          _write_ninja_file_and_compile_objects(
+        File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2361, in _write_ninja_file_and_compile_objects
+          _run_ninja_build(
+        File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/cpp_extension.py", line 2791, in _run_ninja_build
+          raise RuntimeError(message) from e
+      RuntimeError: Error compiling objects for extension
+
+
+hint: Build failures usually indicate a problem with the package or the build environment
+Repair/resume summary: /home/jovyan/wangtonghan/EASYEP/logs/v4_fht_repair_and_resume_20260814_104221_summary.txt
