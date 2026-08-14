@@ -8,8 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 FULL_MODEL_PATH="${FULL_MODEL_PATH:-/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash}"
-PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-}"
-PRUNE50_MODEL_PATH="${PRUNE50_MODEL_PATH:-}"
+PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-${REPO_ROOT}/models/v4-prune25-keep192}"
+PRUNE50_MODEL_PATH="${PRUNE50_MODEL_PATH:-${REPO_ROOT}/models/v4-prune50-keep128}"
 V4_PYTHON="${V4_PYTHON:-/opt/sglang-v4/bin/python}"
 EVAL_PYTHON="${EVAL_PYTHON:-python3}"
 GPU_LIST="${GPU_LIST:-4,5,6,7}"
@@ -28,10 +28,18 @@ fail() {
   exit 2
 }
 
-[[ -n "${PRUNE25_MODEL_PATH}" ]] || \
-  fail "PRUNE25_MODEL_PATH is required and must be a materialized checkpoint with 192/256 experts."
-[[ -n "${PRUNE50_MODEL_PATH}" ]] || \
-  fail "PRUNE50_MODEL_PATH is required and must be a materialized checkpoint with 128/256 experts."
+for checkpoint_file in \
+  "${PRUNE25_MODEL_PATH}/config.json" \
+  "${PRUNE25_MODEL_PATH}/model.safetensors.index.json"; do
+  [[ -f "${checkpoint_file}" ]] || \
+    fail "25%-pruned checkpoint is incomplete; missing ${checkpoint_file}"
+done
+for checkpoint_file in \
+  "${PRUNE50_MODEL_PATH}/config.json" \
+  "${PRUNE50_MODEL_PATH}/model.safetensors.index.json"; do
+  [[ -f "${checkpoint_file}" ]] || \
+    fail "50%-pruned checkpoint is incomplete; missing ${checkpoint_file}"
+done
 [[ -x "${V4_PYTHON}" ]] || fail "V4 Python is not executable: ${V4_PYTHON}"
 command -v "${EVAL_PYTHON}" >/dev/null 2>&1 || \
   fail "evaluation Python was not found: ${EVAL_PYTHON}"

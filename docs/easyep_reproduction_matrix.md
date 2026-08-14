@@ -38,18 +38,34 @@ mask 不是物理剪枝 checkpoint。当前仓库仍不支持 V4 hash-router 的
 
 ## 运行三组 checkpoint
 
-准备好经过独立 load/generate/reload 验证的三个 checkpoint 后：
+把经过独立 load/generate/reload 验证的两个剪枝 checkpoint 放入仓库的
+`models/` 目录，使用以下固定布局：
+
+```text
+models/
+├── v4-prune25-keep192/
+│   ├── config.json
+│   ├── model.safetensors.index.json
+│   └── *.safetensors
+└── v4-prune50-keep128/
+    ├── config.json
+    ├── model.safetensors.index.json
+    └── *.safetensors
+```
+
+然后运行：
 
 ```bash
 cd /home/jovyan/wangtonghan/EASYEP
 
 export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
-export PRUNE25_MODEL_PATH=/path/to/validated-v4-prune25-keep192
-export PRUNE50_MODEL_PATH=/path/to/validated-v4-prune50-keep128
 
 REPEATS=5 WORKERS=1 MAX_TOKENS=32768 \
   bash scripts/run_easyep_reproduction.sh
 ```
+
+脚本默认读取上述两个仓库内路径；只有需要把 checkpoint 放在其他磁盘时，才应
+覆盖 `PRUNE25_MODEL_PATH` 和 `PRUNE50_MODEL_PATH`。
 
 默认依次运行三个变体，使用 GPU 4–7、TP=4、相同采样参数和相同数据顺序。
 一次完整实验包含 `90 × 5 × 3 = 1350` 次长推理，可能运行数小时到数天。

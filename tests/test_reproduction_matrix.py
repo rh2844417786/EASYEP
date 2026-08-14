@@ -207,6 +207,16 @@ class ReproductionMatrixTests(unittest.TestCase):
             self.assertNotEqual(original, changed)
             self.assertNotEqual(original, changed_code)
 
+    def test_wrapper_defaults_to_repository_models_directory(self) -> None:
+        wrapper = (
+            Path(__file__).resolve().parents[1]
+            / "scripts"
+            / "run_easyep_reproduction.sh"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn("models/v4-prune25-keep192", wrapper)
+        self.assertIn("models/v4-prune50-keep128", wrapper)
+
 
 if __name__ == "__main__":
     unittest.main()
