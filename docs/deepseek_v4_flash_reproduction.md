@@ -50,6 +50,19 @@ export MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
 PROFILE=verified PORT=60000 bash scripts/serve_v4_flash_h100.sh
 ```
 
+如果当前只能使用物理 GPU 4–7，可运行独立的四卡可行性测试。该脚本固定
+`CUDA_VISIBLE_DEVICES=4,5,6,7` 和 `TP=4`，自动等待服务、发送 smoke
+请求并停止本次启动的服务：
+
+```bash
+export MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+bash scripts/test_v4_flash_gpus_4_7.sh
+```
+
+这是诊断路径，不是论文的 8 卡基线。若出现 hidden-size mismatch、FP4
+权重 shape 错误或 OOM，应保留脚本输出的 `logs/v4_gpus_4_7_*.log`；不能把
+四卡失败直接归因于 EASY-EP，也不能把四卡 smoke 成功当作吞吐复现完成。
+
 启动脚本会先运行 `tools/v4_preflight.py`，检查模型结构、可见卡数、每卡空闲显存、TP 与 MoE backend。若仍出现 hidden-size mismatch，请保存以下完整信息再定位，不要只截最后一行：
 
 ```bash
