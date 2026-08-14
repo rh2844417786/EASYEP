@@ -102,7 +102,13 @@ else
   command -v uv >/dev/null 2>&1 || \
     fail "uv is required to install the single missing dependency"
   CURRENT_STAGE="install-fast-hadamard-transform"
+  # Version 1.1.0 maps every non-CUDA-11 runtime to a guessed cu122 wheel.
+  # CUDA 13 must bypass that network lookup and compile from the downloaded
+  # source distribution with the already installed nvcc/PyTorch toolchain.
+  export FAST_HADAMARD_TRANSFORM_FORCE_BUILD=TRUE
+  export FAST_HADAMARD_TRANSFORM_SKIP_CUDA_BUILD=FALSE
   echo "Installing only fast-hadamard-transform==${FHT_VERSION} into ${V4_PYTHON}..."
+  echo "Prebuilt GitHub wheel lookup: disabled; forcing the local CUDA ${CUDA_HOME} source build."
   uv pip install \
     --python "${V4_PYTHON}" \
     --no-build-isolation \

@@ -225,6 +225,9 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("--no-build-isolation", repair)
         self.assertIn("--no-deps", repair)
         self.assertIn('"fast-hadamard-transform==${FHT_VERSION}"', repair)
+        self.assertIn("FAST_HADAMARD_TRANSFORM_FORCE_BUILD=TRUE", repair)
+        self.assertIn("FAST_HADAMARD_TRANSFORM_SKIP_CUDA_BUILD=FALSE", repair)
+        self.assertIn("Prebuilt GitHub wheel lookup: disabled", repair)
         self.assertIn("run_v4_full_reproduction_gpus_4_7.sh", repair)
         for forbidden in ("apt install", "apt-get install", "conda install"):
             self.assertNotIn(forbidden, repair)
