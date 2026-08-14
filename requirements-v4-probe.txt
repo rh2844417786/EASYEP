@@ -1,0 +1,9 @@
+# Separate from requirements.txt: that file intentionally preserves the
+# original DeepSeek-V3/R1 + SGLang 0.4.3 reproduction environment.
+torch>=2.10.0
+transformers>=5.0.0
+safetensors>=0.7.0
+datasets
+tqdm
+fast_hadamard_transform
+tilelang==0.1.8

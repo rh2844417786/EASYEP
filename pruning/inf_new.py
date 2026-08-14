@@ -6,7 +6,6 @@ from datasets import load_from_disk
 import torch
 from tqdm import tqdm
 import torch.distributed as dist
-from transformers import AutoTokenizer
 from safetensors.torch import load_model
 class Hook_gate():
     def __init__(self):
@@ -48,34 +47,45 @@ def sample(logits, temperature: float = 1.0):
     return probs.div_(torch.empty_like(probs).exponential_(1)).argmax(dim=-1)
 
 @torch.inference_mode()
-def inference(model, dataset,rank, output):
+def inference(model, dataset, rank, output, max_input_tokens):
     count = 0
+    moe_layers = [
+        layer for layer in model.layers
+        if hasattr(layer, "tmp") and hasattr(layer.ffn, "tmp")
+    ]
+    if not moe_layers:
+        raise RuntimeError("No instrumented MoE layers were found in model_new.Transformer")
+    print(f"Collecting {len(moe_layers)} MoE layers")
     for data in tqdm(dataset):
-
         count+=1
+        tokens = torch.tensor([data['input_ids']], device="cuda")
+        print(tokens.shape)
+        if tokens.shape[1] > max_input_tokens:
+            print(f"Skipping tokens with shape {tokens.shape}, too long for probing")
+            continue
+
         Hook = Hook_gate()
         hooks = []
         Hook2 = Hook_gate2()
         hooks2 = []
-        # print(len(model.layers))
-        for layer in range(3,61):
-            # 1, 59 for deepseek-v2
-            hooks.append(model.layers[layer].ffn.tmp.register_forward_hook(Hook.hook_fn))
-            hooks2.append(model.layers[layer].tmp.register_forward_hook(Hook2.hook_fn))
-        
-        tokens = torch.tensor([data['input_ids']],device="cuda")
-        print(tokens.shape) # torch.Size([1, 14820])
-        if tokens.shape[1] > 13000:
-            print(f"Skipping tokens with shape {tokens.shape}, too long for probing")
-            continue
-
-        with torch.no_grad():
+        if rank == 0:
+            for layer in moe_layers:
+                hooks.append(layer.ffn.tmp.register_forward_hook(Hook.hook_fn))
+                hooks2.append(layer.tmp.register_forward_hook(Hook2.hook_fn))
+        try:
             logits = model.forward(tokens[:, :], 0)
-
-        for hook in hooks:
-            hook.remove()
-        for hook in hooks2:
-            hook.remove()
+        finally:
+            for hook in hooks:
+                hook.remove()
+            for hook in hooks2:
+                hook.remove()
+        if rank == 0 and (
+            len(Hook.topk_idxs) != len(moe_layers) or len(Hook2.simi1) != len(moe_layers)
+        ):
+            raise RuntimeError(
+                f"Hook count mismatch: experts={len(Hook.topk_idxs)}, "
+                f"similarities={len(Hook2.simi1)}, layers={len(moe_layers)}"
+            )
         if rank == 0:
             with open(output,'a') as fp:
                 idxs = []
@@ -92,7 +102,17 @@ def inference(model, dataset,rank, output):
                     simi1.append(Hook2.simi1[layer].tolist())
                     simi2.append(Hook2.simi2[layer].tolist())
                     simi3.append(Hook2.simi3[layer].tolist())
-                fp.write(json.dumps({"idxs":idxs, "weights":weights, "norms": norms, 'simibr': simi1, 'simisf': simi2, 'simirf': simi3})+'\n')
+                fp.write(json.dumps({
+                    "format_version": 2,
+                    "architecture": "deepseek_v3",
+                    "num_routed_experts": moe_layers[0].ffn.n_routed_experts,
+                    "idxs": idxs,
+                    "weights": weights,
+                    "norms": norms,
+                    "simibr": simi1,
+                    "simisf": simi2,
+                    "simirf": simi3,
+                })+'\n')
  
 
 def main(
@@ -102,6 +122,8 @@ def main(
     max_new_tokens: int = 100,
     temperature: float = 1.0,
     output_file: str = "",
+    max_input_tokens: int = 13000,
+    append: bool = False,
 ) -> None:
     """
     Main function to load the model and perform interactive or batch text generation.
@@ -131,13 +153,18 @@ def main(
     print(args)
     with torch.device("cuda"):
         model = Transformer(args)
-    tokenizer = AutoTokenizer.from_pretrained(ckpt_path)
-
     load_model(model, os.path.join(ckpt_path, f"model{rank}-mp{world_size}.safetensors"))
 
-    
     dataset = load_from_disk(input_file)
-    inference(model, dataset, rank, output_file)
+    if rank == 0:
+        output_dir = os.path.dirname(os.path.abspath(output_file))
+        os.makedirs(output_dir, exist_ok=True)
+        if not append:
+            with open(output_file, "w"):
+                pass
+    if world_size > 1:
+        dist.barrier()
+    inference(model, dataset, rank, output_file, max_input_tokens)
 
 
     if world_size > 1:
@@ -165,5 +192,16 @@ if __name__ == "__main__":
     parser.add_argument("--input-file", type=str, default="")
     parser.add_argument("--max-new-tokens", type=int, default=200)
     parser.add_argument("--temperature", type=float, default=0.2)
+    parser.add_argument("--max-input-tokens", type=int, default=13000)
+    parser.add_argument("--append", action="store_true")
     args = parser.parse_args()
-    main(args.ckpt_path, args.config, args.input_file, args.max_new_tokens, args.temperature, args.output)
+    main(
+        args.ckpt_path,
+        args.config,
+        args.input_file,
+        args.max_new_tokens,
+        args.temperature,
+        args.output,
+        args.max_input_tokens,
+        args.append,
+    )

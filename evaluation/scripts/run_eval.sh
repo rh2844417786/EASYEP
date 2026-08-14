@@ -1,40 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
 
-model_list=(\
-    "/path/DeepSeek-R1" \
-)
-L=32768
-num_model=${#model_list[@]}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
-tgt_path=easyep/evaluation
-for ((i=0;i<$num_model;i++)) do
-{
-    MODEL_PATH=${model_list[$i]}
-    SRC_PATH=${MODEL_PATH}
+BASE_URL="${BASE_URL:-http://127.0.0.1:60000/v1}"
+TARGET_PATH="${TARGET_PATH:-${REPO_ROOT}/evaluation/outputs}"
+MAX_TOKENS="${MAX_TOKENS:-32768}"
+REPEATS="${REPEATS:-5}"
+WORKERS="${WORKERS:-8}"
+MODEL_NAME="${MODEL_NAME:-}"
 
-    python run_sglang.py \
-        --data_name AIME24 \
-        --target_path ${tgt_path} \
-        --model_name_or_path ./outputs \
-        --max_tokens ${L} \
-        --system_prompt none \
-        --paralle_size 1 \
-        --number 5 & 
-        
-    python run_sglang.py \
-         --data_name hmmt_feb_2025 \
-         --target_path ${tgt_path} \
-         --model_name_or_path ./outputs \
-         --max_tokens ${L} \
-         --system_prompt none \
-         --paralle_size 1  --number 5 &
-        
-     python run_sglang.py \
-        --data_name AIME25 \
-         --target_path ${tgt_path} \
-        --model_name_or_path ./outputs \
-         --max_tokens ${L} \
-         --system_prompt none \
-         --paralle_size 1  --number 5 & 
+model_args=()
+if [[ -n "${MODEL_NAME}" ]]; then
+  model_args+=(--model "${MODEL_NAME}")
+fi
 
-}
+for dataset in AIME24 hmmt_feb_2025 AIME25; do
+  python3 "${REPO_ROOT}/evaluation/run_sglang.py" \
+    --data-name "${dataset}" \
+    --target-path "${TARGET_PATH}" \
+    --base-url "${BASE_URL}" \
+    --max-tokens "${MAX_TOKENS}" \
+    --repeats "${REPEATS}" \
+    --workers "${WORKERS}" \
+    --thinking \
+    "${model_args[@]}"
 done

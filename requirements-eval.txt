@@ -1,0 +1,3 @@
+# Evaluation runs in a lightweight client environment; it does not require
+# SGLang itself. The generation endpoint is accessed through HTTP.
+math-verify

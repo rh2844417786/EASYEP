@@ -8,6 +8,12 @@
 - [5. Evaluation](#5-evaluation)
 - [6. Citation](#6-citation)
 
+> [!IMPORTANT]
+> DeepSeek-V4-Flash is not compatible with the repository's vendored SGLang
+> 0.4.3 / DeepSeek-V2 patch. For the diagnosed H100 baseline, V4 probe and the
+> remaining hash-routing limitation, read
+> [`docs/deepseek_v4_flash_reproduction.md`](docs/deepseek_v4_flash_reproduction.md).
+
 ## 1. Introduction
 Mixture-of-Experts (MoE) models achieve a favorable trade-off between performance and inference efficiency by activating only a subset of experts. However, the memory overhead of storing all experts remains a major limitation, especially in large-scale MoE models such as DeepSeek-R1 (671B). In this study, we investigate domain specialization and expert redundancy in large-scale MoE models and uncover a consistent behavior we term *few-shot expert localization*, with only a few demonstrations, the model consistently activates a sparse and stable subset of experts. Building on this observation, we propose a simple yet effective pruning framework, **EASY-EP**, that leverages a few domain-specific demonstrations to identify and retain only the most relevant experts. EASY-EP comprises two key components: **output-aware expert importance assessment** and **expert-level token contribution estimation**. The former evaluates the importance of each expert for the current token by considering the gating scores and magnitudes of the outputs of activated experts, while the latter assesses the contribution of tokens based on representation similarities after and before routed experts. Experiments show that our method can achieve comparable performances and $2.99\times$ throughput under the same memory budget with full DeepSeek-R1 with only half the experts.
 
@@ -67,7 +73,8 @@ python pruning/expert_selection.py \
     --input_file expert_statistics/token_information/aime.jsonl \
     --output_file expert_statistics/expert_information/aime23.pt \
     --expert_mask expert_statistics/expert_mask/aime23_128_mask.json \
-    --target_number 128
+    --target_number 128 \
+    --num-experts 256
 ```
 For mixed-domain pruning, we employ the multiple files in about expert information in ``expert_statistics\expert_information`` and merge them into a mask file.
 ```bash
@@ -135,10 +142,10 @@ python pruning/model_prune.py \
     --output_dir pruned_model
 ```
 
-Then manually modify `config.json` to match the number of remaining experts:
-```json
-"n_routed_experts": 128
-```
+The script validates the checkpoint layout and updates `config.json` and index
+metadata automatically. It deliberately refuses DeepSeek-V4 checkpoints with
+hash-routed layers because deleting experts without remapping the token-to-expert
+table would corrupt routing.
 
 ---
 
