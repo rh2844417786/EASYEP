@@ -1,0 +1,193 @@
+DeepSeek-V4-Flash four-GPU test summary
+========================================
+Result: SMOKE_FAILED
+Started: 2026-08-14T06:50:11+00:00
+Ended: 2026-08-14T07:06:39+00:00
+Git commit: ab7a160
+Server exit status: running
+Smoke status: 1
+Full log: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_065011.log
+
+Runtime
+-------
+Python: /opt/sglang-v4/bin/python
+SGLang: 0.5.16
+NVCC: 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+CUDA_HOME: /usr/local/cuda-13.0
+Model: /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+Physical GPUs: 4,5,6,7
+TP: 4
+Context length: 8192
+Memory fraction static: 0.80
+Custom AllReduce: disabled
+HF Hub offline: 1
+Transformers offline: 1
+NCCL_IB_DISABLE: 1
+NCCL_SOCKET_IFNAME: lo
+NCCL_CUMEM_HOST_ENABLE: 0
+
+GPU snapshot
+------------
+4, NVIDIA H100 80GB HBM3, 66612 MiB, 14468 MiB, 0 %
+5, NVIDIA H100 80GB HBM3, 66706 MiB, 14374 MiB, 0 %
+6, NVIDIA H100 80GB HBM3, 66706 MiB, 14374 MiB, 0 %
+7, NVIDIA H100 80GB HBM3, 66226 MiB, 14854 MiB, 2 %
+
+Host/container memory
+---------------------
+               total        used        free      shared  buff/cache   available
+Mem:           1.0Ti        37Gi       500Gi        34Mi       469Gi       957Gi
+Swap:          8.0Gi       4.7Gi       3.3Gi
+
+/sys/fs/cgroup/memory.events
+low 0
+high 0
+max 0
+oom 0
+oom_kill 0
+oom_group_kill 0
+
+Smoke output
+------------
+Traceback (most recent call last):
+  File "/home/jovyan/wangtonghan/EASYEP/scripts/smoke_v4_server.py", line 67, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/jovyan/wangtonghan/EASYEP/scripts/smoke_v4_server.py", line 49, in main
+    response = request_json(f"{base_url}/chat/completions", payload, args.timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jovyan/wangtonghan/EASYEP/scripts/smoke_v4_server.py", line 17, in request_json
+    with urlopen(request, timeout=timeout) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/http/client.py", line 1415, in getresponse
+    response.begin()
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/http/client.py", line 330, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/http/client.py", line 299, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+Key log lines (last 60 matches)
+-------------------------------
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP3] Pyspy failed (py-spy dump  --pid 16091). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP3] All pyspy dump attempts failed for PID 16091.
+[2026-08-14 07:05:29 TP1] Pyspy failed (py-spy dump  --pid 16089). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP1] All pyspy dump attempts failed for PID 16089.
+[2026-08-14 07:05:29 TP0] Pyspy failed (py-spy dump --native --pid 16088). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP2] Pyspy failed (py-spy dump --native --pid 16090). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP0] Pyspy failed (py-spy dump  --pid 16088). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP0] All pyspy dump attempts failed for PID 16088.
+[2026-08-14 07:05:29 TP2] Pyspy failed (py-spy dump  --pid 16090). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:29 TP2] All pyspy dump attempts failed for PID 16090.
+[rank3]:[W814 07:05:30.194857804 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank0]:[W814 07:05:30.194912977 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank1]:[W814 07:05:30.194921716 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank2]:[W814 07:05:30.194957427 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank0]:[W814 07:05:30.195671087 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[rank2]:[W814 07:05:30.196637770 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[rank3]:[W814 07:05:30.195699228 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[rank1]:[W814 07:05:30.195868713 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[2026-08-14 07:05:34] SIGQUIT received. signum=None, frame=None. It usually means one child failed.
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump --native --pid 16088). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump  --pid 16088). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16088.
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump --native --pid 16089). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump  --pid 16089). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16089.
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump --native --pid 16090). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump  --pid 16090). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16090.
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump --native --pid 16091). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump  --pid 16091). Error: Error: Failed to copy Py_Version symbol
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16091.
+
+Last 40 full-log lines
+----------------------
+
+Caused by:
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16089.
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump --native --pid 16090). Error: Error: Failed to copy Py_Version symbol
+
+Caused by:
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump  --pid 16090). Error: Error: Failed to copy Py_Version symbol
+
+Caused by:
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16090.
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump --native --pid 16091). Error: Error: Failed to copy Py_Version symbol
+
+Caused by:
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+
+[2026-08-14 07:05:39] Pyspy failed (py-spy dump  --pid 16091). Error: Error: Failed to copy Py_Version symbol
+
+Caused by:
+    0: Permission denied (os error 13)
+    1: Permission denied (os error 13)
+
+[2026-08-14 07:05:39] All pyspy dump attempts failed for PID 16091.
+[2026-08-14 07:05:39] CUDA user-triggered coredump is not enabled. Set CUDA_ENABLE_USER_TRIGGERED_COREDUMP=1 before CUDA initialization.
+[2026-08-14 07:05:39] CUDA coredump pipe not found for PID 16088: /home/jovyan/wangtonghan/EASYEP/corepipe.cuda.10-72-1-171.16088. Ensure CUDA_ENABLE_USER_TRIGGERED_COREDUMP=1 was set before this process initialized CUDA.
+[2026-08-14 07:05:39] CUDA coredump pipe not found for PID 16089: /home/jovyan/wangtonghan/EASYEP/corepipe.cuda.10-72-1-171.16089. Ensure CUDA_ENABLE_USER_TRIGGERED_COREDUMP=1 was set before this process initialized CUDA.
+[2026-08-14 07:05:39] CUDA coredump pipe not found for PID 16090: /home/jovyan/wangtonghan/EASYEP/corepipe.cuda.10-72-1-171.16090. Ensure CUDA_ENABLE_USER_TRIGGERED_COREDUMP=1 was set before this process initialized CUDA.
+[2026-08-14 07:05:39] CUDA coredump pipe not found for PID 16091: /home/jovyan/wangtonghan/EASYEP/corepipe.cuda.10-72-1-171.16091. Ensure CUDA_ENABLE_USER_TRIGGERED_COREDUMP=1 was set before this process initialized CUDA.
+[2026-08-14 07:05:39] Waiting 60.0 seconds for CUDA coredumps before exiting.
+[2026-08-14 07:05:40 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 173.77
+[2026-08-14 07:06:39] kill_process_tree called: parent_pid=15948, include_parent=True, pid=15948

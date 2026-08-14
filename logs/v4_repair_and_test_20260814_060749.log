@@ -1,0 +1,34 @@
+Installing the NVIDIA CUDA repository keyring for ubuntu2204/x86_64...
+Trying CUDA repository: https://developer.download.nvidia.com/compute/cuda/repos
+Downloading with /opt/sglang-v4/bin/python standard library...
+Selected CUDA repository: https://developer.download.nvidia.com/compute/cuda/repos
+(Reading database ... 15864 files and directories currently installed.)
+Preparing to unpack .../cuda-keyring.deb ...
+Unpacking cuda-keyring (1.1-1) over (1.1-1) ...
+Setting up cuda-keyring (1.1-1) ...
+Refreshing apt indexes for CUDA repository: https://developer.download.nvidia.com/compute/cuda/repos
+Ign:1 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu jammy InRelease
+Hit:3 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:5 http://archive.ubuntu.com/ubuntu jammy-backports InRelease
+Ign:1 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  InRelease
+Ign:1 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  InRelease
+Err:1 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64  InRelease
+  Could not handshake: Error in the pull function. [IP: 23.198.6.149 443]
+Reading package lists...
+W: Failed to fetch https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/InRelease  Could not handshake: Error in the pull function. [IP: 23.198.6.149 443]
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+CUDA repository health check failed: apt reported an index download error.
+Switching CUDA repository to: https://developer.download.nvidia.cn/compute/cuda/repos
+Refreshing apt indexes for CUDA repository: https://developer.download.nvidia.cn/compute/cuda/repos
+Hit:1 http://archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64  InRelease [1578 B]
+Hit:3 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu jammy-updates InRelease
+Get:5 https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64  Packages [2908 kB]
+Hit:6 http://archive.ubuntu.com/ubuntu jammy-backports InRelease
+Fetched 2910 kB in 2s (1832 kB/s)
+Reading package lists...
+CUDA repository health check failed: package cuda-compiler-12-9 is not visible to apt.
+ERROR: CUDA packages are unavailable from both NVIDIA repository endpoints

@@ -1,0 +1,106 @@
+DeepSeek-V4-Flash runtime validation (read-only)
+Downloads/installers: disabled
+Hugging Face/Transformers offline mode: enabled
+Active transfer/install process check: none detected
+Physical GPUs: 4,5,6,7 are present
+CUDA compiler: NVCC 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+Python runtime: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+PyTorch: 2.11.0+cu130; CUDA build: 13.0; visible GPUs: 4
+Local model: config plus 46 indexed shard(s) present
+SGLang CLI: required DeepSeek-V4 launch options are available
+Validation passed. No apt, curl, wget, pip, uv, or model download command was executed.
+WARNING: this is an unverified TP=4 feasibility test, not the 8-GPU baseline.
+Physical GPUs: 4,5,6,7 (inside SGLang they appear as cuda:0..3)
+Python: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+NVCC: 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+CUDA_HOME: /usr/local/cuda-13.0
+Model: /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_065011.log
+Summary: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_065011_summary.txt
+Selected GPU inventory:
+  4, NVIDIA H100 80GB HBM3, 81079
+  5, NVIDIA H100 80GB HBM3, 81079
+  6, NVIDIA H100 80GB HBM3, 81079
+  7, NVIDIA H100 80GB HBM3, 81079
+NCCL: IB_DISABLE=1, SOCKET_IFNAME=lo, CUMEM_HOST_ENABLE=0
+Custom AllReduce: disabled (v0.5.16 tvm-ffi JIT compile workaround)
+Downloads: disabled; HF_HUB_OFFLINE=1, TRANSFORMERS_OFFLINE=1
+Waiting up to 3600s for /v1/models (PID 15948)...
+Full log streaming is disabled; set STREAM_LOGS=1 to enable it.
+Still waiting: 61s elapsed; GPU memory:
+4, 41342 MiB, 39738 MiB
+5, 41390 MiB, 39690 MiB
+6, 41390 MiB, 39690 MiB
+7, 41150 MiB, 39930 MiB
+Still waiting: 122s elapsed; GPU memory:
+4, 41364 MiB, 39716 MiB
+5, 41412 MiB, 39668 MiB
+6, 41412 MiB, 39668 MiB
+7, 41172 MiB, 39908 MiB
+Still waiting: 183s elapsed; GPU memory:
+4, 41364 MiB, 39716 MiB
+5, 41412 MiB, 39668 MiB
+6, 41412 MiB, 39668 MiB
+7, 41172 MiB, 39908 MiB
+Still waiting: 243s elapsed; GPU memory:
+4, 41386 MiB, 39694 MiB
+5, 41434 MiB, 39646 MiB
+6, 41434 MiB, 39646 MiB
+7, 41194 MiB, 39886 MiB
+Still waiting: 304s elapsed; GPU memory:
+4, 41486 MiB, 39594 MiB
+5, 41534 MiB, 39546 MiB
+6, 41534 MiB, 39546 MiB
+7, 41294 MiB, 39786 MiB
+Still waiting: 365s elapsed; GPU memory:
+4, 41598 MiB, 39482 MiB
+5, 41646 MiB, 39434 MiB
+6, 41646 MiB, 39434 MiB
+7, 41406 MiB, 39674 MiB
+Still waiting: 426s elapsed; GPU memory:
+4, 41936 MiB, 39144 MiB
+5, 41984 MiB, 39096 MiB
+6, 41984 MiB, 39096 MiB
+7, 41744 MiB, 39336 MiB
+Service is ready; sending the smoke request...
+/home/jovyan/wangtonghan/EASYEP/scripts/test_v4_flash_gpus_4_7.sh: line 266: 15948 Killed                  "${V4_PYTHON}" -m sglang.launch_server --trust-remote-code --model-path "${MODEL_PATH}" --tp "${TP_SIZE}" --moe-runner-backend marlin --reasoning-parser deepseek-v4 --tool-call-parser deepseekv4 --host "${HOST}" --port "${PORT}" --disable-cuda-graph --mem-fraction-static "${MEM_FRACTION_STATIC}" --context-length "${CONTEXT_LENGTH}" --max-running-requests 1 --disable-custom-all-reduce "$@" > "${LOG_FILE}" 2>&1
+Traceback (most recent call last):
+  File "/home/jovyan/wangtonghan/EASYEP/scripts/smoke_v4_server.py", line 67, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/jovyan/wangtonghan/EASYEP/scripts/smoke_v4_server.py", line 49, in main
+    response = request_json(f"{base_url}/chat/completions", payload, args.timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jovyan/wangtonghan/EASYEP/scripts/smoke_v4_server.py", line 17, in request_json
+    with urlopen(request, timeout=timeout) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 519, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 536, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 1377, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/urllib/request.py", line 1352, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/http/client.py", line 1415, in getresponse
+    response.begin()
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/http/client.py", line 330, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/opt/uv-python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/http/client.py", line 299, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+Summary report: /home/jovyan/wangtonghan/EASYEP/logs/v4_gpus_4_7_20260814_065011_summary.txt
+Smoke request failed; send the summary TXT above.

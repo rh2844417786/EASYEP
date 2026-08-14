@@ -220,7 +220,9 @@ apt_repository_ready() {
   rm -f "${update_log}"
 
   for package in "$@"; do
-    if ! apt-cache show "${package}" 2>/dev/null | grep -q '^Package:'; then
+    # Consume all apt-cache output; with pipefail, grep -q can make apt-cache
+    # exit on SIGPIPE after the first matching package version.
+    if ! apt-cache show "${package}" 2>/dev/null | grep '^Package:' >/dev/null; then
       echo "CUDA repository health check failed: package ${package} is not visible to apt." >&2
       return 1
     fi

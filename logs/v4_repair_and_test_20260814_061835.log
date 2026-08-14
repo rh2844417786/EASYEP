@@ -1,0 +1,28 @@
+NVIDIA driver maximum supported CUDA: 13.0 (this is not the NVCC version)
+PyTorch runtime build CUDA: 13.0 (/opt/sglang-v4/bin/python)
+Installing the NVIDIA CUDA repository keyring for ubuntu2204/x86_64...
+Trying CUDA repository: https://developer.download.nvidia.com/compute/cuda/repos
+Downloading with /opt/sglang-v4/bin/python standard library...
+Selected CUDA repository: https://developer.download.nvidia.com/compute/cuda/repos
+(Reading database ... 15864 files and directories currently installed.)
+Preparing to unpack .../cuda-keyring.deb ...
+Unpacking cuda-keyring (1.1-1) over (1.1-1) ...
+Setting up cuda-keyring (1.1-1) ...
+Refreshing apt indexes for CUDA repository: https://developer.download.nvidia.com/compute/cuda/repos
+Hit:1 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:2 http://archive.ubuntu.com/ubuntu jammy InRelease
+Hit:3 https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64  InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:5 http://archive.ubuntu.com/ubuntu jammy-backports InRelease
+Reading package lists...
+CUDA repository health check failed: package cuda-compiler-13-0 is not visible to apt.
+Switching CUDA repository to: https://developer.download.nvidia.cn/compute/cuda/repos
+Refreshing apt indexes for CUDA repository: https://developer.download.nvidia.cn/compute/cuda/repos
+Hit:1 https://developer.download.nvidia.cn/compute/cuda/repos/ubuntu2204/x86_64  InRelease
+Hit:2 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu jammy InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu jammy-updates InRelease
+Hit:5 http://archive.ubuntu.com/ubuntu jammy-backports InRelease
+Reading package lists...
+CUDA repository health check failed: package cuda-compiler-13-0 is not visible to apt.
+ERROR: CUDA packages are unavailable from both NVIDIA repository endpoints
