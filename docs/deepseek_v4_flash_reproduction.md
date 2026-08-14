@@ -85,19 +85,24 @@ bash scripts/test_v4_flash_gpus_4_7.sh
 
 V4 的 mHC 权重加载会通过 DeepGEMM 即时编译 CUDA kernel；因此即使 MoE
 backend 使用 Marlin，也不能只安装 PyTorch 自带的 CUDA runtime。测试脚本会
-在占用显存前寻找可用的 CUDA toolkit，并要求 NVCC >= 12.3。若当前 Docker
-中只有旧 NVCC，可用下面的一条命令在**当前容器**安装 CUDA 12.9 编译组件并
-立即重跑四卡测试（不使用 conda，也不安装或改动宿主机 NVIDIA driver）：
+在占用显存前扫描 `/usr/local/cuda-*`、`/usr/local/cuda` 和 `PATH` 中的
+toolkit，选择最高版本的可用 NVCC，并要求 NVCC >= 12.3。SGLang 0.5.16 的
+默认运行时为 CUDA 13；若当前 Docker 中没有合格 NVCC，可用下面的一条命令
+在**当前容器**安装 CUDA 13.0 编译组件并立即重跑四卡测试（不使用 conda，
+也不安装或改动宿主机 NVIDIA driver）：
 
 ```bash
 cd /path/to/easy-ep
 bash scripts/repair_and_test_v4_flash_gpus_4_7.sh
 ```
 
-该修复脚本需要容器内的 root 权限和 Debian/Ubuntu `apt`。默认只安装
-`cuda-compiler-12-9`、`cuda-cudart-dev-12-9`、`cuda-cccl-12-9`，并显式设置
+该修复脚本需要容器内的 root 权限和 Debian/Ubuntu `apt`。若已存在 CUDA
+13.0（例如 `/usr/local/cuda-13.0/bin/nvcc`），脚本会直接启用它，不安装
+任何 CUDA 包。否则默认只安装 `cuda-compiler-13-0`、
+`cuda-cudart-dev-13-0`、`cuda-cccl-13-0`，并显式设置
 `DG_JIT_NVCC_COMPILER` 与 `CUDA_HOME`，避免 DeepGEMM 继续误用旧版
-`/usr/local/cuda/bin/nvcc`。安装和测试总日志写入
+`/usr/local/cuda/bin/nvcc`。日志会分别显示 `nvidia-smi` 报告的驱动最高支持
+版本、PyTorch 构建所用 CUDA 版本和最终 NVCC 版本。安装和测试总日志写入
 `logs/v4_repair_and_test_*.log`，SGLang 测试结果仍写入独立的
 `logs/v4_gpus_4_7_*_summary.txt`。
 

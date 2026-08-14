@@ -5,8 +5,11 @@ set -euo pipefail
 # This intentionally installs toolkit/compiler packages only; it never installs
 # or replaces the host NVIDIA driver.
 
-CUDA_TOOLKIT_SERIES="${CUDA_TOOLKIT_SERIES:-12-9}"
-CUDA_TOOLKIT_DOT="${CUDA_TOOLKIT_DOT:-12.9}"
+# SGLang 0.5.16 defaults to a CUDA 13 runtime.  Keep the toolkit version
+# overridable for older images, but install the matching CUDA 13 compiler when
+# the current container does not already provide a compatible NVCC.
+CUDA_TOOLKIT_DOT="${CUDA_TOOLKIT_DOT:-13.0}"
+CUDA_TOOLKIT_SERIES="${CUDA_TOOLKIT_SERIES:-${CUDA_TOOLKIT_DOT//./-}}"
 CUDA_TOOLKIT_ROOT="${CUDA_TOOLKIT_ROOT:-/usr/local/cuda-${CUDA_TOOLKIT_DOT}}"
 CUDA_APT_PACKAGES="${CUDA_APT_PACKAGES:-cuda-compiler-${CUDA_TOOLKIT_SERIES} cuda-cudart-dev-${CUDA_TOOLKIT_SERIES} cuda-cccl-${CUDA_TOOLKIT_SERIES}}"
 CUDA_REPO_BASE_URL="${CUDA_REPO_BASE_URL:-}"
@@ -34,6 +37,20 @@ nvcc_is_compatible() {
     (major == MIN_NVCC_MAJOR && minor >= MIN_NVCC_MINOR) ))
 }
 
+nvcc_is_newer() {
+  local candidate_release="$1"
+  local current_release="$2"
+  local candidate_major candidate_minor current_major current_minor
+  [[ "${candidate_release}" =~ ^([0-9]+)\.([0-9]+)$ ]] || return 1
+  candidate_major="${BASH_REMATCH[1]}"
+  candidate_minor="${BASH_REMATCH[2]}"
+  [[ "${current_release}" =~ ^([0-9]+)\.([0-9]+)$ ]] || return 0
+  current_major="${BASH_REMATCH[1]}"
+  current_minor="${BASH_REMATCH[2]}"
+  (( candidate_major > current_major || \
+    (candidate_major == current_major && candidate_minor > current_minor) ))
+}
+
 activate_compiler() {
   local compiler="$1"
   local release
@@ -47,6 +64,62 @@ activate_compiler() {
   export PATH="${CUDA_HOME}/bin:${PATH}"
   echo "Activated NVCC ${release}: ${DG_JIT_NVCC_COMPILER}"
   echo "CUDA_HOME=${CUDA_HOME}"
+}
+
+report_cuda_context() {
+  local driver_cuda="" python_bin="" runtime_cuda=""
+  local candidate
+
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    driver_cuda="$(nvidia-smi 2>/dev/null | sed -n \
+      's/.*CUDA Version: \([^ ]*\).*/\1/p' | head -n 1 || true)"
+    [[ -n "${driver_cuda}" ]] && \
+      echo "NVIDIA driver maximum supported CUDA: ${driver_cuda} (this is not the NVCC version)"
+  fi
+
+  for candidate in "${V4_PYTHON:-}" "/opt/sglang-v4/bin/python"; do
+    [[ -n "${candidate}" && -x "${candidate}" ]] || continue
+    python_bin="${candidate}"
+    break
+  done
+  if [[ -n "${python_bin}" ]] && \
+    runtime_cuda="$("${python_bin}" -c 'import torch; print(torch.version.cuda or "unknown")' 2>/dev/null)"; then
+    echo "PyTorch runtime build CUDA: ${runtime_cuda} (${python_bin})"
+  fi
+}
+
+activate_best_installed_compiler() {
+  local candidate normalized release best_compiler="" best_release=""
+  local seen_compilers=$'\n'
+  local -a candidates=()
+
+  [[ -n "${DG_JIT_NVCC_COMPILER:-}" ]] && candidates+=("${DG_JIT_NVCC_COMPILER}")
+  candidates+=("${CUDA_TOOLKIT_ROOT}/bin/nvcc" "/usr/local/cuda/bin/nvcc")
+  while IFS= read -r candidate; do
+    [[ -n "${candidate}" ]] && candidates+=("${candidate}")
+  done < <(compgen -G '/usr/local/cuda-*/bin/nvcc' 2>/dev/null || true)
+  if command -v nvcc >/dev/null 2>&1; then
+    candidates+=("$(command -v nvcc)")
+  fi
+
+  for candidate in "${candidates[@]}"; do
+    [[ -d "${candidate}" ]] && candidate="${candidate}/bin/nvcc"
+    [[ -x "${candidate}" ]] || continue
+    normalized="$(readlink -f "${candidate}" 2>/dev/null || printf '%s' "${candidate}")"
+    [[ "${seen_compilers}" == *$'\n'"${normalized}"$'\n'* ]] && continue
+    seen_compilers+="${normalized}"$'\n'
+
+    release="$(nvcc_release "${normalized}" || true)"
+    nvcc_is_compatible "${release}" || continue
+    echo "Detected compatible NVCC ${release}: ${normalized}"
+    if [[ -z "${best_release}" ]] || nvcc_is_newer "${release}" "${best_release}"; then
+      best_compiler="${normalized}"
+      best_release="${release}"
+    fi
+  done
+
+  [[ -n "${best_compiler}" ]] || return 1
+  activate_compiler "${best_compiler}"
 }
 
 download_file() {
@@ -163,18 +236,11 @@ install_toolchain() {
   local nvidia_china_base="https://developer.download.nvidia.cn/compute/cuda/repos"
   local -a packages repo_base_candidates
 
-  for candidate in \
-    "${DG_JIT_NVCC_COMPILER:-}" \
-    "${CUDA_TOOLKIT_ROOT}/bin/nvcc" \
-    "/usr/local/cuda/bin/nvcc" \
-    "$(command -v nvcc 2>/dev/null || true)"; do
-    [[ -n "${candidate}" ]] || continue
-    [[ -d "${candidate}" ]] && candidate="${candidate}/bin/nvcc"
-    if activate_compiler "${candidate}"; then
-      echo "A compatible CUDA compiler is already installed; no package changes are needed."
-      return 0
-    fi
-  done
+  report_cuda_context
+  if activate_best_installed_compiler; then
+    echo "Using the newest compatible CUDA compiler already installed; no package changes are needed."
+    return 0
+  fi
 
   [[ "$(id -u)" == "0" ]] || \
     fail "run this script as root inside the current Docker container"
