@@ -22,13 +22,81 @@ MEM_FRACTION_STATIC="${MEM_FRACTION_STATIC:-0.80}"
 STARTUP_TIMEOUT="${STARTUP_TIMEOUT:-3600}"
 LOG_DIR="${LOG_DIR:-${REPO_ROOT}/logs}"
 STREAM_LOGS="${STREAM_LOGS:-0}"
+MIN_NVCC_MAJOR="12"
+MIN_NVCC_MINOR="3"
 SERVER_PID=""
 LOG_TAIL_PID=""
 SMOKE_OUTPUT=""
+NVCC_VERSION=""
 
 fail() {
   echo "ERROR: $*" >&2
   exit 1
+}
+
+nvcc_release() {
+  local compiler="$1"
+  "${compiler}" --version 2>/dev/null | sed -n \
+    's/.*release \([0-9][0-9]*\)\.\([0-9][0-9]*\).*/\1.\2/p' | head -n 1
+}
+
+nvcc_is_compatible() {
+  local release="$1"
+  local major minor
+  [[ "${release}" =~ ^([0-9]+)\.([0-9]+)$ ]] || return 1
+  major="${BASH_REMATCH[1]}"
+  minor="${BASH_REMATCH[2]}"
+  (( major > MIN_NVCC_MAJOR || \
+    (major == MIN_NVCC_MAJOR && minor >= MIN_NVCC_MINOR) ))
+}
+
+configure_deepgemm_toolchain() {
+  local candidate release best_compiler="" best_release=""
+  local -a candidates=()
+  local -A seen=()
+
+  if [[ -n "${DG_JIT_NVCC_COMPILER:-}" ]]; then
+    candidate="${DG_JIT_NVCC_COMPILER}"
+    [[ -d "${candidate}" ]] && candidate="${candidate}/bin/nvcc"
+    [[ -x "${candidate}" ]] || \
+      fail "DG_JIT_NVCC_COMPILER is not executable: ${candidate}"
+    release="$(nvcc_release "${candidate}" || true)"
+    nvcc_is_compatible "${release}" || \
+      fail "DeepGEMM needs NVCC >= ${MIN_NVCC_MAJOR}.${MIN_NVCC_MINOR}; ${candidate} reports ${release:-unknown}. Run scripts/repair_and_test_v4_flash_gpus_4_7.sh inside this Docker container."
+    best_compiler="${candidate}"
+    best_release="${release}"
+  else
+    [[ -n "${CUDA_HOME:-}" ]] && candidates+=("${CUDA_HOME}/bin/nvcc")
+    candidates+=("/usr/local/cuda/bin/nvcc")
+    while IFS= read -r candidate; do
+      [[ -n "${candidate}" ]] && candidates+=("${candidate}")
+    done < <(compgen -G '/usr/local/cuda-*/bin/nvcc' 2>/dev/null || true)
+    if command -v nvcc >/dev/null 2>&1; then
+      candidates+=("$(command -v nvcc)")
+    fi
+
+    for candidate in "${candidates[@]}"; do
+      [[ -x "${candidate}" ]] || continue
+      candidate="$(readlink -f "${candidate}" 2>/dev/null || printf '%s' "${candidate}")"
+      [[ -z "${seen[${candidate}]:-}" ]] || continue
+      seen["${candidate}"]=1
+      release="$(nvcc_release "${candidate}" || true)"
+      nvcc_is_compatible "${release}" || continue
+      if [[ -z "${best_release}" ]] || \
+        [[ "$(printf '%s\n%s\n' "${best_release}" "${release}" | sort -V | tail -n 1)" == "${release}" ]]; then
+        best_compiler="${candidate}"
+        best_release="${release}"
+      fi
+    done
+
+    [[ -n "${best_compiler}" ]] || \
+      fail "No NVCC >= ${MIN_NVCC_MAJOR}.${MIN_NVCC_MINOR} was found. DeepSeek-V4 mHC uses DeepGEMM JIT even with --moe-runner-backend marlin. Run scripts/repair_and_test_v4_flash_gpus_4_7.sh inside this Docker container."
+  fi
+
+  export DG_JIT_NVCC_COMPILER="${best_compiler}"
+  export CUDA_HOME="$(cd "$(dirname "${best_compiler}")/.." && pwd)"
+  export PATH="${CUDA_HOME}/bin:${PATH}"
+  NVCC_VERSION="${best_release}"
 }
 
 cleanup() {
@@ -78,6 +146,11 @@ case "${SGLANG_MODULE}" in
     ;;
 esac
 
+# DeepSeek-V4 prewarms mHC kernels through DeepGEMM while loading weights.
+# DeepGEMM JIT requires an actual CUDA compiler, not only PyTorch's bundled
+# CUDA runtime.  Resolve the newest compatible toolkit before allocating HBM.
+configure_deepgemm_toolchain
+
 if "${V4_PYTHON}" - "${PORT}" <<'PY'
 import socket
 import sys
@@ -119,6 +192,8 @@ write_summary() {
     echo "-------"
     echo "Python: ${V4_PYTHON}"
     echo "SGLang: ${SGLANG_VERSION}"
+    echo "NVCC: ${NVCC_VERSION} (${DG_JIT_NVCC_COMPILER})"
+    echo "CUDA_HOME: ${CUDA_HOME}"
     echo "Model: ${MODEL_PATH}"
     echo "Physical GPUs: ${GPU_LIST}"
     echo "TP: ${TP_SIZE}"
@@ -168,6 +243,8 @@ echo "WARNING: this is an unverified TP=4 feasibility test, not the 8-GPU baseli
 echo "Physical GPUs: ${GPU_LIST} (inside SGLang they appear as cuda:0..3)"
 echo "Python: ${V4_PYTHON}"
 echo "SGLang: ${SGLANG_VERSION} (${SGLANG_MODULE})"
+echo "NVCC: ${NVCC_VERSION} (${DG_JIT_NVCC_COMPILER})"
+echo "CUDA_HOME: ${CUDA_HOME}"
 echo "Model: ${MODEL_PATH}"
 echo "Log: ${LOG_FILE}"
 echo "Summary: ${SUMMARY_FILE}"

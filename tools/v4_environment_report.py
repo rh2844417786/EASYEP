@@ -67,6 +67,8 @@ MODEL_CONFIG_KEYS = (
 SAFE_ENV_KEYS = (
     "CUDA_VISIBLE_DEVICES",
     "CUDA_DEVICE_ORDER",
+    "CUDA_HOME",
+    "DG_JIT_NVCC_COMPILER",
     "NVIDIA_VISIBLE_DEVICES",
     "NVIDIA_DRIVER_CAPABILITIES",
     "NVIDIA_REQUIRE_CUDA",
@@ -455,10 +457,28 @@ def collect_gpu_environment(report: Report, gpu_ids: list[int], timeout: int, sk
             timeout=timeout,
         ),
     )
-    if shutil.which("nvcc"):
-        report.command_result("CUDA compiler", run_command(["nvcc", "--version"], timeout=timeout))
+    configured_nvcc = os.environ.get("DG_JIT_NVCC_COMPILER")
+    nvcc = configured_nvcc or shutil.which("nvcc")
+    if nvcc and Path(nvcc).is_file():
+        compiler = run_command([nvcc, "--version"], timeout=timeout)
+        report.command_result("CUDA compiler", compiler)
+        release_match = re.search(r"release\s+(\d+)\.(\d+)", compiler.combined_output)
+        if not release_match:
+            report.finding("FAIL", "DeepGEMM CUDA compiler", "could not parse the NVCC release")
+        elif (int(release_match.group(1)), int(release_match.group(2))) < (12, 3):
+            report.finding(
+                "FAIL",
+                "DeepGEMM CUDA compiler",
+                f"NVCC {release_match.group(1)}.{release_match.group(2)} is older than the required 12.3",
+            )
+        else:
+            report.finding(
+                "PASS",
+                "DeepGEMM CUDA compiler",
+                f"NVCC {release_match.group(1)}.{release_match.group(2)} satisfies the 12.3 minimum",
+            )
     else:
-        report.finding("INFO", "CUDA compiler", "nvcc is not installed; runtime-only images may omit it")
+        report.finding("FAIL", "DeepGEMM CUDA compiler", "NVCC is missing; DeepSeek-V4 mHC JIT cannot load")
 
     if skip_cuda_smoke:
         report.finding("INFO", "PyTorch CUDA smoke", "skipped by --skip-cuda-smoke")

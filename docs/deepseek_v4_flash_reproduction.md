@@ -83,6 +83,24 @@ export MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
 bash scripts/test_v4_flash_gpus_4_7.sh
 ```
 
+V4 的 mHC 权重加载会通过 DeepGEMM 即时编译 CUDA kernel；因此即使 MoE
+backend 使用 Marlin，也不能只安装 PyTorch 自带的 CUDA runtime。测试脚本会
+在占用显存前寻找可用的 CUDA toolkit，并要求 NVCC >= 12.3。若当前 Docker
+中只有旧 NVCC，可用下面的一条命令在**当前容器**安装 CUDA 12.9 编译组件并
+立即重跑四卡测试（不使用 conda，也不安装或改动宿主机 NVIDIA driver）：
+
+```bash
+cd /path/to/easy-ep
+bash scripts/repair_and_test_v4_flash_gpus_4_7.sh
+```
+
+该修复脚本需要容器内的 root 权限和 Debian/Ubuntu `apt`。默认只安装
+`cuda-compiler-12-9`、`cuda-cudart-dev-12-9`、`cuda-cccl-12-9`，并显式设置
+`DG_JIT_NVCC_COMPILER` 与 `CUDA_HOME`，避免 DeepGEMM 继续误用旧版
+`/usr/local/cuda/bin/nvcc`。安装和测试总日志写入
+`logs/v4_repair_and_test_*.log`，SGLang 测试结果仍写入独立的
+`logs/v4_gpus_4_7_*_summary.txt`。
+
 这是诊断路径，不是论文的 8 卡基线。若出现 hidden-size mismatch、FP4
 权重 shape 错误或 OOM，应保留脚本输出的 `logs/v4_gpus_4_7_*.log`；不能把
 四卡失败直接归因于 EASY-EP，也不能把四卡 smoke 成功当作吞吐复现完成。
