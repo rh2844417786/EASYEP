@@ -21,8 +21,10 @@ CONTEXT_LENGTH="${CONTEXT_LENGTH:-8192}"
 MEM_FRACTION_STATIC="${MEM_FRACTION_STATIC:-0.80}"
 STARTUP_TIMEOUT="${STARTUP_TIMEOUT:-3600}"
 LOG_DIR="${LOG_DIR:-${REPO_ROOT}/logs}"
+STREAM_LOGS="${STREAM_LOGS:-0}"
 SERVER_PID=""
 LOG_TAIL_PID=""
+SMOKE_OUTPUT=""
 
 fail() {
   echo "ERROR: $*" >&2
@@ -89,7 +91,78 @@ then
 fi
 
 mkdir -p "${LOG_DIR}"
-LOG_FILE="${LOG_DIR}/v4_gpus_4_7_$(date +%Y%m%d_%H%M%S).log"
+RUN_ID="$(date +%Y%m%d_%H%M%S)"
+RUN_STARTED_AT="$(date -Iseconds 2>/dev/null || date)"
+GIT_COMMIT="$(git -C "${REPO_ROOT}" rev-parse --short HEAD 2>/dev/null || printf 'unknown')"
+LOG_FILE="${LOG_DIR}/v4_gpus_4_7_${RUN_ID}.log"
+SUMMARY_FILE="${LOG_DIR}/v4_gpus_4_7_${RUN_ID}_summary.txt"
+
+write_summary() {
+  local result="$1"
+  local server_status="${2:-not_available}"
+  local smoke_status="${3:-not_run}"
+  local ended_at
+  ended_at="$(date -Iseconds 2>/dev/null || date)"
+
+  {
+    echo "DeepSeek-V4-Flash four-GPU test summary"
+    echo "========================================"
+    echo "Result: ${result}"
+    echo "Started: ${RUN_STARTED_AT}"
+    echo "Ended: ${ended_at}"
+    echo "Git commit: ${GIT_COMMIT}"
+    echo "Server exit status: ${server_status}"
+    echo "Smoke status: ${smoke_status}"
+    echo "Full log: ${LOG_FILE}"
+    echo
+    echo "Runtime"
+    echo "-------"
+    echo "Python: ${V4_PYTHON}"
+    echo "SGLang: ${SGLANG_VERSION}"
+    echo "Model: ${MODEL_PATH}"
+    echo "Physical GPUs: ${GPU_LIST}"
+    echo "TP: ${TP_SIZE}"
+    echo "Context length: ${CONTEXT_LENGTH}"
+    echo "Memory fraction static: ${MEM_FRACTION_STATIC}"
+    echo "Custom AllReduce: disabled"
+    echo "NCCL_IB_DISABLE: ${NCCL_IB_DISABLE}"
+    echo "NCCL_SOCKET_IFNAME: ${NCCL_SOCKET_IFNAME}"
+    echo "NCCL_CUMEM_HOST_ENABLE: ${NCCL_CUMEM_HOST_ENABLE}"
+    echo
+    echo "GPU snapshot"
+    echo "------------"
+    nvidia-smi -i "${GPU_LIST}" \
+      --query-gpu=index,name,memory.used,memory.free,utilization.gpu \
+      --format=csv,noheader || true
+    echo
+    echo "Host/container memory"
+    echo "---------------------"
+    free -h || true
+    if [[ -r /sys/fs/cgroup/memory.events ]]; then
+      echo
+      echo "/sys/fs/cgroup/memory.events"
+      cat /sys/fs/cgroup/memory.events || true
+    fi
+    if [[ -n "${SMOKE_OUTPUT}" ]]; then
+      echo
+      echo "Smoke output"
+      echo "------------"
+      printf '%s\n' "${SMOKE_OUTPUT}"
+    fi
+    echo
+    echo "Key log lines (last 60 matches)"
+    echo "-------------------------------"
+    grep -Eai \
+      'traceback|error|exception|failed|killed|out of memory|oom|ninja: build stopped|nccl warn|server is ready|loading.*weight|load.*model|memory' \
+      "${LOG_FILE}" | tail -n 60 || true
+    echo
+    echo "Last 40 full-log lines"
+    echo "----------------------"
+    tail -n 40 "${LOG_FILE}" || true
+  } >"${SUMMARY_FILE}" 2>&1
+
+  echo "Summary report: ${SUMMARY_FILE}"
+}
 
 echo "WARNING: this is an unverified TP=4 feasibility test, not the 8-GPU baseline."
 echo "Physical GPUs: ${GPU_LIST} (inside SGLang they appear as cuda:0..3)"
@@ -97,6 +170,7 @@ echo "Python: ${V4_PYTHON}"
 echo "SGLang: ${SGLANG_VERSION} (${SGLANG_MODULE})"
 echo "Model: ${MODEL_PATH}"
 echo "Log: ${LOG_FILE}"
+echo "Summary: ${SUMMARY_FILE}"
 echo "Selected GPU inventory:"
 awk -F, '$1 ~ /^[[:space:]]*[4567][[:space:]]*$/ { print "  " $0 }' \
   <<<"${GPU_INVENTORY}"
@@ -136,10 +210,16 @@ echo "Custom AllReduce: disabled (v0.5.16 tvm-ffi JIT compile workaround)"
 SERVER_PID=$!
 
 echo "Waiting up to ${STARTUP_TIMEOUT}s for /v1/models (PID ${SERVER_PID})..."
-echo "Streaming SGLang output from ${LOG_FILE}:"
-tail -n +1 -F "${LOG_FILE}" &
-LOG_TAIL_PID=$!
+if [[ "${STREAM_LOGS}" == "1" ]]; then
+  echo "Streaming SGLang output from ${LOG_FILE}:"
+  tail -n +1 -F "${LOG_FILE}" &
+  LOG_TAIL_PID=$!
+else
+  echo "Full log streaming is disabled; set STREAM_LOGS=1 to enable it."
+fi
 
+wait_started=$SECONDS
+next_progress=$((SECONDS + 60))
 deadline=$((SECONDS + STARTUP_TIMEOUT))
 ready=0
 while (( SECONDS < deadline )); do
@@ -152,14 +232,8 @@ while (( SECONDS < deadline )); do
       wait "${LOG_TAIL_PID}" 2>/dev/null || true
     fi
     LOG_TAIL_PID=""
-    echo "SGLang exited before becoming ready (status ${server_status}). Last 120 log lines:" >&2
-    tail -n 120 "${LOG_FILE}" >&2 || true
-    echo "Host/container memory snapshot:" >&2
-    free -h >&2 || true
-    if [[ -r /sys/fs/cgroup/memory.events ]]; then
-      echo "/sys/fs/cgroup/memory.events:" >&2
-      cat /sys/fs/cgroup/memory.events >&2 || true
-    fi
+    write_summary "SERVER_EXITED_BEFORE_READY" "${server_status}" "not_run"
+    echo "SGLang exited before becoming ready; send the summary TXT above." >&2
     exit 1
   fi
 
@@ -177,22 +251,33 @@ PY
     ready=1
     break
   fi
+  if (( SECONDS >= next_progress )); then
+    echo "Still waiting: $((SECONDS - wait_started))s elapsed; GPU memory:"
+    nvidia-smi -i "${GPU_LIST}" \
+      --query-gpu=index,memory.used,memory.free \
+      --format=csv,noheader || true
+    next_progress=$((SECONDS + 60))
+  fi
   sleep 10
 done
 
 if [[ "${ready}" != "1" ]]; then
-  echo "SGLang did not become ready within ${STARTUP_TIMEOUT}s. Last 120 log lines:" >&2
-  tail -n 120 "${LOG_FILE}" >&2 || true
+  write_summary "STARTUP_TIMEOUT" "still_running" "not_run"
+  echo "SGLang did not become ready within ${STARTUP_TIMEOUT}s; send the summary TXT above." >&2
   exit 1
 fi
 
 echo "Service is ready; sending the smoke request..."
-if ! "${V4_PYTHON}" "${REPO_ROOT}/scripts/smoke_v4_server.py" \
+smoke_status=0
+SMOKE_OUTPUT="$("${V4_PYTHON}" "${REPO_ROOT}/scripts/smoke_v4_server.py" \
   --base-url "http://127.0.0.1:${PORT}/v1" \
-  --timeout 600; then
-  echo "Smoke request failed. Last 120 server log lines:" >&2
-  tail -n 120 "${LOG_FILE}" >&2 || true
+  --timeout 600 2>&1)" || smoke_status=$?
+printf '%s\n' "${SMOKE_OUTPUT}"
+if [[ "${smoke_status}" != "0" ]]; then
+  write_summary "SMOKE_FAILED" "running" "${smoke_status}"
+  echo "Smoke request failed; send the summary TXT above." >&2
   exit 1
 fi
 
+write_summary "PASSED" "running" "0"
 echo "Four-GPU smoke test passed. Full server log: ${LOG_FILE}"
