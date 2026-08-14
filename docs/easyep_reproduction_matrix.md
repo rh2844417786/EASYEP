@@ -27,12 +27,36 @@ MTP 层保持原样，不计入上述 43 个主干层的 slot 比例。报告中
 
 ## 先生成 25%/50% mask
 
+### 当前四卡服务器的一键入口
+
+如果本地只有 46 个 Hugging Face shard，且要求所有 MP=4/剪枝产物都放在
+`/mnt/docker_data/v4-converted`，直接运行：
+
+```bash
+cd /home/jovyan/wangtonghan/EASYEP
+bash scripts/run_v4_full_reproduction_gpus_4_7.sh
+```
+
+该脚本顺序执行本地 HF→FP4/MP=4 转换、统计采集、mask 生成、两套 checkpoint
+物化、各两次 load/generate 验收、矩阵 dry-run 和正式评测。任一步失败都会立即
+停止并指出 `stage`；完整 MP=4 和已完成 checkpoint 会被验证后复用，部分 MP=4
+产物则拒绝覆盖。脚本不会执行下载或安装。默认目录为：
+
+```text
+/mnt/docker_data/v4-converted/mp4-fp4/
+/mnt/docker_data/v4-converted/v4-prune25-keep192/
+/mnt/docker_data/v4-converted/v4-prune50-keep128/
+```
+
+只希望走到矩阵 dry-run 时设置 `DRY_RUN_ONLY=1`。若资源检查低于默认保守阈值，
+先人工确认磁盘/内存，再显式设置 `ALLOW_LOW_RESOURCES=1`，不要盲目绕过。
+
 可以单独完成 V4 calibration/probe：
 
 ```bash
 cd /home/jovyan/wangtonghan/EASYEP
 export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
-export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted/mp4-fp4
 bash scripts/collect_v4_easyep_statistics_gpus_4_7.sh
 ```
 
@@ -48,7 +72,7 @@ mask 不是物理 checkpoint；下一步必须执行物理裁剪。
 cd /home/jovyan/wangtonghan/EASYEP
 export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
 export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
-export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted/mp4-fp4
 bash scripts/prepare_v4_pruned_checkpoints.sh
 ```
 

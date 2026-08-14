@@ -18,6 +18,7 @@ STATISTICS_COLLECTOR = (
     REPO_ROOT / "scripts" / "collect_v4_easyep_statistics_gpus_4_7.sh"
 )
 PRUNED_PREPARER = REPO_ROOT / "scripts" / "prepare_v4_pruned_checkpoints.sh"
+FULL_PIPELINE = REPO_ROOT / "scripts" / "run_v4_full_reproduction_gpus_4_7.sh"
 
 
 class V4RuntimeValidationTests(unittest.TestCase):
@@ -158,6 +159,52 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn('if [[ ! -f "${TOKEN_STATS}" ]]', preparer)
         self.assertIn("collect_v4_easyep_statistics_gpus_4_7.sh", preparer)
         self.assertIn("V4 token statistics already exist", preparer)
+
+    def test_full_pipeline_uses_external_artifact_root_and_is_fail_fast(self) -> None:
+        pipeline = FULL_PIPELINE.read_text(encoding="utf-8")
+
+        self.assertIn("set -Eeuo pipefail", pipeline)
+        self.assertIn(
+            'ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/docker_data/v4-converted}"',
+            pipeline,
+        )
+        self.assertIn(
+            'CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}/mp4-fp4}"',
+            pipeline,
+        )
+        self.assertIn(
+            'PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune25-keep192}"',
+            pipeline,
+        )
+        self.assertIn(
+            'PRUNE50_MODEL_PATH="${PRUNE50_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune50-keep128}"',
+            pipeline,
+        )
+        self.assertIn("--model-parallel 4", pipeline)
+        self.assertIn("--expert-dtype fp4", pipeline)
+        self.assertIn("validate_mp4", pipeline)
+        self.assertIn(
+            'DRY_RUN=1 bash "${SCRIPT_DIR}/run_easyep_reproduction.sh"',
+            pipeline,
+        )
+        self.assertIn(
+            'DRY_RUN=0 bash "${SCRIPT_DIR}/run_easyep_reproduction.sh"',
+            pipeline,
+        )
+
+    def test_full_pipeline_does_not_download_or_install(self) -> None:
+        pipeline = FULL_PIPELINE.read_text(encoding="utf-8")
+
+        for forbidden in (
+            "apt install",
+            "apt-get install",
+            "pip install",
+            "uv pip",
+            "curl ",
+            "wget ",
+            "huggingface-cli download",
+        ):
+            self.assertNotIn(forbidden, pipeline)
 
 
 if __name__ == "__main__":
