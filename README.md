@@ -177,10 +177,11 @@ If the official V4 statistics collector reports that
 `fast_hadamard_transform` is missing, use the repair-and-resume wrapper. It
 first runs a real CUDA Hadamard operation, skips installation when that passes,
 and otherwise installs only `fast-hadamard-transform` into `/opt/sglang-v4`.
-For CUDA 13 it disables the package's incorrect `cu122` wheel lookup and forces
-a local source build with the existing compiler. It never reinstalls CUDA,
-PyTorch, or SGLang, then resumes the command above and reuses complete MP=4
-shards:
+For CUDA 13 it installs offline from the complete build-required upstream
+v1.1.0 source stored under `third_party/fast-hadamard-transform`, bypassing both
+the incorrect `cu122` wheel lookup and the incomplete PyPI source distribution.
+It never reinstalls CUDA, PyTorch, or SGLang, then resumes the command above and
+reuses complete MP=4 shards:
 
 ```bash
 bash scripts/repair_and_resume_v4_full_reproduction.sh

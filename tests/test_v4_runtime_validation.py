@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 from pathlib import Path
 import subprocess
@@ -20,6 +21,7 @@ STATISTICS_COLLECTOR = (
 PRUNED_PREPARER = REPO_ROOT / "scripts" / "prepare_v4_pruned_checkpoints.sh"
 FULL_PIPELINE = REPO_ROOT / "scripts" / "run_v4_full_reproduction_gpus_4_7.sh"
 FHT_REPAIR_RESUME = REPO_ROOT / "scripts" / "repair_and_resume_v4_full_reproduction.sh"
+VENDORED_FHT = REPO_ROOT / "third_party" / "fast-hadamard-transform"
 
 
 class V4RuntimeValidationTests(unittest.TestCase):
@@ -222,15 +224,43 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn('if check_fht >/dev/null 2>&1; then', repair)
         self.assertIn("no download or installation is needed", repair)
         self.assertIn("uv pip install", repair)
+        self.assertIn("--offline", repair)
         self.assertIn("--no-build-isolation", repair)
         self.assertIn("--no-deps", repair)
-        self.assertIn('"fast-hadamard-transform==${FHT_VERSION}"', repair)
+        self.assertIn('"${FHT_SOURCE_DIR}"', repair)
         self.assertIn("FAST_HADAMARD_TRANSFORM_FORCE_BUILD=TRUE", repair)
         self.assertIn("FAST_HADAMARD_TRANSFORM_SKIP_CUDA_BUILD=FALSE", repair)
-        self.assertIn("Prebuilt GitHub wheel lookup: disabled", repair)
+        self.assertIn("Network package lookup: disabled", repair)
         self.assertIn("run_v4_full_reproduction_gpus_4_7.sh", repair)
         for forbidden in ("apt install", "apt-get install", "conda install"):
             self.assertNotIn(forbidden, repair)
+
+    def test_vendored_fht_source_is_complete_and_matches_manifest(self) -> None:
+        required = (
+            "setup.py",
+            "LICENSE",
+            "fast_hadamard_transform/__init__.py",
+            "fast_hadamard_transform/fast_hadamard_transform_interface.py",
+            "csrc/fast_hadamard_transform.cpp",
+            "csrc/fast_hadamard_transform_cuda.cu",
+            "csrc/fast_hadamard_transform.h",
+            "csrc/fast_hadamard_transform_common.h",
+            "csrc/fast_hadamard_transform_special.h",
+            "csrc/static_switch.h",
+        )
+        for relative in required:
+            path = VENDORED_FHT / relative
+            self.assertTrue(path.is_file(), relative)
+            self.assertGreater(path.stat().st_size, 0, relative)
+
+        manifest = VENDORED_FHT / "SHA256SUMS"
+        entries = {}
+        for line in manifest.read_text(encoding="utf-8").splitlines():
+            digest, relative = line.split("  ", 1)
+            entries[relative] = digest
+        for relative in required:
+            digest = hashlib.sha256((VENDORED_FHT / relative).read_bytes()).hexdigest()
+            self.assertEqual(entries.get(relative), digest, relative)
 
 
 if __name__ == "__main__":

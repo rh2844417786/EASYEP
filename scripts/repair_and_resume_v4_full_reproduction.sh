@@ -3,8 +3,8 @@ set -Eeuo pipefail
 
 # Repair the one missing official DeepSeek-V4 inference dependency and resume
 # the existing four-GPU EASY-EP pipeline. The CUDA, PyTorch, and SGLang
-# installations are never changed. The package is downloaded/built only when
-# its import plus a real CUDA Hadamard operation fails.
+# installations are never changed. The vendored package is built only when its
+# import plus a real CUDA Hadamard operation fails.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -13,6 +13,7 @@ V4_PYTHON="${V4_PYTHON:-/opt/sglang-v4/bin/python}"
 CUDA_HOME="${CUDA_HOME:-/usr/local/cuda-13.0}"
 GPU_LIST="${GPU_LIST:-4,5,6,7}"
 FHT_VERSION="${FHT_VERSION:-1.1.0}"
+FHT_SOURCE_DIR="${FHT_SOURCE_DIR:-${REPO_ROOT}/third_party/fast-hadamard-transform}"
 MAX_JOBS="${MAX_JOBS:-8}"
 RUN_ID="${RUN_ID:-v4flash_easyep_matrix_01}"
 
@@ -37,6 +38,7 @@ write_summary() {
     echo "cuda_home=${CUDA_HOME}"
     echo "physical_gpus=${GPU_LIST}"
     echo "fast_hadamard_transform_version=${FHT_VERSION}"
+    echo "fast_hadamard_transform_source=${FHT_SOURCE_DIR}"
     echo "run_id=${RUN_ID}"
     echo "log=${LOG_PATH}"
   } >"${SUMMARY_PATH}"
@@ -86,11 +88,35 @@ print("GPU:", torch.cuda.get_device_name(0))
 PY
 }
 
+check_fht_source() {
+  local required
+  for required in \
+    setup.py \
+    LICENSE \
+    SHA256SUMS \
+    fast_hadamard_transform/__init__.py \
+    fast_hadamard_transform/fast_hadamard_transform_interface.py \
+    csrc/fast_hadamard_transform.cpp \
+    csrc/fast_hadamard_transform_cuda.cu \
+    csrc/fast_hadamard_transform.h \
+    csrc/fast_hadamard_transform_common.h \
+    csrc/fast_hadamard_transform_special.h \
+    csrc/static_switch.h; do
+    [[ -s "${FHT_SOURCE_DIR}/${required}" ]] || \
+      fail "vendored FHT source is missing or empty: ${FHT_SOURCE_DIR}/${required}"
+  done
+  command -v sha256sum >/dev/null 2>&1 || \
+    fail "sha256sum is required to verify the vendored FHT source"
+  (cd "${FHT_SOURCE_DIR}" && sha256sum --check SHA256SUMS) || \
+    fail "vendored FHT source checksum verification failed"
+}
+
 echo "DeepSeek-V4-Flash dependency repair and full-pipeline resume"
 echo "Python: ${V4_PYTHON}"
 echo "CUDA_HOME: ${CUDA_HOME}"
 echo "Physical GPUs: ${GPU_LIST}"
 echo "Target dependency: fast-hadamard-transform==${FHT_VERSION}"
+echo "Vendored source: ${FHT_SOURCE_DIR}"
 echo "CUDA/PyTorch/SGLang reinstall: disabled"
 echo "Log: ${LOG_PATH}"
 
@@ -101,20 +127,23 @@ else
   echo "fast_hadamard_transform is missing or its CUDA extension is unusable."
   command -v uv >/dev/null 2>&1 || \
     fail "uv is required to install the single missing dependency"
+  check_fht_source
   CURRENT_STAGE="install-fast-hadamard-transform"
   # Version 1.1.0 maps every non-CUDA-11 runtime to a guessed cu122 wheel.
-  # CUDA 13 must bypass that network lookup and compile from the downloaded
-  # source distribution with the already installed nvcc/PyTorch toolchain.
+  # CUDA 13 must bypass that lookup and compile the complete vendored source
+  # with the already installed nvcc/PyTorch toolchain. The PyPI 1.1.0 sdist is
+  # intentionally not used because it omits the csrc build inputs.
   export FAST_HADAMARD_TRANSFORM_FORCE_BUILD=TRUE
   export FAST_HADAMARD_TRANSFORM_SKIP_CUDA_BUILD=FALSE
   echo "Installing only fast-hadamard-transform==${FHT_VERSION} into ${V4_PYTHON}..."
-  echo "Prebuilt GitHub wheel lookup: disabled; forcing the local CUDA ${CUDA_HOME} source build."
+  echo "Network package lookup: disabled; building ${FHT_SOURCE_DIR} with CUDA ${CUDA_HOME}."
   uv pip install \
     --python "${V4_PYTHON}" \
+    --offline \
     --no-build-isolation \
     --no-deps \
     --reinstall \
-    "fast-hadamard-transform==${FHT_VERSION}"
+    "${FHT_SOURCE_DIR}"
 fi
 
 CURRENT_STAGE="validate-fast-hadamard-transform"
