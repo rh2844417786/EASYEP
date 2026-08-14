@@ -1,0 +1,49 @@
+DeepSeek-V4-Flash dependency repair and full-pipeline resume
+Python: /opt/sglang-v4/bin/python
+CUDA_HOME: /usr/local/cuda-13.0
+Physical GPUs: 4,5,6,7
+Target dependency: fast-hadamard-transform==1.1.0
+CUDA/PyTorch/SGLang reinstall: disabled
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_fht_repair_and_resume_20260814_102853.log
+fast_hadamard_transform is missing or its CUDA extension is unusable.
+Installing only fast-hadamard-transform==1.1.0 into /opt/sglang-v4/bin/python...
+Using Python 3.11.15 environment at: /opt/sglang-v4
+Resolved 1 package in 417ms
+   Building fast-hadamard-transform==1.1.0
+  × Failed to build `fast-hadamard-transform==1.1.0`
+  ├─▶ The build backend returned an error
+  ╰─▶ Call to `setuptools.build_meta:__legacy__.build_wheel` failed (exit status: 1)
+
+      [stdout]
+
+
+      torch.__version__  = 2.11.0+cu130
+
+
+      running bdist_wheel
+      Guessing wheel URL:
+      https://github.com/Dao-AILab/fast-hadamard-transform/releases/download/v1.1.0/fast_hadamard_transform-1.1.0+cu122torch2.11cxx11abiTRUE-cp311-cp311-linux_x86_64.whl
+
+      [stderr]
+      /opt/sglang-v4/lib/python3.11/site-packages/setuptools/_vendor/wheel/bdist_wheel.py:4: FutureWarning: The 'wheel' package is no longer the canonical
+      location of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated
+      version of this command.
+        warn(
+      /opt/sglang-v4/lib/python3.11/site-packages/setuptools/dist.py:765: SetuptoolsDeprecationWarning: License classifiers are deprecated.
+      !!
+
+              ********************************************************************************
+              Please consider removing the following classifiers in favor of a SPDX license expression:
+
+              License :: OSI Approved :: BSD License
+
+              See https://packaging.python.org/en/latest/guides/writing-pyproject-toml/#license for details.
+              ********************************************************************************
+
+      !!
+        self._finalize_license_expression()
+      error: <urlopen error [Errno 104] Connection reset by peer>
+
+
+hint: Build failures usually indicate a problem with the package or the build environment
+Repair/resume summary: /home/jovyan/wangtonghan/EASYEP/logs/v4_fht_repair_and_resume_20260814_102853_summary.txt

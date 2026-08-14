@@ -1,0 +1,10 @@
+DeepSeek-V4-Flash FHT repair and resume
+status=FAIL
+exit_code=1
+last_stage=install-fast-hadamard-transform
+python=/opt/sglang-v4/bin/python
+cuda_home=/usr/local/cuda-13.0
+physical_gpus=4,5,6,7
+fast_hadamard_transform_version=1.1.0
+run_id=v4flash_easyep_matrix_01
+log=/home/jovyan/wangtonghan/EASYEP/logs/v4_fht_repair_and_resume_20260814_102853.log
