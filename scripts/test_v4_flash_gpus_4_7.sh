@@ -71,7 +71,7 @@ source "${SCRIPT_DIR}/validate_v4_flash_runtime.sh"
 unset V4_RUNTIME_VALIDATOR_LIB_ONLY
 validate_v4_flash_runtime
 
-GPU_LIST="${GPU_LIST}" \
+env GPU_LIST="${GPU_LIST}" \
   MAX_PREEXISTING_GPU_MEMORY_MIB="${MAX_PREEXISTING_GPU_MEMORY_MIB:-2048}" \
   bash "${SCRIPT_DIR}/check_v4_gpus_idle.sh" || \
   fail "GPUs 4..7 are not exclusive; no SGLang process was started"

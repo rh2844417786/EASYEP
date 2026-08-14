@@ -23,17 +23,15 @@ inventory="$(nvidia-smi -i "${GPU_LIST}" \
   --query-gpu=index,memory.used \
   --format=csv,noheader,nounits)" || fail "nvidia-smi GPU memory query failed"
 
-busy_gpus=()
 seen_gpus=()
+seen_memory=()
 while IFS=',' read -r raw_gpu raw_used; do
   gpu="${raw_gpu//[!0-9]/}"
   used="${raw_used//[!0-9]/}"
   [[ -n "${gpu}" && -n "${used}" ]] || \
     fail "unexpected nvidia-smi row: ${raw_gpu},${raw_used}"
   seen_gpus+=("${gpu}")
-  if (( used > MAX_PREEXISTING_GPU_MEMORY_MIB )); then
-    busy_gpus+=("${gpu}:${used}")
-  fi
+  seen_memory+=("${used}")
 done <<<"${inventory}"
 
 for expected_gpu in 4 5 6 7; do
@@ -47,8 +45,32 @@ done
 [[ "${#seen_gpus[@]}" -eq 4 ]] || \
   fail "nvidia-smi returned ${#seen_gpus[@]} rows for GPUs ${GPU_LIST}, expected 4"
 
+# A compute process is always considered busy, even when its context currently
+# holds less memory than the baseline threshold. The threshold is only a
+# fallback for memory that nvidia-smi cannot attribute inside this PID namespace.
+busy_gpus=()
+for index in "${!seen_gpus[@]}"; do
+  gpu="${seen_gpus[${index}]}"
+  used="${seen_memory[${index}]}"
+  if ! process_rows="$(nvidia-smi -i "${gpu}" \
+    --query-compute-apps=pid,process_name,used_gpu_memory \
+    --format=csv,noheader,nounits 2>/dev/null)"; then
+    fail "cannot establish exclusivity because the compute-process query failed for GPU ${gpu}"
+  fi
+  has_compute_process=0
+  while IFS=',' read -r raw_pid _rest; do
+    pid="${raw_pid//[!0-9]/}"
+    [[ -n "${pid}" ]] && has_compute_process=1
+  done <<<"${process_rows}"
+  if (( has_compute_process == 1 )); then
+    busy_gpus+=("${gpu}:${used}:compute-process")
+  elif (( used > MAX_PREEXISTING_GPU_MEMORY_MIB )); then
+    busy_gpus+=("${gpu}:${used}:unattributed-memory")
+  fi
+done
+
 if [[ "${#busy_gpus[@]}" -eq 0 ]]; then
-  echo "GPU exclusivity check: PASS (GPUs ${GPU_LIST}; each uses at most ${MAX_PREEXISTING_GPU_MEMORY_MIB} MiB)"
+  echo "GPU exclusivity check: PASS (GPUs ${GPU_LIST}; no compute processes; each uses at most ${MAX_PREEXISTING_GPU_MEMORY_MIB} MiB)"
   printf '%s\n' "${inventory}"
   exit 0
 fi
@@ -61,8 +83,10 @@ echo "Busy GPU details (read-only; no process was terminated):" >&2
 
 for item in "${busy_gpus[@]}"; do
   gpu="${item%%:*}"
-  used="${item##*:}"
-  echo "GPU ${gpu}: ${used} MiB used" >&2
+  remainder="${item#*:}"
+  used="${remainder%%:*}"
+  reason="${item##*:}"
+  echo "GPU ${gpu}: ${used} MiB used; reason=${reason}" >&2
   process_rows="$(nvidia-smi -i "${gpu}" \
     --query-compute-apps=pid,process_name,used_gpu_memory \
     --format=csv,noheader,nounits 2>/dev/null || true)"

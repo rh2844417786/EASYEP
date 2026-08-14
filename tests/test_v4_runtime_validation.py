@@ -151,6 +151,8 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("os.setsid()", launcher)
         self.assertIn('kill -TERM -- "-${SERVER_PGID}"', launcher)
         self.assertIn('kill -KILL -- "-${SERVER_PGID}"', launcher)
+        self.assertIn('env GPU_LIST="${GPU_LIST}"', launcher)
+        self.assertNotIn('\nGPU_LIST="${GPU_LIST}" \\\n', launcher)
 
     def test_gpu_idle_gate_reports_busy_process_without_killing_it(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -162,7 +164,12 @@ class V4RuntimeValidationTests(unittest.TestCase):
                 """\
                 #!/usr/bin/env bash
                 if [[ "$*" == *"--query-compute-apps="* ]]; then
-                  echo '2771319, python, 42840'
+                  if [[ "${FAKE_QUERY_FAIL:-0}" == "1" ]]; then
+                    exit 3
+                  fi
+                  if [[ "${FAKE_COMPUTE:-0}" == "1" ]]; then
+                    echo '2771319, python, 900'
+                  fi
                 elif [[ "${FAKE_BUSY:-0}" == "1" ]]; then
                   printf '4, 42840\\n5, 42700\\n6, 42720\\n7, 42000\\n'
                 else
@@ -186,6 +193,21 @@ class V4RuntimeValidationTests(unittest.TestCase):
             self.assertEqual(idle.returncode, 0, idle.stdout)
             self.assertIn("GPU exclusivity check: PASS", idle.stdout)
 
+            env["FAKE_COMPUTE"] = "1"
+            low_memory_process = subprocess.run(
+                ["bash", str(GPU_IDLE_CHECK)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertEqual(low_memory_process.returncode, 2, low_memory_process.stdout)
+            self.assertIn("PID 2771319", low_memory_process.stdout)
+            self.assertIn("compute-process", low_memory_process.stdout)
+
+            env.pop("FAKE_COMPUTE")
             env["FAKE_BUSY"] = "1"
             busy = subprocess.run(
                 ["bash", str(GPU_IDLE_CHECK)],
@@ -197,8 +219,22 @@ class V4RuntimeValidationTests(unittest.TestCase):
                 check=False,
             )
             self.assertEqual(busy.returncode, 2, busy.stdout)
-            self.assertIn("PID 2771319", busy.stdout)
+            self.assertIn("unattributed-memory", busy.stdout)
             self.assertIn("no process was terminated", busy.stdout)
+
+            env.pop("FAKE_BUSY")
+            env["FAKE_QUERY_FAIL"] = "1"
+            unavailable = subprocess.run(
+                ["bash", str(GPU_IDLE_CHECK)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertEqual(unavailable.returncode, 2, unavailable.stdout)
+            self.assertIn("cannot establish exclusivity", unavailable.stdout)
 
     def test_statistics_collector_is_offline_and_restricted_to_gpus_4_7(self) -> None:
         collector = STATISTICS_COLLECTOR.read_text(encoding="utf-8")

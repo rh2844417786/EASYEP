@@ -60,6 +60,7 @@ class CheckpointInfo:
     indexed_tensors: int
     shard_count: int
     checkpoint_bytes: int
+    shard_sha256: tuple[tuple[str, str], ...]
     fingerprint: str
 
 
@@ -80,6 +81,89 @@ def sha256_parts(parts: Iterable[bytes]) -> str:
     for part in parts:
         digest.update(part)
     return digest.hexdigest()
+
+
+def sha256_file(path: Path, chunk_size: int = 16 * 1024 * 1024) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        while chunk := handle.read(chunk_size):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def file_evidence(path: Path) -> dict[str, Any]:
+    return {
+        "path": str(path.resolve()),
+        "bytes": path.stat().st_size,
+        "sha256": sha256_file(path),
+    }
+
+
+def _stat_signature(path: Path) -> dict[str, int]:
+    stat = path.stat()
+    return {
+        "size": stat.st_size,
+        "mtime_ns": stat.st_mtime_ns,
+        "inode": stat.st_ino,
+    }
+
+
+def hash_checkpoint_shards(
+    paths: list[Path],
+    *,
+    cache_path: Path | None,
+    rehash: bool,
+) -> tuple[tuple[str, str], ...]:
+    cache: dict[str, Any] = {"format_version": 1, "files": {}}
+    if cache_path is not None and cache_path.is_file():
+        try:
+            loaded = load_json(cache_path)
+            if loaded.get("format_version") == 1 and isinstance(
+                loaded.get("files"), dict
+            ):
+                cache = loaded
+        except (OSError, ValueError, json.JSONDecodeError):
+            cache = {"format_version": 1, "files": {}}
+
+    files = cache["files"]
+    changed = False
+    result: list[tuple[str, str]] = []
+    total_bytes = sum(path.stat().st_size for path in paths)
+    if total_bytes >= 1024**3:
+        print(
+            f"checkpoint payload verification: {len(paths)} shard(s), "
+            f"{total_bytes / 2**30:.2f} GiB",
+            flush=True,
+        )
+    for index, path in enumerate(paths, 1):
+        key = str(path.resolve())
+        signature = _stat_signature(path)
+        cached = files.get(key)
+        digest: str | None = None
+        if not rehash and isinstance(cached, dict):
+            candidate = cached.get("sha256")
+            if (
+                cached.get("signature") == signature
+                and isinstance(candidate, str)
+                and re.fullmatch(r"[0-9a-f]{64}", candidate)
+            ):
+                digest = candidate
+        if digest is None:
+            digest = sha256_file(path)
+            if _stat_signature(path) != signature:
+                raise RuntimeError(
+                    f"checkpoint shard changed while being hashed: {path}"
+                )
+            files[key] = {"signature": signature, "sha256": digest}
+            changed = True
+            if total_bytes >= 1024**3:
+                print(f"  hashed {index}/{len(paths)}: {path.name}", flush=True)
+        result.append((path.name, digest))
+
+    if cache_path is not None and changed:
+        cache["updated_at"] = utc_now()
+        atomic_write_json(cache_path, cache)
+    return tuple(result)
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -205,7 +289,12 @@ def _validate_pruning_provenance(
         raise ValueError(f"{manifest_path} per-layer expert counts do not match config")
 
 
-def inspect_checkpoint(path: Path) -> CheckpointInfo:
+def inspect_checkpoint(
+    path: Path,
+    *,
+    hash_cache_path: Path | None = None,
+    rehash: bool = False,
+) -> CheckpointInfo:
     path = path.expanduser().resolve()
     config_path = path / "config.json"
     index_path = path / "model.safetensors.index.json"
@@ -293,8 +382,17 @@ def inspect_checkpoint(path: Path) -> CheckpointInfo:
         raise FileNotFoundError(
             f"{path} is missing {len(missing)} indexed shard(s): {missing[:5]}"
         )
-    checkpoint_bytes = sum((path / name).stat().st_size for name in shard_names)
-    fingerprint = sha256_parts((config_bytes, b"\0", index_bytes))[:20]
+    shard_paths = [path / name for name in shard_names]
+    checkpoint_bytes = sum(item.stat().st_size for item in shard_paths)
+    shard_sha256 = hash_checkpoint_shards(
+        shard_paths, cache_path=hash_cache_path, rehash=rehash
+    )
+    fingerprint_parts: list[bytes] = [config_bytes, b"\0", index_bytes, b"\0"]
+    for name, digest in shard_sha256:
+        fingerprint_parts.extend(
+            (name.encode("utf-8"), b"\0", digest.encode("ascii"), b"\0")
+        )
+    fingerprint = sha256_parts(fingerprint_parts)
     return CheckpointInfo(
         path=str(path),
         global_routed_experts=global_routed_experts,
@@ -315,6 +413,7 @@ def inspect_checkpoint(path: Path) -> CheckpointInfo:
         indexed_tensors=len(weight_map),
         shard_count=len(shard_names),
         checkpoint_bytes=checkpoint_bytes,
+        shard_sha256=shard_sha256,
         fingerprint=fingerprint,
     )
 
@@ -323,11 +422,20 @@ def build_variant_specs(
     full_model: Path,
     prune25_model: Path,
     prune50_model: Path,
+    *,
+    hash_cache_path: Path | None = None,
+    rehash: bool = False,
 ) -> list[VariantSpec]:
     checkpoints = [
-        inspect_checkpoint(full_model),
-        inspect_checkpoint(prune25_model),
-        inspect_checkpoint(prune50_model),
+        inspect_checkpoint(
+            full_model, hash_cache_path=hash_cache_path, rehash=rehash
+        ),
+        inspect_checkpoint(
+            prune25_model, hash_cache_path=hash_cache_path, rehash=rehash
+        ),
+        inspect_checkpoint(
+            prune50_model, hash_cache_path=hash_cache_path, rehash=rehash
+        ),
     ]
     original_experts = checkpoints[0].routed_experts
     if any(
@@ -394,9 +502,17 @@ def percentile(values: list[float], fraction: float) -> float | None:
     return ordered[index]
 
 
-def parse_evaluation_output(path: Path, wall_seconds: float) -> dict[str, Any]:
+def parse_evaluation_output(
+    path: Path,
+    wall_seconds: float,
+    *,
+    expected_dataset: str | None = None,
+    expected_model: str | None = None,
+    expected_total: int | None = None,
+) -> dict[str, Any]:
     samples: list[dict[str, Any]] = []
     summary: dict[str, Any] | None = None
+    summary_count = 0
     with path.open(encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, 1):
             if not line.strip():
@@ -406,11 +522,66 @@ def parse_evaluation_output(path: Path, wall_seconds: float) -> dict[str, Any]:
             except json.JSONDecodeError as exc:
                 raise ValueError(f"invalid JSON at {path}:{line_number}: {exc}") from exc
             if record.get("type") == "sample":
+                if summary is not None:
+                    raise ValueError(
+                        f"evaluation output contains samples after its summary: {path}"
+                    )
                 samples.append(record)
             elif record.get("type") == "summary":
                 summary = record
+                summary_count += 1
+            else:
+                raise ValueError(
+                    f"evaluation output has unknown record type at {path}:{line_number}"
+                )
     if summary is None:
         raise ValueError(f"evaluation output has no summary record: {path}")
+    if summary_count != 1:
+        raise ValueError(
+            f"evaluation output has {summary_count} summary records, expected one: {path}"
+        )
+    total = int(summary["total"])
+    correct = int(summary["correct"])
+    if total < 1:
+        raise ValueError(f"evaluation output has no scored samples: {path}")
+    if total != len(samples):
+        raise ValueError(
+            f"evaluation output sample count={len(samples)} but summary total={total}: {path}"
+        )
+    if not 0 <= correct <= total:
+        raise ValueError(f"evaluation output has invalid correct/total: {correct}/{total}")
+    job_ids = [sample.get("job_id") for sample in samples]
+    if any(not isinstance(value, str) or not value for value in job_ids):
+        raise ValueError(f"evaluation output has a sample without a job_id: {path}")
+    if len(set(job_ids)) != len(job_ids):
+        raise ValueError(f"evaluation output has duplicate job_id values: {path}")
+    observed_accuracy = float(summary["accuracy"])
+    expected_accuracy = round(correct / total * 100, 2) if total else 0.0
+    if not math.isclose(observed_accuracy, expected_accuracy, rel_tol=0.0, abs_tol=1e-9):
+        raise ValueError(
+            f"evaluation output accuracy={observed_accuracy}, expected {expected_accuracy}: {path}"
+        )
+    if expected_total is not None and total != expected_total:
+        raise ValueError(
+            f"evaluation output total={total}, expected {expected_total}: {path}"
+        )
+    observed_dataset = summary.get("dataset")
+    observed_model = summary.get("model")
+    run_fingerprint = summary.get("run_fingerprint")
+    if expected_dataset is not None and observed_dataset != expected_dataset:
+        raise ValueError(
+            f"evaluation output dataset={observed_dataset!r}, "
+            f"expected {expected_dataset!r}: {path}"
+        )
+    if expected_model is not None and observed_model != expected_model:
+        raise ValueError(
+            f"evaluation output model={observed_model!r}, "
+            f"expected {expected_model!r}: {path}"
+        )
+    if (expected_dataset is not None or expected_model is not None) and (
+        not isinstance(run_fingerprint, str) or not run_fingerprint
+    ):
+        raise ValueError(f"evaluation output has no run fingerprint: {path}")
 
     latencies = [float(item["latency_seconds"]) for item in samples]
     prompt_tokens = 0
@@ -420,9 +591,12 @@ def parse_evaluation_output(path: Path, wall_seconds: float) -> dict[str, Any]:
         prompt_tokens += int(usage.get("prompt_tokens") or 0)
         completion_tokens += int(usage.get("completion_tokens") or 0)
     return {
-        "accuracy": float(summary["accuracy"]),
-        "correct": int(summary["correct"]),
-        "total": int(summary["total"]),
+        "accuracy": observed_accuracy,
+        "correct": correct,
+        "total": total,
+        "dataset": observed_dataset,
+        "model": observed_model,
+        "run_fingerprint": run_fingerprint,
         "evaluator_backend": summary.get("evaluator_backend"),
         "wall_seconds": round(wall_seconds, 6),
         "samples_per_second": round(len(samples) / wall_seconds, 6)
@@ -437,6 +611,50 @@ def parse_evaluation_output(path: Path, wall_seconds: float) -> dict[str, Any]:
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
         "output_file": str(path),
+        "output_bytes": path.stat().st_size,
+        "output_sha256": sha256_file(path),
+    }
+
+
+def summarize_gpu_samples(
+    samples: list[dict[str, Any]], baseline_memory_mib: dict[int, float]
+) -> dict[str, Any]:
+    by_gpu: dict[int, list[dict[str, Any]]] = {}
+    for sample in samples:
+        by_gpu.setdefault(int(sample["gpu_index"]), []).append(sample)
+    gpu_rows: list[dict[str, Any]] = []
+    for gpu_index, gpu_samples in sorted(by_gpu.items()):
+        used = [float(item["memory_used_mib"]) for item in gpu_samples]
+        baseline = baseline_memory_mib.get(gpu_index, used[0])
+        utilization = [
+            float(item["utilization_gpu_percent"]) for item in gpu_samples
+        ]
+        power = [float(item["power_draw_watts"]) for item in gpu_samples]
+        gpu_rows.append(
+            {
+                "gpu_index": gpu_index,
+                "gpu_name": gpu_samples[0]["gpu_name"],
+                "samples": len(gpu_samples),
+                "baseline_memory_mib": baseline,
+                "peak_memory_mib": max(used),
+                "peak_memory_delta_mib": max(used) - baseline,
+                "mean_memory_mib": round(statistics.fmean(used), 3),
+                "peak_utilization_percent": max(utilization),
+                "mean_utilization_percent": round(
+                    statistics.fmean(utilization), 3
+                ),
+                "mean_power_watts": round(statistics.fmean(power), 3),
+            }
+        )
+    return {
+        "sample_rows": len(samples),
+        "gpus": gpu_rows,
+        "max_peak_memory_mib": max(
+            (row["peak_memory_mib"] for row in gpu_rows), default=None
+        ),
+        "sum_per_gpu_peak_memory_mib": sum(
+            row["peak_memory_mib"] for row in gpu_rows
+        ),
     }
 
 
@@ -444,6 +662,7 @@ class GpuMonitor:
     FIELDS = (
         "timestamp_utc",
         "epoch_seconds",
+        "phase",
         "variant",
         "gpu_index",
         "gpu_name",
@@ -460,12 +679,29 @@ class GpuMonitor:
         self.interval = interval
         self.samples: list[dict[str, Any]] = []
         self.errors: list[str] = []
+        self.baseline_memory_mib: dict[int, float] = {}
         self._stop = threading.Event()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._started = False
 
+    def _expected_gpu_indices(self) -> set[int]:
+        try:
+            return {int(value) for value in self.gpu_list.split(",")}
+        except ValueError as exc:
+            raise ValueError(f"invalid GPU list: {self.gpu_list!r}") from exc
+
     def start(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        baseline = self._query("baseline")
+        self.samples.extend(baseline)
+        self.baseline_memory_mib = {
+            int(item["gpu_index"]): float(item["memory_used_mib"])
+            for item in baseline
+        }
+        with self.path.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=self.FIELDS)
+            writer.writeheader()
+            writer.writerows(baseline)
         self._thread.start()
         self._started = True
 
@@ -473,50 +709,67 @@ class GpuMonitor:
         if not self._started:
             return
         self._stop.set()
-        self._thread.join(timeout=max(10.0, self.interval * 3))
+        self._thread.join(timeout=max(35.0, self.interval * 3))
+        if self._thread.is_alive():
+            raise RuntimeError("GPU telemetry thread did not stop after nvidia-smi timeout")
 
-    def _run(self) -> None:
+    def _query(self, phase: str) -> list[dict[str, Any]]:
         query = (
             "index,name,memory.used,memory.total,utilization.gpu,power.draw"
         )
-        with self.path.open("w", newline="", encoding="utf-8") as handle:
+        epoch = time.time()
+        completed = subprocess.run(
+            [
+                "nvidia-smi",
+                "-i",
+                self.gpu_list,
+                f"--query-gpu={query}",
+                "--format=csv,noheader,nounits",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(completed.stderr.strip() or "nvidia-smi failed")
+        samples: list[dict[str, Any]] = []
+        for row in csv.reader(completed.stdout.splitlines()):
+            if len(row) != 6:
+                raise ValueError(f"unexpected nvidia-smi row: {row}")
+            samples.append(
+                {
+                    "timestamp_utc": datetime.fromtimestamp(
+                        epoch, timezone.utc
+                    ).isoformat(),
+                    "epoch_seconds": round(epoch, 6),
+                    "phase": phase,
+                    "variant": self.variant,
+                    "gpu_index": int(row[0].strip()),
+                    "gpu_name": row[1].strip(),
+                    "memory_used_mib": float(row[2].strip()),
+                    "memory_total_mib": float(row[3].strip()),
+                    "utilization_gpu_percent": float(row[4].strip()),
+                    "power_draw_watts": float(row[5].strip()),
+                }
+            )
+        expected_gpus = self._expected_gpu_indices()
+        observed_gpus = {int(item["gpu_index"]) for item in samples}
+        if observed_gpus != expected_gpus or len(samples) != len(expected_gpus):
+            raise RuntimeError(
+                f"{phase} telemetry did not return each requested GPU exactly once; "
+                f"expected={sorted(expected_gpus)}, observed={sorted(observed_gpus)}"
+            )
+        return samples
+
+    def _run(self) -> None:
+        with self.path.open("a", newline="", encoding="utf-8") as handle:
             writer = csv.DictWriter(handle, fieldnames=self.FIELDS)
-            writer.writeheader()
             while not self._stop.is_set():
-                epoch = time.time()
                 try:
-                    completed = subprocess.run(
-                        [
-                            "nvidia-smi",
-                            "-i",
-                            self.gpu_list,
-                            f"--query-gpu={query}",
-                            "--format=csv,noheader,nounits",
-                        ],
-                        text=True,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        timeout=30,
-                        check=False,
-                    )
-                    if completed.returncode != 0:
-                        raise RuntimeError(completed.stderr.strip() or "nvidia-smi failed")
-                    for row in csv.reader(completed.stdout.splitlines()):
-                        if len(row) != 6:
-                            raise ValueError(f"unexpected nvidia-smi row: {row}")
-                        sample = {
-                            "timestamp_utc": datetime.fromtimestamp(
-                                epoch, timezone.utc
-                            ).isoformat(),
-                            "epoch_seconds": round(epoch, 6),
-                            "variant": self.variant,
-                            "gpu_index": int(row[0].strip()),
-                            "gpu_name": row[1].strip(),
-                            "memory_used_mib": float(row[2].strip()),
-                            "memory_total_mib": float(row[3].strip()),
-                            "utilization_gpu_percent": float(row[4].strip()),
-                            "power_draw_watts": float(row[5].strip()),
-                        }
+                    queried = self._query("runtime")
+                    for sample in queried:
                         self.samples.append(sample)
                         writer.writerow(sample)
                     handle.flush()
@@ -525,45 +778,32 @@ class GpuMonitor:
                 self._stop.wait(self.interval)
 
     def summary(self) -> dict[str, Any]:
-        by_gpu: dict[int, list[dict[str, Any]]] = {}
-        for sample in self.samples:
-            by_gpu.setdefault(int(sample["gpu_index"]), []).append(sample)
-        gpu_rows: list[dict[str, Any]] = []
-        for gpu_index, samples in sorted(by_gpu.items()):
-            used = [float(item["memory_used_mib"]) for item in samples]
-            utilization = [
-                float(item["utilization_gpu_percent"]) for item in samples
-            ]
-            power = [float(item["power_draw_watts"]) for item in samples]
-            gpu_rows.append(
-                {
-                    "gpu_index": gpu_index,
-                    "gpu_name": samples[0]["gpu_name"],
-                    "samples": len(samples),
-                    "baseline_memory_mib": used[0],
-                    "peak_memory_mib": max(used),
-                    "peak_memory_delta_mib": max(used) - used[0],
-                    "mean_memory_mib": round(statistics.fmean(used), 3),
-                    "peak_utilization_percent": max(utilization),
-                    "mean_utilization_percent": round(
-                        statistics.fmean(utilization), 3
-                    ),
-                    "mean_power_watts": round(statistics.fmean(power), 3),
-                }
+        evidence_errors = list(self.errors)
+        expected_gpus = self._expected_gpu_indices()
+        runtime_gpus = {
+            int(sample["gpu_index"])
+            for sample in self.samples
+            if sample.get("phase") == "runtime"
+        }
+        if runtime_gpus != expected_gpus:
+            evidence_errors.append(
+                "runtime telemetry is incomplete; "
+                f"expected={sorted(expected_gpus)}, observed={sorted(runtime_gpus)}"
             )
-        return {
+        result = {
             "trace_file": str(self.path),
             "interval_seconds": self.interval,
-            "sample_rows": len(self.samples),
-            "errors": self.errors,
-            "gpus": gpu_rows,
-            "max_peak_memory_mib": max(
-                (row["peak_memory_mib"] for row in gpu_rows), default=None
-            ),
-            "sum_per_gpu_peak_memory_mib": sum(
-                row["peak_memory_mib"] for row in gpu_rows
-            ),
+            "errors": evidence_errors,
+            **summarize_gpu_samples(self.samples, self.baseline_memory_mib),
         }
+        if self.path.is_file():
+            result.update(
+                {
+                    "trace_bytes": self.path.stat().st_size,
+                    "trace_sha256": sha256_file(self.path),
+                }
+            )
+        return result
 
 
 def port_is_free(port: int) -> bool:
@@ -627,18 +867,52 @@ def wait_for_server(process: subprocess.Popen[Any], port: int, timeout: float) -
     raise TimeoutError(f"SGLang was not ready within {timeout} seconds")
 
 
-def stop_process_group(process: subprocess.Popen[Any], timeout: float = 30.0) -> int:
-    if process.poll() is not None:
-        return int(process.returncode)
+def process_group_exists(process_group_id: int) -> bool:
     try:
-        os.killpg(process.pid, signal.SIGTERM)
+        os.killpg(process_group_id, 0)
     except ProcessLookupError:
-        return int(process.poll() or 0)
-    try:
-        return int(process.wait(timeout=timeout))
-    except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGKILL)
-        return int(process.wait(timeout=10))
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _wait_for_process_group_exit(process_group_id: int, timeout: float) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if not process_group_exists(process_group_id):
+            return True
+        time.sleep(0.1)
+    return not process_group_exists(process_group_id)
+
+
+def stop_process_group(process: subprocess.Popen[Any], timeout: float = 30.0) -> int:
+    process_group_id = process.pid  # start_new_session=True makes PGID equal the leader PID.
+    leader_status = process.poll()
+    if process_group_exists(process_group_id):
+        try:
+            os.killpg(process_group_id, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        if not _wait_for_process_group_exit(process_group_id, timeout):
+            try:
+                os.killpg(process_group_id, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            if not _wait_for_process_group_exit(process_group_id, 10.0):
+                raise RuntimeError(
+                    f"process group {process_group_id} survived SIGKILL"
+                )
+    if process.poll() is None:
+        try:
+            leader_status = process.wait(timeout=10)
+        except subprocess.TimeoutExpired as exc:
+            raise RuntimeError(
+                f"process-group leader {process.pid} was not reaped"
+            ) from exc
+    else:
+        leader_status = process.returncode
+    return int(leader_status or 0)
 
 
 def tail_text(path: Path, lines: int = 80) -> str:
@@ -745,14 +1019,188 @@ def run_logged(
                         flush=True,
                     )
         except BaseException:
-            if process.poll() is None:
-                stop_process_group(process)
+            stop_process_group(process)
             raise
+        stop_process_group(process)
     if return_code != 0:
         raise RuntimeError(
             f"command failed with status {return_code}: {' '.join(command)}\n"
             f"last log lines:\n{tail_text(log_path)}"
         )
+
+
+def _same_scientific_dataset_result(
+    stored: dict[str, Any], observed: dict[str, Any]
+) -> bool:
+    fields = (
+        "accuracy",
+        "correct",
+        "total",
+        "dataset",
+        "model",
+        "run_fingerprint",
+        "evaluator_backend",
+        "prompt_tokens",
+        "completion_tokens",
+        "output_bytes",
+        "output_sha256",
+    )
+    return all(stored.get(field) == observed.get(field) for field in fields)
+
+
+def validated_cached_datasets(
+    previous: dict[str, Any],
+    args: argparse.Namespace,
+    spec: VariantSpec,
+    variant_dir: Path,
+) -> tuple[dict[str, Any], list[str]]:
+    reasons: list[str] = []
+    if previous.get("protocol_fingerprint") != args.protocol_fingerprint:
+        return {}, ["variant protocol fingerprint is missing or stale"]
+    stored_checkpoint = previous.get("checkpoint") or {}
+    if stored_checkpoint.get("fingerprint") != spec.checkpoint.fingerprint:
+        return {}, ["variant checkpoint fingerprint is missing or stale"]
+    served_model = previous.get("served_model")
+    if not isinstance(served_model, str) or not served_model:
+        return {}, ["variant served-model identity is missing"]
+
+    valid: dict[str, Any] = {}
+    stored_datasets = previous.get("datasets") or {}
+    for dataset in args.datasets:
+        stored = stored_datasets.get(dataset)
+        if not isinstance(stored, dict):
+            reasons.append(f"{dataset}: cached result is missing")
+            continue
+        output_path = variant_dir / "evaluation" / f"{dataset}.jsonl"
+        if not output_path.is_file():
+            reasons.append(f"{dataset}: raw JSONL is missing")
+            continue
+        try:
+            wall_seconds = float(stored["wall_seconds"])
+            observed = parse_evaluation_output(
+                output_path,
+                wall_seconds,
+                expected_dataset=dataset,
+                expected_model=served_model,
+                expected_total=args.dataset_totals[dataset] * args.repeats,
+            )
+        except (KeyError, TypeError, ValueError, OSError) as exc:
+            reasons.append(f"{dataset}: raw JSONL validation failed: {exc}")
+            continue
+        if not _same_scientific_dataset_result(stored, observed):
+            reasons.append(f"{dataset}: cached metrics/hash do not match raw JSONL")
+            continue
+        valid[dataset] = observed
+    return valid, reasons
+
+
+def validate_completed_variant_artifacts(
+    previous: dict[str, Any], variant_dir: Path, gpu_list: str
+) -> list[str]:
+    reasons: list[str] = []
+    gpu = previous.get("gpu") or {}
+    if gpu.get("errors"):
+        reasons.append("GPU telemetry recorded sampling errors")
+    telemetry = variant_dir / "gpu_telemetry.csv"
+    if not telemetry.is_file():
+        reasons.append("GPU telemetry CSV is missing")
+    elif (
+        gpu.get("trace_bytes") != telemetry.stat().st_size
+        or gpu.get("trace_sha256") != sha256_file(telemetry)
+    ):
+        reasons.append("GPU telemetry hash/size does not match variant_result.json")
+    else:
+        try:
+            expected_gpus = {int(value) for value in gpu_list.split(",")}
+            with telemetry.open(newline="", encoding="utf-8") as handle:
+                reader = csv.DictReader(handle)
+                if tuple(reader.fieldnames or ()) != GpuMonitor.FIELDS:
+                    raise ValueError("telemetry header does not match the expected schema")
+                rows = list(reader)
+            observed_gpus = {int(row["gpu_index"]) for row in rows}
+            baseline_gpus = {
+                int(row["gpu_index"])
+                for row in rows
+                if row.get("phase") == "baseline"
+            }
+            runtime_gpus = {
+                int(row["gpu_index"])
+                for row in rows
+                if row.get("phase") == "runtime"
+            }
+            if (
+                observed_gpus != expected_gpus
+                or baseline_gpus != expected_gpus
+                or runtime_gpus != expected_gpus
+            ):
+                raise ValueError(
+                    "telemetry must contain baseline and runtime rows for every GPU"
+                )
+            baseline_counts = {
+                gpu_index: sum(
+                    row.get("phase") == "baseline"
+                    and int(row["gpu_index"]) == gpu_index
+                    for row in rows
+                )
+                for gpu_index in expected_gpus
+            }
+            if any(count != 1 for count in baseline_counts.values()):
+                raise ValueError("telemetry must contain exactly one baseline per GPU")
+            expected_variant = previous.get("variant")
+            if expected_variant and any(
+                row.get("variant") != expected_variant for row in rows
+            ):
+                raise ValueError("telemetry contains rows for another variant")
+            parsed_rows: list[dict[str, Any]] = []
+            for row in rows:
+                parsed_rows.append(
+                    {
+                        **row,
+                        "epoch_seconds": float(row["epoch_seconds"]),
+                        "gpu_index": int(row["gpu_index"]),
+                        "memory_used_mib": float(row["memory_used_mib"]),
+                        "memory_total_mib": float(row["memory_total_mib"]),
+                        "utilization_gpu_percent": float(
+                            row["utilization_gpu_percent"]
+                        ),
+                        "power_draw_watts": float(row["power_draw_watts"]),
+                    }
+                )
+            baseline_memory = {
+                int(row["gpu_index"]): float(row["memory_used_mib"])
+                for row in parsed_rows
+                if row["phase"] == "baseline"
+            }
+            observed_summary = summarize_gpu_samples(parsed_rows, baseline_memory)
+            for field in (
+                "sample_rows",
+                "gpus",
+                "max_peak_memory_mib",
+                "sum_per_gpu_peak_memory_mib",
+            ):
+                if gpu.get(field) != observed_summary[field]:
+                    raise ValueError(
+                        f"stored GPU summary field {field} does not match telemetry"
+                    )
+        except (KeyError, TypeError, ValueError) as exc:
+            reasons.append(f"GPU telemetry CSV is malformed: {exc}")
+
+    stored_artifacts = previous.get("artifacts") or {}
+    for name, path in (
+        ("server_log", variant_dir / "server.log"),
+        ("smoke_log", variant_dir / "smoke.log"),
+    ):
+        expected = stored_artifacts.get(name)
+        if not isinstance(expected, dict) or not path.is_file():
+            reasons.append(f"{name} evidence is missing")
+            continue
+        observed = file_evidence(path)
+        if (
+            expected.get("bytes") != observed["bytes"]
+            or expected.get("sha256") != observed["sha256"]
+        ):
+            reasons.append(f"{name} hash/size does not match variant_result.json")
+    return reasons
 
 
 def run_variant(
@@ -766,9 +1214,29 @@ def run_variant(
     previous: dict[str, Any] = {}
     if args.resume and result_path.is_file():
         previous = load_json(result_path)
+        cached_datasets, cache_reasons = validated_cached_datasets(
+            previous, args, spec, variant_dir
+        )
         if previous.get("status") == "PASSED":
-            print(f"[{spec.name}] already passed; reusing {result_path}")
-            return previous
+            cache_reasons.extend(
+                validate_completed_variant_artifacts(
+                    previous, variant_dir, args.gpu_list
+                )
+            )
+            if not cache_reasons and len(cached_datasets) == len(args.datasets):
+                print(
+                    f"[{spec.name}] already passed; raw outputs and telemetry verified: "
+                    f"{result_path}"
+                )
+                previous["datasets"] = cached_datasets
+                return previous
+        if cache_reasons:
+            print(
+                f"[{spec.name}] cached variant is not fully reusable: "
+                + "; ".join(cache_reasons),
+                flush=True,
+            )
+        previous = {"datasets": cached_datasets}
 
     require_idle_gpus(args.gpu_list)
     if not port_is_free(args.port):
@@ -780,6 +1248,7 @@ def run_variant(
         "prune_fraction": spec.prune_fraction,
         "expected_experts": spec.expected_experts,
         "checkpoint": asdict(spec.checkpoint),
+        "protocol_fingerprint": args.protocol_fingerprint,
         "started_at": utc_now(),
         "datasets": previous.get("datasets", {}),
     }
@@ -799,6 +1268,9 @@ def run_variant(
     variant_started = time.monotonic()
     try:
         monitor.start()
+        # Close the gap between the initial exclusivity gate and the actual
+        # server launch. This remains read-only and never terminates a process.
+        require_idle_gpus(args.gpu_list)
         with server_log.open("w", encoding="utf-8") as server_handle:
             process = subprocess.Popen(
                 command,
@@ -840,7 +1312,7 @@ def run_variant(
                 and dataset in result["datasets"]
                 and output_path.is_file()
             ):
-                print(f"[{spec.name}] reusing completed dataset {dataset}")
+                print(f"[{spec.name}] reusing hash-verified dataset {dataset}")
                 continue
             eval_started = time.monotonic()
             eval_command = [
@@ -880,7 +1352,11 @@ def run_variant(
             )
             wall_seconds = time.monotonic() - eval_started
             result["datasets"][dataset] = parse_evaluation_output(
-                output_path, wall_seconds
+                output_path,
+                wall_seconds,
+                expected_dataset=dataset,
+                expected_model=served_model,
+                expected_total=args.dataset_totals[dataset] * args.repeats,
             )
             atomic_write_json(result_path, result)
 
@@ -912,11 +1388,41 @@ def run_variant(
         if isinstance(exc, KeyboardInterrupt):
             result["interrupted"] = True
     finally:
+        cleanup_errors: list[str] = []
         if process is not None:
-            result["server_exit_status"] = stop_process_group(process)
-        time.sleep(3)
-        monitor.stop()
-        result["gpu"] = monitor.summary()
+            try:
+                result["server_exit_status"] = stop_process_group(process)
+            except Exception as exc:
+                cleanup_errors.append(f"server process-group cleanup failed: {exc}")
+        try:
+            monitor.stop()
+        except Exception as exc:
+            cleanup_errors.append(f"GPU telemetry shutdown failed: {exc}")
+        if monitor._thread.is_alive():
+            result["gpu"] = {
+                "trace_file": str(monitor.path),
+                "errors": cleanup_errors,
+            }
+        else:
+            result["gpu"] = monitor.summary()
+            if result["gpu"]["errors"]:
+                cleanup_errors.append(
+                    "GPU telemetry sampling failed: "
+                    + "; ".join(result["gpu"]["errors"])
+                )
+        result["artifacts"] = {}
+        for name, path in (
+            ("server_log", server_log),
+            ("smoke_log", variant_dir / "smoke.log"),
+        ):
+            if path.is_file():
+                result["artifacts"][name] = file_evidence(path)
+        if cleanup_errors:
+            previous_error = result.get("error")
+            result["status"] = "FAILED"
+            result["error"] = "; ".join(
+                ([str(previous_error)] if previous_error else []) + cleanup_errors
+            )
         result["elapsed_seconds"] = round(time.monotonic() - variant_started, 6)
         result["ended_at"] = utc_now()
         atomic_write_json(result_path, result)
@@ -1047,6 +1553,105 @@ def git_commit() -> str:
     return completed.stdout.strip() if completed.returncode == 0 else "unknown"
 
 
+def git_tracked_state() -> dict[str, Any]:
+    parts: list[bytes] = []
+    for command in (
+        ["git", "-C", str(REPO_ROOT), "diff", "--binary", "HEAD", "--"],
+        ["git", "-C", str(REPO_ROOT), "diff", "--binary", "--cached", "HEAD", "--"],
+    ):
+        completed = subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+        if completed.returncode != 0:
+            raise RuntimeError(
+                f"cannot fingerprint tracked repository changes: "
+                f"{completed.stderr.decode(errors='replace').strip()}"
+            )
+        parts.append(completed.stdout)
+    payload = b"\0".join(parts)
+    return {
+        "dirty": bool(payload.replace(b"\0", b"")),
+        "diff_sha256": hashlib.sha256(payload).hexdigest(),
+    }
+
+
+def python_runtime_identity(python: Path, modules: tuple[str, ...]) -> dict[str, Any]:
+    code = r'''
+import hashlib
+import importlib.metadata
+import importlib.util
+import json
+from pathlib import Path
+import platform
+import sys
+
+result = {"python": platform.python_version(), "executable": sys.executable, "modules": {}}
+for name in sys.argv[1:]:
+    spec = importlib.util.find_spec(name)
+    if spec is None:
+        result["modules"][name] = None
+        continue
+    entry = {"origin": spec.origin}
+    try:
+        entry["version"] = importlib.metadata.version(name.replace("_", "-"))
+    except importlib.metadata.PackageNotFoundError:
+        entry["version"] = None
+    if spec.origin and Path(spec.origin).is_file():
+        entry["origin_sha256"] = hashlib.sha256(Path(spec.origin).read_bytes()).hexdigest()
+    if name == "sglang" and spec.origin:
+        root = Path(spec.origin).parent
+        patched = {}
+        for relative in ("srt/configs/deepseek_v4.py", "srt/models/deepseek_v2.py"):
+            path = root / relative
+            if not path.is_file():
+                raise SystemExit(f"missing required SGLang runtime file: {path}")
+            patched[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+        entry["critical_files_sha256"] = patched
+    result["modules"][name] = entry
+print(json.dumps(result, sort_keys=True))
+'''
+    completed = subprocess.run(
+        [str(python), "-c", code, *modules],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=60,
+        check=False,
+    )
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"cannot fingerprint Python runtime {python}: "
+            f"{completed.stderr.strip() or completed.stdout.strip()}"
+        )
+    try:
+        value = json.loads(completed.stdout)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"runtime fingerprint returned invalid JSON: {completed.stdout!r}"
+        ) from exc
+    if not isinstance(value, dict):
+        raise RuntimeError(f"runtime fingerprint is not an object: {value!r}")
+    return value
+
+
+def runtime_identity(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "server": python_runtime_identity(args.server_python, ("sglang", "torch")),
+        "evaluator": python_runtime_identity(
+            args.eval_python, ("symeval", "math_verify")
+        ),
+        "evaluation_client_sha256": sha256_file(EVAL_CLIENT),
+        "smoke_client_sha256": sha256_file(SMOKE_CLIENT),
+        "datasets_sha256": {
+            name: sha256_file(REPO_ROOT / "evaluation" / "dataset" / f"{name}.jsonl")
+            for name in args.datasets
+        },
+    }
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Evaluate full, 25%-pruned, and 50%-pruned checkpoints"
@@ -1081,6 +1686,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--request-timeout", type=float, default=3600)
     parser.add_argument("--monitor-interval", type=float, default=2.0)
     parser.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--rehash-checkpoints",
+        action="store_true",
+        help=(
+            "ignore the local size/mtime/inode hash cache and recompute SHA-256 for "
+            "every checkpoint shard"
+        ),
+    )
     parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser
@@ -1103,6 +1716,21 @@ def validate_args(args: argparse.Namespace) -> None:
     invalid = [name for name, value in positive.items() if value <= 0]
     if invalid:
         raise ValueError(f"these arguments must be positive: {invalid}")
+    if args.gpu_list != "4,5,6,7" or args.tp != 4:
+        raise ValueError(
+            "this evaluation protocol is restricted to physical GPUs 4,5,6,7 "
+            "with TP=4"
+        )
+    if not 1 <= args.port <= 65535:
+        raise ValueError("port must be in [1, 65535]")
+    if len(set(args.datasets)) != len(args.datasets):
+        raise ValueError("datasets must not contain duplicates")
+    if args.retries < 0:
+        raise ValueError("retries must be non-negative")
+    if args.temperature < 0:
+        raise ValueError("temperature must be non-negative")
+    if not 0 < args.top_p <= 1:
+        raise ValueError("top-p must be in (0, 1]")
     if not 0 < args.mem_fraction_static < 1:
         raise ValueError("mem-fraction-static must be in (0, 1)")
     if args.max_tokens >= args.context_length:
@@ -1111,6 +1739,21 @@ def validate_args(args: argparse.Namespace) -> None:
         raise FileNotFoundError(f"server Python does not exist: {args.server_python}")
     if not args.eval_python.is_file():
         raise FileNotFoundError(f"evaluation Python does not exist: {args.eval_python}")
+    if not os.access(args.server_python, os.X_OK):
+        raise PermissionError(f"server Python is not executable: {args.server_python}")
+    if not os.access(args.eval_python, os.X_OK):
+        raise PermissionError(f"evaluation Python is not executable: {args.eval_python}")
+    dataset_totals: dict[str, int] = {}
+    for dataset in args.datasets:
+        path = REPO_ROOT / "evaluation" / "dataset" / f"{dataset}.jsonl"
+        if not path.is_file():
+            raise FileNotFoundError(f"evaluation dataset does not exist: {path}")
+        with path.open(encoding="utf-8") as handle:
+            total = sum(1 for line in handle if line.strip())
+        if total < 1:
+            raise ValueError(f"evaluation dataset is empty: {path}")
+        dataset_totals[dataset] = total
+    args.dataset_totals = dataset_totals
     evaluator_check = subprocess.run(
         [
             str(args.eval_python),
@@ -1140,6 +1783,7 @@ def build_protocol_fingerprint(
         "dry_run",
         "results_root",
         "resume",
+        "rehash_checkpoints",
         "run_id",
     }
     payload = {
@@ -1160,13 +1804,17 @@ def build_protocol_fingerprint(
 def main() -> int:
     args = build_parser().parse_args()
     validate_args(args)
+    results_root = args.results_root.expanduser().resolve()
+    results_root.mkdir(parents=True, exist_ok=True)
     specs = build_variant_specs(
         args.full_model,
         args.prune25_model,
         args.prune50_model,
+        hash_cache_path=results_root / ".checkpoint_hash_cache.json",
+        rehash=args.rehash_checkpoints,
     )
     run_id = args.run_id or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    run_dir = args.results_root.expanduser().resolve() / run_id
+    run_dir = results_root / run_id
     if run_dir.exists() and not args.resume:
         raise FileExistsError(f"run directory already exists: {run_dir}")
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -1181,9 +1829,12 @@ def main() -> int:
         for key, value in settings.items()
     }
     current_git_commit = git_commit()
+    settings["git_tracked_state"] = git_tracked_state()
+    settings["runtime_identity"] = runtime_identity(args)
     protocol_fingerprint = build_protocol_fingerprint(
         settings, specs, current_git_commit
     )
+    args.protocol_fingerprint = protocol_fingerprint
     manifest_path = run_dir / "manifest.json"
     existing_manifest: dict[str, Any] | None = None
     if manifest_path.is_file():
