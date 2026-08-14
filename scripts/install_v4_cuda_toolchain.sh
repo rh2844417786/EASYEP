@@ -110,9 +110,55 @@ except Exception:
 PY
 }
 
+rewrite_cuda_repo_base() {
+  local from_base="${1%/}"
+  local to_base="${2%/}"
+  local from_path source_file
+  from_path="${from_base#*://}"
+
+  while IFS= read -r source_file; do
+    sed -i \
+      -e "s#https://${from_path}#${to_base}#g" \
+      -e "s#http://${from_path}#${to_base}#g" \
+      "${source_file}"
+  done < <(grep -RIlF "${from_path}" /etc/apt/sources.list.d 2>/dev/null || true)
+}
+
+apt_repository_ready() {
+  local repo_base="$1"
+  shift
+  local apt_status=0 package update_log
+  update_log="$(mktemp)"
+
+  echo "Refreshing apt indexes for CUDA repository: ${repo_base}"
+  apt-get update 2>&1 | tee "${update_log}" || apt_status="${PIPESTATUS[0]}"
+
+  if (( apt_status != 0 )); then
+    echo "CUDA repository health check failed: apt-get update exited ${apt_status}." >&2
+    rm -f "${update_log}"
+    return 1
+  fi
+  if grep -Eqi '(^Err:|Failed to fetch|Some index files failed|Could not handshake)' \
+    "${update_log}"; then
+    echo "CUDA repository health check failed: apt reported an index download error." >&2
+    rm -f "${update_log}"
+    return 1
+  fi
+  rm -f "${update_log}"
+
+  for package in "$@"; do
+    if ! apt-cache show "${package}" 2>/dev/null | grep -q '^Package:'; then
+      echo "CUDA repository health check failed: package ${package} is not visible to apt." >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
 install_toolchain() {
-  local candidate repo_distro repo_arch keyring_url temp_dir source_file
+  local candidate repo_distro repo_arch keyring_url temp_dir
   local aliyun_image=0 selected_repo_base=""
+  local alternate_repo_base=""
   local nvidia_global_base="https://developer.download.nvidia.com/compute/cuda/repos"
   local nvidia_china_base="https://developer.download.nvidia.cn/compute/cuda/repos"
   local -a packages repo_base_candidates
@@ -135,6 +181,7 @@ install_toolchain() {
   command -v apt-get >/dev/null 2>&1 || \
     fail "automatic repair currently supports Debian/Ubuntu apt-based Docker images"
   command -v dpkg >/dev/null 2>&1 || fail "dpkg was not found"
+  command -v apt-cache >/dev/null 2>&1 || fail "apt-cache was not found"
   [[ -r /etc/os-release ]] || fail "/etc/os-release was not found"
 
   # shellcheck disable=SC1091
@@ -190,29 +237,27 @@ install_toolchain() {
   rm -rf "${temp_dir}"
 
   if [[ "${selected_repo_base}" != "${nvidia_global_base}" ]]; then
-    while IFS= read -r source_file; do
-      sed -i \
-        -e "s#https://developer.download.nvidia.com/compute/cuda/repos#${selected_repo_base}#g" \
-        -e "s#http://developer.download.nvidia.com/compute/cuda/repos#${selected_repo_base}#g" \
-        "${source_file}"
-    done < <(grep -RIl 'developer\.download\.nvidia\.com/compute/cuda/repos' \
-      /etc/apt/sources.list.d 2>/dev/null || true)
+    rewrite_cuda_repo_base "${nvidia_global_base}" "${selected_repo_base}"
   fi
 
-  if ! apt-get update; then
-    if [[ -z "${CUDA_REPO_BASE_URL}" && "${selected_repo_base}" == "${nvidia_china_base}" ]]; then
-      echo "NVIDIA China CDN apt update failed; retrying the global NVIDIA repository." >&2
-      while IFS= read -r source_file; do
-        sed -i "s#${nvidia_china_base}#${nvidia_global_base}#g" "${source_file}"
-      done < <(grep -RIl "${nvidia_china_base}" /etc/apt/sources.list.d 2>/dev/null || true)
-      selected_repo_base="${nvidia_global_base}"
-      apt-get update
-    else
-      fail "apt-get update failed for CUDA repository ${selected_repo_base}"
+  read -r -a packages <<<"${CUDA_APT_PACKAGES}"
+  if ! apt_repository_ready "${selected_repo_base}" "${packages[@]}"; then
+    if [[ -n "${CUDA_REPO_BASE_URL}" ]]; then
+      fail "explicit CUDA repository is unavailable: ${selected_repo_base}"
     fi
+
+    if [[ "${selected_repo_base}" == "${nvidia_global_base}" ]]; then
+      alternate_repo_base="${nvidia_china_base}"
+    else
+      alternate_repo_base="${nvidia_global_base}"
+    fi
+    echo "Switching CUDA repository to: ${alternate_repo_base}" >&2
+    rewrite_cuda_repo_base "${selected_repo_base}" "${alternate_repo_base}"
+    selected_repo_base="${alternate_repo_base}"
+    apt_repository_ready "${selected_repo_base}" "${packages[@]}" || \
+      fail "CUDA packages are unavailable from both NVIDIA repository endpoints"
   fi
   echo "CUDA apt repository ready: ${selected_repo_base}"
-  read -r -a packages <<<"${CUDA_APT_PACKAGES}"
   echo "Installing CUDA JIT toolchain packages: ${packages[*]}"
   DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends "${packages[@]}"
 
