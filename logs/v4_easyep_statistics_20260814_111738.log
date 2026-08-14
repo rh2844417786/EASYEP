@@ -1,0 +1,210 @@
+DeepSeek-V4-Flash EASY-EP statistic collection
+Physical GPUs: 4,5,6,7 (torchrun ranks 0..3)
+Official inference: /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference
+Converted MP=4 checkpoint: /mnt/docker_data/v4-converte
+Calibration source: /home/jovyan/wangtonghan/EASYEP/dataset/aime23_full
+V4 calibration: /home/jovyan/wangtonghan/EASYEP/dataset/aime23_full_v4
+Statistics: /home/jovyan/wangtonghan/EASYEP/expert_statistics/token_information/aime_v4.jsonl
+Samples: 25
+Downloads/installers/conversion: disabled
+Log: /home/jovyan/wangtonghan/EASYEP/logs/v4_easyep_statistics_20260814_111738.log
+runtime dependencies: OK
+V4 calibration already exists; reusing /home/jovyan/wangtonghan/EASYEP/dataset/aime23_full_v4
+Collecting/resuming paper-defined statistics...
+
+*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+[rank3]: Traceback (most recent call last):
+[rank3]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 385, in <module>
+[rank3]:     raise SystemExit(main())
+[rank3]:                      ^^^^^^
+[rank3]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 377, in main
+[rank3]:     collect(args)
+[rank3]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank3]:     return func(*args, **kwargs)
+[rank3]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 276, in collect
+[rank3]:     model = module.Transformer(model_args)
+[rank3]:             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 787, in __init__
+[rank3]:     self.layers.append(Block(layer_id, args))
+[rank3]:                        ^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 658, in __init__
+[rank3]:     self.ffn = MoE(layer_id, args)
+[rank3]:                ^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in __init__
+[rank3]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank3]:                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in <listcomp>
+[rank3]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank3]:                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 593, in __init__
+[rank3]:     self.w3 = Linear(dim, inter_dim, dtype=dtype)
+[rank3]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 137, in __init__
+[rank3]:     self.weight.scale = self.scale = nn.Parameter(torch.empty(scale_out_features, scale_in_features, dtype=torch.float8_e8m0fnu))
+[rank3]:                                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank3]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_device.py", line 116, in __torch_function__
+[rank3]:     return func(*args, **kwargs)
+[rank3]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank3]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 MiB. GPU 3 has a total capacity of 79.18 GiB of which 2.38 MiB is free. Process 2771322 has 42.00 GiB memory in use. Process 2773296 has 37.16 GiB memory in use. Of the allocated memory 36.54 GiB is allocated by PyTorch, and 26.29 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+[rank2]: Traceback (most recent call last):
+[rank2]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 385, in <module>
+[rank2]:     raise SystemExit(main())
+[rank2]:                      ^^^^^^
+[rank2]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 377, in main
+[rank2]:     collect(args)
+[rank2]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank2]:     return func(*args, **kwargs)
+[rank2]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 276, in collect
+[rank2]:     model = module.Transformer(model_args)
+[rank2]:             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 787, in __init__
+[rank2]:     self.layers.append(Block(layer_id, args))
+[rank2]:                        ^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 658, in __init__
+[rank2]:     self.ffn = MoE(layer_id, args)
+[rank2]:                ^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in __init__
+[rank2]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank2]:                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in <listcomp>
+[rank2]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank2]:                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 592, in __init__
+[rank2]:     self.w2 = Linear(inter_dim, dim, dtype=dtype)
+[rank2]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 134, in __init__
+[rank2]:     self.weight = nn.Parameter(torch.empty(out_features, in_features // 2, dtype=torch.float4_e2m1fn_x2))
+[rank2]:                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank2]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_device.py", line 116, in __torch_function__
+[rank2]:     return func(*args, **kwargs)
+[rank2]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank2]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 2 has a total capacity of 79.18 GiB of which 6.38 MiB is free. Process 2771321 has 42.72 GiB memory in use. Process 2773295 has 36.44 GiB memory in use. Of the allocated memory 35.82 GiB is allocated by PyTorch, and 17.60 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+[rank0]: Traceback (most recent call last):
+[rank0]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 385, in <module>
+[rank0]:     raise SystemExit(main())
+[rank0]:                      ^^^^^^
+[rank0]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 377, in main
+[rank0]:     collect(args)
+[rank0]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 276, in collect
+[rank0]:     model = module.Transformer(model_args)
+[rank0]:             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 787, in __init__
+[rank0]:     self.layers.append(Block(layer_id, args))
+[rank0]:                        ^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 658, in __init__
+[rank0]:     self.ffn = MoE(layer_id, args)
+[rank0]:                ^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in __init__
+[rank0]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank0]:                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in <listcomp>
+[rank0]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank0]:                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 592, in __init__
+[rank0]:     self.w2 = Linear(inter_dim, dim, dtype=dtype)
+[rank0]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 134, in __init__
+[rank0]:     self.weight = nn.Parameter(torch.empty(out_features, in_features // 2, dtype=torch.float4_e2m1fn_x2))
+[rank0]:                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank0]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_device.py", line 116, in __torch_function__
+[rank0]:     return func(*args, **kwargs)
+[rank0]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 79.18 GiB of which 14.38 MiB is free. Process 2771319 has 42.84 GiB memory in use. Process 2773293 has 36.31 GiB memory in use. Of the allocated memory 35.70 GiB is allocated by PyTorch, and 17.10 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+[rank1]: Traceback (most recent call last):
+[rank1]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 385, in <module>
+[rank1]:     raise SystemExit(main())
+[rank1]:                      ^^^^^^
+[rank1]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 377, in main
+[rank1]:     collect(args)
+[rank1]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+[rank1]:     return func(*args, **kwargs)
+[rank1]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py", line 276, in collect
+[rank1]:     model = module.Transformer(model_args)
+[rank1]:             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 787, in __init__
+[rank1]:     self.layers.append(Block(layer_id, args))
+[rank1]:                        ^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 658, in __init__
+[rank1]:     self.ffn = MoE(layer_id, args)
+[rank1]:                ^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in __init__
+[rank1]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank1]:                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 624, in <listcomp>
+[rank1]:     self.experts = nn.ModuleList([Expert(args.dim, args.moe_inter_dim, dtype=expert_dtype, swiglu_limit=args.swiglu_limit) if self.experts_start_idx <= i < self.experts_end_idx else None
+[rank1]:                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 591, in __init__
+[rank1]:     self.w1 = Linear(dim, inter_dim, dtype=dtype)
+[rank1]:               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/inference/model.py", line 134, in __init__
+[rank1]:     self.weight = nn.Parameter(torch.empty(out_features, in_features // 2, dtype=torch.float4_e2m1fn_x2))
+[rank1]:                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[rank1]:   File "/opt/sglang-v4/lib/python3.11/site-packages/torch/utils/_device.py", line 116, in __torch_function__
+[rank1]:     return func(*args, **kwargs)
+[rank1]:            ^^^^^^^^^^^^^^^^^^^^^
+[rank1]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 1 has a total capacity of 79.18 GiB of which 26.38 MiB is free. Process 2771320 has 42.70 GiB memory in use. Process 2773294 has 36.46 GiB memory in use. Of the allocated memory 35.84 GiB is allocated by PyTorch, and 16.35 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://docs.pytorch.org/docs/stable/notes/cuda.html#optimizing-memory-usage-with-pytorch-cuda-alloc-conf)
+W0814 11:18:23.792000 29681 torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 29747 closing signal SIGTERM
+W0814 11:18:23.793000 29681 torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 29748 closing signal SIGTERM
+W0814 11:18:23.793000 29681 torch/distributed/elastic/multiprocessing/api.py:1012] Sending process 29749 closing signal SIGTERM
+E0814 11:18:25.474000 29681 torch/distributed/elastic/multiprocessing/api.py:986] failed (exitcode: 1) local_rank: 3 (pid: 29750) of binary: /opt/sglang-v4/bin/python
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/opt/sglang-v4/lib/python3.11/site-packages/torch/distributed/run.py", line 994, in <module>
+    main()
+  File "/opt/sglang-v4/lib/python3.11/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 362, in wrapper
+    return f(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/sglang-v4/lib/python3.11/site-packages/torch/distributed/run.py", line 990, in main
+    run(args)
+  File "/opt/sglang-v4/lib/python3.11/site-packages/torch/distributed/run.py", line 981, in run
+    elastic_launch(
+  File "/opt/sglang-v4/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 170, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/sglang-v4/lib/python3.11/site-packages/torch/distributed/launcher/api.py", line 317, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+/home/jovyan/wangtonghan/EASYEP/pruning/inf_v4.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2026-08-14_11:18:25
+  host      : 10-72-1-171.taila4adc5.ts.net
+  rank      : 0 (local_rank: 0)
+  exitcode  : 1 (pid: 29747)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2026-08-14_11:18:25
+  host      : 10-72-1-171.taila4adc5.ts.net
+  rank      : 1 (local_rank: 1)
+  exitcode  : -15 (pid: 29748)
+  error_file: <N/A>
+  traceback : Signal 15 (SIGTERM) received by PID 29748
+[3]:
+  time      : 2026-08-14_11:18:25
+  host      : 10-72-1-171.taila4adc5.ts.net
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 29749)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2026-08-14_11:18:23
+  host      : 10-72-1-171.taila4adc5.ts.net
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 29750)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
