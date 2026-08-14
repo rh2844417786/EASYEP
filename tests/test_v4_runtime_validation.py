@@ -23,6 +23,10 @@ PRUNED_PREPARER = REPO_ROOT / "scripts" / "prepare_v4_pruned_checkpoints.sh"
 FULL_PIPELINE = REPO_ROOT / "scripts" / "run_v4_full_reproduction_gpus_4_7.sh"
 FHT_REPAIR_RESUME = REPO_ROOT / "scripts" / "repair_and_resume_v4_full_reproduction.sh"
 GPU_IDLE_CHECK = REPO_ROOT / "scripts" / "check_v4_gpus_idle.sh"
+EVALUATION_WRAPPER = REPO_ROOT / "scripts" / "run_easyep_reproduction.sh"
+EVALUATION_RUNTIME_PREPARER = (
+    REPO_ROOT / "scripts" / "prepare_easyep_evaluation_runtime.sh"
+)
 REPRODUCTION_RUNNER = REPO_ROOT / "evaluation" / "run_reproduction_matrix.py"
 VENDORED_FHT = REPO_ROOT / "third_party" / "fast-hadamard-transform"
 
@@ -235,6 +239,82 @@ class V4RuntimeValidationTests(unittest.TestCase):
             )
             self.assertEqual(unavailable.returncode, 2, unavailable.stdout)
             self.assertIn("cannot establish exclusivity", unavailable.stdout)
+
+    def test_evaluation_wrapper_locks_explicit_python_before_runtime_validation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            fake_eval = root / "eval-python"
+            self._write_executable(
+                fake_eval,
+                """\
+                #!/usr/bin/env bash
+                exit 0
+                """,
+            )
+            for name in ("p25", "p50"):
+                checkpoint = root / name
+                checkpoint.mkdir()
+                (checkpoint / "config.json").write_text("{}", encoding="utf-8")
+                (checkpoint / "model.safetensors.index.json").write_text(
+                    "{}", encoding="utf-8"
+                )
+            env = os.environ.copy()
+            env.update(
+                {
+                    "V4_PYTHON": sys.executable,
+                    "EVAL_PYTHON": str(fake_eval),
+                    "PRUNE25_MODEL_PATH": str(root / "p25"),
+                    "PRUNE50_MODEL_PATH": str(root / "p50"),
+                }
+            )
+            result = subprocess.run(
+                ["bash", str(EVALUATION_WRAPPER)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn(
+                f"Evaluation Python: {fake_eval.resolve()}", result.stdout
+            )
+            self.assertLess(
+                result.stdout.index("Evaluation Python:"),
+                result.stdout.index("apply the checked SGLang patch"),
+            )
+
+    def test_evaluation_runtime_preparer_never_installs_without_opt_in(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env = os.environ.copy()
+            env.update(
+                {
+                    "V4_PYTHON": sys.executable,
+                    "EVAL_ENV_DIR": str(root / "easyep-eval"),
+                    "ALLOW_EVAL_DEP_INSTALL": "0",
+                }
+            )
+            result = subprocess.run(
+                ["bash", str(EVALUATION_RUNTIME_PREPARER)],
+                cwd=REPO_ROOT,
+                env=env,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+
+            self.assertEqual(result.returncode, 2, result.stdout)
+            self.assertIn("no installer was run", result.stdout)
+            self.assertFalse((root / "easyep-eval").exists())
+
+        preparer = EVALUATION_RUNTIME_PREPARER.read_text(encoding="utf-8")
+        self.assertIn('[[ "${ALLOW_EVAL_DEP_INSTALL}" == "1" ]]', preparer)
+        self.assertIn("uv pip install", preparer)
+        self.assertIn("requirements-eval.txt", preparer)
 
     def test_statistics_collector_is_offline_and_restricted_to_gpus_4_7(self) -> None:
         collector = STATISTICS_COLLECTOR.read_text(encoding="utf-8")
