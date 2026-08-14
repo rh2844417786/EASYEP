@@ -12,7 +12,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 FULL_MODEL_PATH="${FULL_MODEL_PATH:-/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash}"
 V4_INFERENCE_DIR="${V4_INFERENCE_DIR:-${FULL_MODEL_PATH}/inference}"
 ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/docker_data/v4-converted}"
-CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}/mp4-fp4}"
+CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}}"
 PRUNE25_MODEL_PATH="${PRUNE25_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune25-keep192}"
 PRUNE50_MODEL_PATH="${PRUNE50_MODEL_PATH:-${ARTIFACT_ROOT}/v4-prune50-keep128}"
 RESULTS_ROOT="${RESULTS_ROOT:-${REPO_ROOT}/results/easyep_reproduction}"
@@ -31,6 +31,7 @@ DRY_RUN_ONLY="${DRY_RUN_ONLY:-0}"
 MIN_FREE_GIB="${MIN_FREE_GIB:-350}"
 MIN_AVAILABLE_RAM_GIB="${MIN_AVAILABLE_RAM_GIB:-150}"
 ALLOW_LOW_RESOURCES="${ALLOW_LOW_RESOURCES:-0}"
+ALLOW_DUPLICATE_MP4="${ALLOW_DUPLICATE_MP4:-0}"
 
 timestamp="$(date -u +%Y%m%d_%H%M%S)"
 MASTER_LOG="${MASTER_LOG:-${REPO_ROOT}/logs/v4_full_pipeline_${RUN_ID}_${timestamp}.log}"
@@ -57,6 +58,21 @@ trap on_error ERR
 [[ "${MIN_FREE_GIB}" =~ ^[0-9]+$ ]] || fail "MIN_FREE_GIB must be an integer"
 [[ "${MIN_AVAILABLE_RAM_GIB}" =~ ^[0-9]+$ ]] || \
   fail "MIN_AVAILABLE_RAM_GIB must be an integer"
+[[ "${ALLOW_DUPLICATE_MP4}" =~ ^[01]$ ]] || \
+  fail "ALLOW_DUPLICATE_MP4 must be 0 or 1"
+
+mp4_path_note=""
+root_mp4_complete=1
+for rank in 0 1 2 3; do
+  [[ -s "${ARTIFACT_ROOT}/model${rank}-mp4.safetensors" ]] || \
+    root_mp4_complete=0
+done
+legacy_nested_path="${ARTIFACT_ROOT%/}/mp4-fp4"
+if [[ "${CONVERTED_CKPT_PATH%/}" == "${legacy_nested_path}" && \
+      "${root_mp4_complete}" == "1" && "${ALLOW_DUPLICATE_MP4}" == "0" ]]; then
+  CONVERTED_CKPT_PATH="${ARTIFACT_ROOT}"
+  mp4_path_note="Detected existing MP=4 shards in the artifact root; reusing them instead of the legacy nested path."
+fi
 
 mkdir -p "${ARTIFACT_ROOT}" "$(dirname "${MASTER_LOG}")" "${RESULTS_ROOT}"
 exec > >(tee "${MASTER_LOG}") 2>&1
@@ -74,6 +90,7 @@ echo "Physical GPUs: ${GPU_LIST}"
 echo "Full HF model: ${FULL_MODEL_PATH}"
 echo "Official inference: ${V4_INFERENCE_DIR}"
 echo "MP=4 FP4: ${CONVERTED_CKPT_PATH}"
+[[ -z "${mp4_path_note}" ]] || echo "${mp4_path_note}"
 echo "Prune 25%: ${PRUNE25_MODEL_PATH}"
 echo "Prune 50%: ${PRUNE50_MODEL_PATH}"
 echo "Results: ${RESULTS_ROOT}/${RUN_ID}"
@@ -133,6 +150,13 @@ if [[ "${#mp4_shards[@]}" -eq 4 ]]; then
 elif [[ "${#mp4_shards[@]}" -ne 0 ]]; then
   fail "partial MP=4 output found in ${CONVERTED_CKPT_PATH}; use a fresh path or inspect it manually"
 else
+  shopt -s nullglob
+  root_mp4_shards=("${ARTIFACT_ROOT}"/model*-mp4.safetensors)
+  shopt -u nullglob
+  if [[ "${CONVERTED_CKPT_PATH%/}" != "${ARTIFACT_ROOT%/}" && \
+        "${#root_mp4_shards[@]}" -ne 0 && "${ALLOW_DUPLICATE_MP4}" == "0" ]]; then
+    fail "refusing duplicate MP=4 conversion: ${#root_mp4_shards[@]} shard(s) already exist in ${ARTIFACT_ROOT}; use that checkpoint or set ALLOW_DUPLICATE_MP4=1 explicitly"
+  fi
   CURRENT_STAGE="resource-check-before-conversion"
   available_kib="$(df -Pk "${ARTIFACT_ROOT}" | awk 'NR==2 {print $4}')"
   required_kib="$((MIN_FREE_GIB * 1024 * 1024))"

@@ -43,7 +43,7 @@ bash scripts/run_v4_full_reproduction_gpus_4_7.sh
 产物则拒绝覆盖。脚本不会执行下载或安装。默认目录为：
 
 ```text
-/mnt/docker_data/v4-converted/mp4-fp4/
+/mnt/docker_data/v4-converted/model0-mp4.safetensors ... model3-mp4.safetensors
 /mnt/docker_data/v4-converted/v4-prune25-keep192/
 /mnt/docker_data/v4-converted/v4-prune50-keep128/
 ```
@@ -56,7 +56,7 @@ bash scripts/run_v4_full_reproduction_gpus_4_7.sh
 ```bash
 cd /home/jovyan/wangtonghan/EASYEP
 export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
-export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted/mp4-fp4
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
 bash scripts/collect_v4_easyep_statistics_gpus_4_7.sh
 ```
 
@@ -72,7 +72,7 @@ mask 不是物理 checkpoint；下一步必须执行物理裁剪。
 cd /home/jovyan/wangtonghan/EASYEP
 export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
 export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
-export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted/mp4-fp4
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
 bash scripts/prepare_v4_pruned_checkpoints.sh
 ```
 

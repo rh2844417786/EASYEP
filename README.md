@@ -156,7 +156,7 @@ prune only dynamic layers 3–42 with the dedicated, resumable entrypoint:
 ```bash
 export FULL_MODEL_PATH=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
 export V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference
-export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted/mp4-fp4
+export CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted
 bash scripts/prepare_v4_pruned_checkpoints.sh
 ```
 

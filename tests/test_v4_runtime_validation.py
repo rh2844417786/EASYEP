@@ -172,7 +172,7 @@ class V4RuntimeValidationTests(unittest.TestCase):
             pipeline,
         )
         self.assertIn(
-            'CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}/mp4-fp4}"',
+            'CONVERTED_CKPT_PATH="${CONVERTED_CKPT_PATH:-${ARTIFACT_ROOT}}"',
             pipeline,
         )
         self.assertIn(
@@ -186,6 +186,9 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("--model-parallel 4", pipeline)
         self.assertIn("--expert-dtype fp4", pipeline)
         self.assertIn("validate_mp4", pipeline)
+        self.assertIn('ALLOW_DUPLICATE_MP4="${ALLOW_DUPLICATE_MP4:-0}"', pipeline)
+        self.assertIn("refusing duplicate MP=4 conversion", pipeline)
+        self.assertIn("Detected existing MP=4 shards in the artifact root", pipeline)
         self.assertIn(
             'DRY_RUN=1 bash "${SCRIPT_DIR}/run_easyep_reproduction.sh"',
             pipeline,

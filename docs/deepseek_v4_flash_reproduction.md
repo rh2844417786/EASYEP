@@ -173,7 +173,7 @@ python pruning/prepare_v4_calibration.py \
 CUDA_VISIBLE_DEVICES=4,5,6,7 \
 torchrun --nproc-per-node=4 pruning/inf_v4.py \
   --inference-dir /path/to/DeepSeek-V4-Flash/inference \
-  --ckpt-path /mnt/docker_data/v4-converted/mp4-fp4 \
+  --ckpt-path /mnt/docker_data/v4-converted \
   --config configs/config_v4_flash.json \
   --input-file dataset/aime23_full_v4 \
   --output expert_statistics/token_information/aime_v4_debug.jsonl \
@@ -206,7 +206,7 @@ torchrun --nproc-per-node=8 pruning/inf_v4.py \
 
 ```bash
 V4_INFERENCE_DIR=/path/to/DeepSeek-V4-Flash/inference \
-CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted/mp4-fp4 \
+CONVERTED_CKPT_PATH=/mnt/docker_data/v4-converted \
   bash scripts/collect_v4_easyep_statistics_gpus_4_7.sh
 ```
 
