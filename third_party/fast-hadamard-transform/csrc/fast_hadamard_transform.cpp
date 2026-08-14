@@ -2,8 +2,8 @@
  * Copyright (c) 2023, Tri Dao.
  ******************************************************************************/
 
-#include <ATen/cuda/CUDAContext.h>
 #include <c10/cuda/CUDAGuard.h>
+#include <c10/cuda/CUDAStream.h>
 #include <torch/extension.h>
 #include <vector>
 
@@ -100,9 +100,9 @@ fast_hadamard_transform(at::Tensor &x, float scale) {
     set_hadamard_params(params, batch_size, dim, 1, x, out, scale);
 
     // Otherwise the kernel will be launched from cuda:0 device
-    // Cast to char to avoid compiler warning about narrowing
-    at::cuda::CUDAGuard device_guard{(char)x.get_device()};
-    auto stream = at::cuda::getCurrentCUDAStream().stream();
+    // Use PyTorch's device index type to avoid a narrowing conversion.
+    c10::cuda::CUDAGuard device_guard{static_cast<c10::DeviceIndex>(x.get_device())};
+    auto stream = c10::cuda::getCurrentCUDAStream().stream();
     DISPATCH_ITYPE_FLOAT_AND_HALF_AND_BF16(x.scalar_type(), "fast_hadamard_transform", [&] {
         fast_hadamard_transform_cuda<input_t>(params, stream);
     });
@@ -143,9 +143,9 @@ fast_hadamard_transform_12N(at::Tensor &x, float scale) {
     set_hadamard_params(params, batch_size, dim, 12, x, out, scale);
 
     // Otherwise the kernel will be launched from cuda:0 device
-    // Cast to char to avoid compiler warning about narrowing
-    at::cuda::CUDAGuard device_guard{(char)x.get_device()};
-    auto stream = at::cuda::getCurrentCUDAStream().stream();
+    // Use PyTorch's device index type to avoid a narrowing conversion.
+    c10::cuda::CUDAGuard device_guard{static_cast<c10::DeviceIndex>(x.get_device())};
+    auto stream = c10::cuda::getCurrentCUDAStream().stream();
     DISPATCH_ITYPE_FLOAT_AND_HALF_AND_BF16(x.scalar_type(), "fast_hadamard_transform", [&] {
         fast_hadamard_transform_12N_cuda<input_t>(params, stream);
     });
@@ -186,9 +186,9 @@ fast_hadamard_transform_20N(at::Tensor &x, float scale) {
     set_hadamard_params(params, batch_size, dim, 20, x, out, scale);
 
     // Otherwise the kernel will be launched from cuda:0 device
-    // Cast to char to avoid compiler warning about narrowing
-    at::cuda::CUDAGuard device_guard{(char)x.get_device()};
-    auto stream = at::cuda::getCurrentCUDAStream().stream();
+    // Use PyTorch's device index type to avoid a narrowing conversion.
+    c10::cuda::CUDAGuard device_guard{static_cast<c10::DeviceIndex>(x.get_device())};
+    auto stream = c10::cuda::getCurrentCUDAStream().stream();
     DISPATCH_ITYPE_FLOAT_AND_HALF_AND_BF16(x.scalar_type(), "fast_hadamard_transform", [&] {
         fast_hadamard_transform_20N_cuda<input_t>(params, stream);
     });
@@ -229,9 +229,9 @@ fast_hadamard_transform_28N(at::Tensor &x, float scale) {
     set_hadamard_params(params, batch_size, dim, 28, x, out, scale);
 
     // Otherwise the kernel will be launched from cuda:0 device
-    // Cast to char to avoid compiler warning about narrowing
-    at::cuda::CUDAGuard device_guard{(char)x.get_device()};
-    auto stream = at::cuda::getCurrentCUDAStream().stream();
+    // Use PyTorch's device index type to avoid a narrowing conversion.
+    c10::cuda::CUDAGuard device_guard{static_cast<c10::DeviceIndex>(x.get_device())};
+    auto stream = c10::cuda::getCurrentCUDAStream().stream();
     DISPATCH_ITYPE_FLOAT_AND_HALF_AND_BF16(x.scalar_type(), "fast_hadamard_transform", [&] {
         fast_hadamard_transform_28N_cuda<input_t>(params, stream);
     });
@@ -272,9 +272,9 @@ fast_hadamard_transform_40N(at::Tensor &x, float scale) {
     set_hadamard_params(params, batch_size, dim, 40, x, out, scale);
 
     // Otherwise the kernel will be launched from cuda:0 device
-    // Cast to char to avoid compiler warning about narrowing
-    at::cuda::CUDAGuard device_guard{(char)x.get_device()};
-    auto stream = at::cuda::getCurrentCUDAStream().stream();
+    // Use PyTorch's device index type to avoid a narrowing conversion.
+    c10::cuda::CUDAGuard device_guard{static_cast<c10::DeviceIndex>(x.get_device())};
+    auto stream = c10::cuda::getCurrentCUDAStream().stream();
     DISPATCH_ITYPE_FLOAT_AND_HALF_AND_BF16(x.scalar_type(), "fast_hadamard_transform", [&] {
         fast_hadamard_transform_40N_cuda<input_t>(params, stream);
     });

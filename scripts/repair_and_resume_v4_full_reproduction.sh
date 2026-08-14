@@ -111,6 +111,19 @@ check_fht_source() {
     fail "vendored FHT source checksum verification failed"
 }
 
+clean_fht_build_artifacts() {
+  local source_real build_dir
+  source_real="$(cd "${FHT_SOURCE_DIR}" && pwd -P)" || \
+    fail "cannot resolve vendored FHT source: ${FHT_SOURCE_DIR}"
+  [[ "${source_real}" != "/" ]] || \
+    fail "refusing to clean an FHT build directory below the filesystem root"
+  build_dir="${source_real}/build"
+  if [[ -e "${build_dir}" ]]; then
+    echo "Removing stale generated FHT build directory: ${build_dir}"
+    rm -rf -- "${build_dir}"
+  fi
+}
+
 echo "DeepSeek-V4-Flash dependency repair and full-pipeline resume"
 echo "Python: ${V4_PYTHON}"
 echo "CUDA_HOME: ${CUDA_HOME}"
@@ -127,7 +140,9 @@ else
   echo "fast_hadamard_transform is missing or its CUDA extension is unusable."
   command -v uv >/dev/null 2>&1 || \
     fail "uv is required to install the single missing dependency"
+  CURRENT_STAGE="prepare-fast-hadamard-transform-source"
   check_fht_source
+  clean_fht_build_artifacts
   CURRENT_STAGE="install-fast-hadamard-transform"
   # Version 1.1.0 maps every non-CUDA-11 runtime to a guessed cu122 wheel.
   # CUDA 13 must bypass that lookup and compile the complete vendored source

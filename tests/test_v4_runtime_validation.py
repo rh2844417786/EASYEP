@@ -231,6 +231,8 @@ class V4RuntimeValidationTests(unittest.TestCase):
         self.assertIn("FAST_HADAMARD_TRANSFORM_FORCE_BUILD=TRUE", repair)
         self.assertIn("FAST_HADAMARD_TRANSFORM_SKIP_CUDA_BUILD=FALSE", repair)
         self.assertIn("Network package lookup: disabled", repair)
+        self.assertIn('[[ "${source_real}" != "/" ]]', repair)
+        self.assertIn('rm -rf -- "${build_dir}"', repair)
         self.assertIn("run_v4_full_reproduction_gpus_4_7.sh", repair)
         for forbidden in ("apt install", "apt-get install", "conda install"):
             self.assertNotIn(forbidden, repair)
@@ -261,6 +263,19 @@ class V4RuntimeValidationTests(unittest.TestCase):
         for relative in required:
             digest = hashlib.sha256((VENDORED_FHT / relative).read_bytes()).hexdigest()
             self.assertEqual(entries.get(relative), digest, relative)
+
+    def test_vendored_fht_avoids_unused_cusparse_and_targets_h100(self) -> None:
+        binding = (VENDORED_FHT / "csrc/fast_hadamard_transform.cpp").read_text(
+            encoding="utf-8"
+        )
+        setup = (VENDORED_FHT / "setup.py").read_text(encoding="utf-8")
+        repair = FHT_REPAIR_RESUME.read_text(encoding="utf-8")
+
+        self.assertNotIn("ATen/cuda/CUDAContext", binding)
+        self.assertIn("c10/cuda/CUDAStream.h", binding)
+        self.assertIn("c10::cuda::getCurrentCUDAStream", binding)
+        self.assertNotIn("arch=compute_", setup)
+        self.assertIn('TORCH_CUDA_ARCH_LIST="${TORCH_CUDA_ARCH_LIST:-9.0}"', repair)
 
 
 if __name__ == "__main__":

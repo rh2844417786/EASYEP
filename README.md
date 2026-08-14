@@ -180,8 +180,10 @@ and otherwise installs only `fast-hadamard-transform` into `/opt/sglang-v4`.
 For CUDA 13 it installs offline from the complete build-required upstream
 v1.1.0 source stored under `third_party/fast-hadamard-transform`, bypassing both
 the incorrect `cu122` wheel lookup and the incomplete PyPI source distribution.
-It never reinstalls CUDA, PyTorch, or SGLang, then resumes the command above and
-reuses complete MP=4 shards:
+The vendored compatibility patch avoids the unused cuSPARSE development-header
+dependency and compiles only the H100 `sm_90` target. It never reinstalls CUDA,
+PyTorch, or SGLang, then resumes the command above and reuses complete MP=4
+shards:
 
 ```bash
 bash scripts/repair_and_resume_v4_full_reproduction.sh

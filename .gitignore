@@ -1,1 +1,4 @@
 reports/*.md
+third_party/fast-hadamard-transform/build/
+third_party/fast-hadamard-transform/dist/
+third_party/fast-hadamard-transform/*.egg-info/
