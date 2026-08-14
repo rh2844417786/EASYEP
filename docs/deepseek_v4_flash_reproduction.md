@@ -84,31 +84,32 @@ bash scripts/test_v4_flash_gpus_4_7.sh
 ```
 
 V4 的 mHC 权重加载会通过 DeepGEMM 即时编译 CUDA kernel；因此即使 MoE
-backend 使用 Marlin，也不能只安装 PyTorch 自带的 CUDA runtime。测试脚本会
-在占用显存前扫描 `/usr/local/cuda-*`、`/usr/local/cuda` 和 `PATH` 中的
-toolkit，选择最高版本的可用 NVCC，并要求 NVCC >= 12.3。SGLang 0.5.16 的
-默认运行时为 CUDA 13；若当前 Docker 中没有合格 NVCC，可用下面的一条命令
-在**当前容器**安装 CUDA 13.0 编译组件并立即重跑四卡测试（不使用 conda，
-也不安装或改动宿主机 NVIDIA driver）：
+backend 使用 Marlin，也不能只安装 PyTorch 自带的 CUDA runtime。当前验证
+路径要求 Docker 内已经存在 CUDA 13.x NVCC、PyTorch CUDA 13 构建、SGLang
+0.5.16、物理 GPU 4–7 和完整的本地模型权重。运行下面的兼容入口会先做只读
+预检，再启动四卡测试：
 
 ```bash
 cd /path/to/easy-ep
+# 可选：只做预检，通过后退出，不启动模型。
+bash scripts/validate_v4_flash_runtime.sh
+
+# 预检通过后自动继续四卡 smoke 测试。
 bash scripts/repair_and_test_v4_flash_gpus_4_7.sh
 ```
 
-该修复脚本需要容器内的 root 权限和 Debian/Ubuntu `apt`。若已存在 CUDA
-13.0（例如 `/usr/local/cuda-13.0/bin/nvcc`），脚本会直接启用它，不安装
-任何 CUDA 包。否则默认只安装 `cuda-compiler-13-0`、
-`cuda-cudart-dev-13-0`、`cuda-cccl-13-0`，并显式设置
-`DG_JIT_NVCC_COMPILER` 与 `CUDA_HOME`，避免 DeepGEMM 继续误用旧版
-`/usr/local/cuda/bin/nvcc`。日志会分别显示 `nvidia-smi` 报告的驱动最高支持
-版本、PyTorch 构建所用 CUDA 版本和最终 NVCC 版本。安装和测试总日志写入
-`logs/v4_repair_and_test_*.log`，SGLang 测试结果仍写入独立的
-`logs/v4_gpus_4_7_*_summary.txt`。
+历史文件名中虽然保留了 `repair`，但该入口现在**不会**执行 `apt`、`curl`、
+`wget`、`pip`、`uv` 或模型下载。它先检查系统中是否已有这些传输/安装进程；
+若检测到重叠任务会直接停止（确认无关后才可显式设置
+`IGNORE_ACTIVE_DOWNLOADS=1`）。随后检查 CUDA 13.x NVCC、SGLang 0.5.16、
+PyTorch CUDA 13、四张目标 GPU、SGLang 启动参数以及本地权重索引和全部分片。
+任一条件缺失都只报错，不自动修复。启动前还强制设置
+`HF_HUB_OFFLINE=1`、`TRANSFORMERS_OFFLINE=1`，避免缺失权重时转为联网下载。
 
-脚本不要求预装 `curl` 或 `wget`，两者缺失时会使用 `/opt/sglang-v4/bin/python`
-的标准库下载。若检测到阿里云 Ubuntu apt 源，会优先使用 NVIDIA 中国 CDN，
-失败后回退 NVIDIA 全球源；也可通过 `CUDA_REPO_BASE_URL` 指定公司内部镜像。
+验证与测试总日志写入 `logs/v4_validate_and_test_*.log`，入口摘要写入
+`logs/v4_validate_and_test_*_summary.txt`，SGLang 测试结果仍写入独立的
+`logs/v4_gpus_4_7_*_summary.txt`。如确实需要重新安装 CUDA，必须单独、显式地
+运行 `scripts/install_v4_cuda_toolchain.sh`；验证入口不会调用它。
 
 这是诊断路径，不是论文的 8 卡基线。若出现 hidden-size mismatch、FP4
 权重 shape 错误或 OOM，应保留脚本输出的 `logs/v4_gpus_4_7_*.log`；不能把

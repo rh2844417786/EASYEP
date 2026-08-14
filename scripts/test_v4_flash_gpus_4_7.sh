@@ -22,8 +22,6 @@ MEM_FRACTION_STATIC="${MEM_FRACTION_STATIC:-0.80}"
 STARTUP_TIMEOUT="${STARTUP_TIMEOUT:-3600}"
 LOG_DIR="${LOG_DIR:-${REPO_ROOT}/logs}"
 STREAM_LOGS="${STREAM_LOGS:-0}"
-MIN_NVCC_MAJOR="12"
-MIN_NVCC_MINOR="3"
 SERVER_PID=""
 LOG_TAIL_PID=""
 SMOKE_OUTPUT=""
@@ -32,71 +30,6 @@ NVCC_VERSION=""
 fail() {
   echo "ERROR: $*" >&2
   exit 1
-}
-
-nvcc_release() {
-  local compiler="$1"
-  "${compiler}" --version 2>/dev/null | sed -n \
-    's/.*release \([0-9][0-9]*\)\.\([0-9][0-9]*\).*/\1.\2/p' | head -n 1
-}
-
-nvcc_is_compatible() {
-  local release="$1"
-  local major minor
-  [[ "${release}" =~ ^([0-9]+)\.([0-9]+)$ ]] || return 1
-  major="${BASH_REMATCH[1]}"
-  minor="${BASH_REMATCH[2]}"
-  (( major > MIN_NVCC_MAJOR || \
-    (major == MIN_NVCC_MAJOR && minor >= MIN_NVCC_MINOR) ))
-}
-
-configure_deepgemm_toolchain() {
-  local candidate release best_compiler="" best_release=""
-  local -a candidates=()
-  local -A seen=()
-
-  if [[ -n "${DG_JIT_NVCC_COMPILER:-}" ]]; then
-    candidate="${DG_JIT_NVCC_COMPILER}"
-    [[ -d "${candidate}" ]] && candidate="${candidate}/bin/nvcc"
-    [[ -x "${candidate}" ]] || \
-      fail "DG_JIT_NVCC_COMPILER is not executable: ${candidate}"
-    release="$(nvcc_release "${candidate}" || true)"
-    nvcc_is_compatible "${release}" || \
-      fail "DeepGEMM needs NVCC >= ${MIN_NVCC_MAJOR}.${MIN_NVCC_MINOR}; ${candidate} reports ${release:-unknown}. Run scripts/repair_and_test_v4_flash_gpus_4_7.sh inside this Docker container."
-    best_compiler="${candidate}"
-    best_release="${release}"
-  else
-    [[ -n "${CUDA_HOME:-}" ]] && candidates+=("${CUDA_HOME}/bin/nvcc")
-    candidates+=("/usr/local/cuda/bin/nvcc")
-    while IFS= read -r candidate; do
-      [[ -n "${candidate}" ]] && candidates+=("${candidate}")
-    done < <(compgen -G '/usr/local/cuda-*/bin/nvcc' 2>/dev/null || true)
-    if command -v nvcc >/dev/null 2>&1; then
-      candidates+=("$(command -v nvcc)")
-    fi
-
-    for candidate in "${candidates[@]}"; do
-      [[ -x "${candidate}" ]] || continue
-      candidate="$(readlink -f "${candidate}" 2>/dev/null || printf '%s' "${candidate}")"
-      [[ -z "${seen[${candidate}]:-}" ]] || continue
-      seen["${candidate}"]=1
-      release="$(nvcc_release "${candidate}" || true)"
-      nvcc_is_compatible "${release}" || continue
-      if [[ -z "${best_release}" ]] || \
-        [[ "$(printf '%s\n%s\n' "${best_release}" "${release}" | sort -V | tail -n 1)" == "${release}" ]]; then
-        best_compiler="${candidate}"
-        best_release="${release}"
-      fi
-    done
-
-    [[ -n "${best_compiler}" ]] || \
-      fail "No NVCC >= ${MIN_NVCC_MAJOR}.${MIN_NVCC_MINOR} was found. DeepSeek-V4 mHC uses DeepGEMM JIT even with --moe-runner-backend marlin. Run scripts/repair_and_test_v4_flash_gpus_4_7.sh inside this Docker container."
-  fi
-
-  export DG_JIT_NVCC_COMPILER="${best_compiler}"
-  export CUDA_HOME="$(cd "$(dirname "${best_compiler}")/.." && pwd)"
-  export PATH="${CUDA_HOME}/bin:${PATH}"
-  NVCC_VERSION="${best_release}"
 }
 
 cleanup() {
@@ -114,42 +47,20 @@ trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
-[[ -x "${V4_PYTHON}" ]] || \
-  fail "V4 Python was not found or is not executable: ${V4_PYTHON}"
-[[ -f "${MODEL_PATH}/config.json" ]] || \
-  fail "${MODEL_PATH}/config.json was not found"
-command -v nvidia-smi >/dev/null 2>&1 || fail "nvidia-smi was not found"
+# Validate the existing runtime before any model load.  The validator performs
+# no package/model download and exports the validated CUDA compiler plus
+# offline Hugging Face/Transformers settings into this process.
+export V4_RUNTIME_VALIDATOR_LIB_ONLY=1
+# shellcheck disable=SC1091
+source "${SCRIPT_DIR}/validate_v4_flash_runtime.sh"
+unset V4_RUNTIME_VALIDATOR_LIB_ONLY
+validate_v4_flash_runtime
 
+SGLANG_VERSION="${V4_VALIDATED_SGLANG_VERSION}"
+SGLANG_MODULE="${V4_VALIDATED_SGLANG_MODULE}"
+NVCC_VERSION="${V4_VALIDATED_NVCC_VERSION}"
 GPU_INVENTORY="$(nvidia-smi --query-gpu=index,name,memory.free \
   --format=csv,noheader,nounits)" || fail "nvidia-smi failed"
-for gpu_index in 4 5 6 7; do
-  if ! awk -F, -v expected="${gpu_index}" \
-    '{ gpu_id=$1; gsub(/[[:space:]]/, "", gpu_id); if (gpu_id == expected) found=1 } END { exit !found }' \
-    <<<"${GPU_INVENTORY}"; then
-    fail "physical GPU ${gpu_index} was not reported by nvidia-smi"
-  fi
-done
-
-if ! SGLANG_VERSION="$("${V4_PYTHON}" -c \
-  'from importlib.metadata import version; print(version("sglang"))' 2>/dev/null)"; then
-  fail "the SGLang Python package is not installed in this environment"
-fi
-if ! SGLANG_MODULE="$("${V4_PYTHON}" -c \
-  'import sglang; print(sglang.__file__ or "")' 2>/dev/null)"; then
-  fail "the installed SGLang package cannot be imported"
-fi
-[[ -n "${SGLANG_MODULE}" ]] || \
-  fail "Python resolved sglang only as a namespace; install the SGLang package"
-case "${SGLANG_MODULE}" in
-  "${REPO_ROOT}"/sglang/*)
-    fail "Python resolved the repository's legacy SGLang copy: ${SGLANG_MODULE}"
-    ;;
-esac
-
-# DeepSeek-V4 prewarms mHC kernels through DeepGEMM while loading weights.
-# DeepGEMM JIT requires an actual CUDA compiler, not only PyTorch's bundled
-# CUDA runtime.  Resolve the newest compatible toolkit before allocating HBM.
-configure_deepgemm_toolchain
 
 if "${V4_PYTHON}" - "${PORT}" <<'PY'
 import socket
@@ -200,6 +111,8 @@ write_summary() {
     echo "Context length: ${CONTEXT_LENGTH}"
     echo "Memory fraction static: ${MEM_FRACTION_STATIC}"
     echo "Custom AllReduce: disabled"
+    echo "HF Hub offline: ${HF_HUB_OFFLINE}"
+    echo "Transformers offline: ${TRANSFORMERS_OFFLINE}"
     echo "NCCL_IB_DISABLE: ${NCCL_IB_DISABLE}"
     echo "NCCL_SOCKET_IFNAME: ${NCCL_SOCKET_IFNAME}"
     echo "NCCL_CUMEM_HOST_ENABLE: ${NCCL_CUMEM_HOST_ENABLE}"
@@ -268,6 +181,7 @@ export TORCH_NCCL_BLOCKING_WAIT="${TORCH_NCCL_BLOCKING_WAIT:-1}"
 
 echo "NCCL: IB_DISABLE=${NCCL_IB_DISABLE}, SOCKET_IFNAME=${NCCL_SOCKET_IFNAME}, CUMEM_HOST_ENABLE=${NCCL_CUMEM_HOST_ENABLE}"
 echo "Custom AllReduce: disabled (v0.5.16 tvm-ffi JIT compile workaround)"
+echo "Downloads: disabled; HF_HUB_OFFLINE=${HF_HUB_OFFLINE}, TRANSFORMERS_OFFLINE=${TRANSFORMERS_OFFLINE}"
 
 "${V4_PYTHON}" -m sglang.launch_server \
   --trust-remote-code \
