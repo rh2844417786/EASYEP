@@ -101,6 +101,10 @@ bash scripts/repair_and_test_v4_flash_gpus_4_7.sh
 `logs/v4_repair_and_test_*.log`，SGLang 测试结果仍写入独立的
 `logs/v4_gpus_4_7_*_summary.txt`。
 
+脚本不要求预装 `curl` 或 `wget`，两者缺失时会使用 `/opt/sglang-v4/bin/python`
+的标准库下载。若检测到阿里云 Ubuntu apt 源，会优先使用 NVIDIA 中国 CDN，
+失败后回退 NVIDIA 全球源；也可通过 `CUDA_REPO_BASE_URL` 指定公司内部镜像。
+
 这是诊断路径，不是论文的 8 卡基线。若出现 hidden-size mismatch、FP4
 权重 shape 错误或 OOM，应保留脚本输出的 `logs/v4_gpus_4_7_*.log`；不能把
 四卡失败直接归因于 EASY-EP，也不能把四卡 smoke 成功当作吞吐复现完成。
