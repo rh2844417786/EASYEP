@@ -1,0 +1,9 @@
+Using Python 3.11.15 environment at: /opt/easyep-eval
+Resolved 5 packages in 481ms
+Prepared 3 packages in 84ms
+Installed 5 packages in 93ms
+ + antlr4-python3-runtime==4.13.2
+ + latex2sympy2-extended==1.11.0
+ + math-verify==0.9.0
+ + mpmath==1.3.0
+ + sympy==1.14.0

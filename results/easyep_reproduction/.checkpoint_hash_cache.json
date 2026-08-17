@@ -1,0 +1,1110 @@
+{
+  "format_version": 1,
+  "files": {
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00001-of-00046.safetensors": {
+      "signature": {
+        "size": 1059061856,
+        "mtime_ns": 1777007816594982608,
+        "inode": 7696690802406
+      },
+      "sha256": "5176586613905d4beaadbaea1cfecd1693e17f9da4a0ea09d99aab7d3f2f5b7c"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00002-of-00046.safetensors": {
+      "signature": {
+        "size": 3566321192,
+        "mtime_ns": 1777008180981486179,
+        "inode": 7696690802407
+      },
+      "sha256": "f04048189d3b472b26d7d02331edd0412e85b184725041c978fdce793a286a0d"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00003-of-00046.safetensors": {
+      "signature": {
+        "size": 3566321192,
+        "mtime_ns": 1777008106553444063,
+        "inode": 7696690802408
+      },
+      "sha256": "df5f80b9b4ca54edf7bda4e640a1b0d1bb95d5995843198dfcce2af0bfc4cb35"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00004-of-00046.safetensors": {
+      "signature": {
+        "size": 3596229272,
+        "mtime_ns": 1777008747453100034,
+        "inode": 7696690802409
+      },
+      "sha256": "948250b46a6f92df92ef093ab2d0023c31f924232846a84affe84fa3c7794f5c"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00005-of-00046.safetensors": {
+      "signature": {
+        "size": 3568768976,
+        "mtime_ns": 1777008278132203316,
+        "inode": 7696690802410
+      },
+      "sha256": "9fda158bc636215aea4f6834821c81f59eea3733223c874ab66b9f3d6740c4c1"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00006-of-00046.safetensors": {
+      "signature": {
+        "size": 3590024776,
+        "mtime_ns": 1777008107456280090,
+        "inode": 7696690802411
+      },
+      "sha256": "51a65e6d9d0ccb70013e25ae70a50b177af8f97e59ac798c2d0ed5ebb169fe7a"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00007-of-00046.safetensors": {
+      "signature": {
+        "size": 3568768976,
+        "mtime_ns": 1777008995158122178,
+        "inode": 7696690802412
+      },
+      "sha256": "2d782c46d6d293189e01ed13ea108de355fd32a9902cea77b264dfc9c4f10c42"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00008-of-00046.safetensors": {
+      "signature": {
+        "size": 3590024776,
+        "mtime_ns": 1777008117165166295,
+        "inode": 7696690802413
+      },
+      "sha256": "b7d9d8d8932e12ea113f2e83ff412fc1d6b663acedf7f34bbe2bfff41a71c595"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00009-of-00046.safetensors": {
+      "signature": {
+        "size": 3568768976,
+        "mtime_ns": 1777008455040390282,
+        "inode": 7696690802414
+      },
+      "sha256": "3197a42d282a8368d4286d11aed52d7fee7928d7950fee4dc18d5154b8111060"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00010-of-00046.safetensors": {
+      "signature": {
+        "size": 3590024776,
+        "mtime_ns": 1777008664198877759,
+        "inode": 7696690802415
+      },
+      "sha256": "c9cef4200444326f8d802bc1bb5be7c1d15af4bfdec0426db7e841a7bd516a28"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00011-of-00046.safetensors": {
+      "signature": {
+        "size": 3568768976,
+        "mtime_ns": 1777008666582361935,
+        "inode": 7696690802416
+      },
+      "sha256": "916b0b34b713c51dc7a83935ccd9e07c4af017ddfcc5feaeec8faa26f1263f89"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00012-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777009320000731800,
+        "inode": 7696690802417
+      },
+      "sha256": "05739c7d91a302f41a4627587982016a6cc874f875a3ea299d1f2e1dcea5cbb6"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00013-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777008949871659332,
+        "inode": 7696690802418
+      },
+      "sha256": "47c5e416b60b9bef9e9005cdad9c991a306ab2dd25a95e1994dda30bd4011905"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00014-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777008753054240711,
+        "inode": 7696690802419
+      },
+      "sha256": "c881e2671ab45428d824197f174d64fb4403b9530451cb1b0b3899881ab34b7e"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00015-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777009251752694689,
+        "inode": 7696690802420
+      },
+      "sha256": "cb3daae8e465c5b49f2b439c045971e96cd658fda152882605e9717573d4c8f5"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00016-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777009316882057616,
+        "inode": 7696690802421
+      },
+      "sha256": "9eba661fba3162a8a051b0283ad3c11c7c17b33d99684e7029ddf732494bd069"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00017-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777009629490455841,
+        "inode": 7696690802422
+      },
+      "sha256": "0c36cbc026c5067164cb506ac6522078478feb539fef264289ef70f1d1688f54"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00018-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777009115335012748,
+        "inode": 7696690802423
+      },
+      "sha256": "1298a07452a409ddbcc5172a4f57a011193bea4f16a6a964c3dd8531cbc06b49"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00019-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777009700888178138,
+        "inode": 7696690802424
+      },
+      "sha256": "d3687748aff78adf42b2bbf7469b8df92e1e3e5dcd90c1c050c8fac62d1fe77a"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00020-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777010084388369213,
+        "inode": 7696690802425
+      },
+      "sha256": "906c652f3c36b510689c2637ebe5172865cc6ccc17515b9fc70ee9e048e7c5af"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00021-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010292398629710,
+        "inode": 7696690802426
+      },
+      "sha256": "f270bf4d0f0067165020baf3c11264a177182918c1ebeec21d2bf33166b44592"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00022-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777009943754742534,
+        "inode": 7696690802427
+      },
+      "sha256": "d02261b8f1c8d697bac4b23ec9a8423096fb1a1edf923ed1c2faea6cebdb05e8"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00023-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010069319749394,
+        "inode": 7696690802428
+      },
+      "sha256": "69fab8bfa1cdfd819382cdef5923dcf10d81879aceb0dc0950be45a6d45771f2"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00024-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777009762709023637,
+        "inode": 7696690802429
+      },
+      "sha256": "baba23c06a7b80e108334eb9fe30349de851e822e9b72df756614ae6b5088dbf"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00025-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010392180767722,
+        "inode": 7696690802430
+      },
+      "sha256": "085b7736ebe3d69574930187f8b213f84b35b36852f0a505067f8755e8b11c89"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00026-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011146543611984,
+        "inode": 7696690802431
+      },
+      "sha256": "fdde6791ab713c93cb256d05d9560d5ecfd2b913563658b62d32af9a17a91546"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00027-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010125258054681,
+        "inode": 7696690802432
+      },
+      "sha256": "2f207b9aef9c56e38f73234e9c5c118c1898676c8ab83d2be0dd410fb196bd01"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00028-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777010182131568928,
+        "inode": 7696690802433
+      },
+      "sha256": "2cc519b5a03a30d45717ffb8408a4f833f3a94f70e35a1de38e95a0ffcdc152e"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00029-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010423973733902,
+        "inode": 7696690802434
+      },
+      "sha256": "d10bf34c789f9294d2cc50b695d259dc1d0d5b2303105329be370eb55f0fd882"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00030-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011444513380648,
+        "inode": 7696690802435
+      },
+      "sha256": "0f1c471fa9d9d3612c94039e9efb2a60f367782918f236e95c45ab3fe36c166c"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00031-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777011478860529577,
+        "inode": 7696690802436
+      },
+      "sha256": "beafa59d64fae3a5c636be4b2a08956d8d5abaf70856a4a5adb70a200011e43e"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00032-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777010528035240601,
+        "inode": 7696690802437
+      },
+      "sha256": "5c6b2934d87ada60493e201652d72075c56ce608091a3d395f3d8e31b6ce036a"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00033-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010740885273912,
+        "inode": 7696690802438
+      },
+      "sha256": "c05f917e873d2da0513385c3c30758d29b4b9d244ffde2a5258ae2e6745f23da"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00034-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011360559335057,
+        "inode": 7696690802439
+      },
+      "sha256": "666b77201ec6946fb1f299f2ebcb462bce53575a97a91fb30db806bbcd099100"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00035-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777010944456106701,
+        "inode": 7696690802440
+      },
+      "sha256": "5e6b9a54fd149ea4908f81cdffd6b09701d9c98e5e7041bb5bd00c6d5c85623f"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00036-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777010859380004440,
+        "inode": 7696690802441
+      },
+      "sha256": "ab72ad9d171fc0867350948e5091878b3c2445a5cfb8a83dd8c25d4272628107"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00037-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777011040498721553,
+        "inode": 7696690802442
+      },
+      "sha256": "93d68bcfc36fdf239f901653c0e96c5d45d8fce4f5be633bbbf93cc75067ec5d"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00038-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011656771533157,
+        "inode": 7696690802443
+      },
+      "sha256": "809fb799edcf1d9b4511dea68a1ea35c5fc03858e0611a0010913f1c84e66efe"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00039-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777011609764691833,
+        "inode": 7696690802444
+      },
+      "sha256": "49dba248917454c0a8ac90cc5a012fee625fea6672ae55c40d32a5922a29dd91"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00040-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011747866412381,
+        "inode": 7696690802445
+      },
+      "sha256": "09a7b8b6957ff3426d7461dd49a158f4576c0277ab18b78a881094aef29ba84b"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00041-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777011591128311420,
+        "inode": 7696690802446
+      },
+      "sha256": "a564ac6c6cc7514beadb2e1d9d1fc2baeed5e680ba1b75cd9afc7a50fb90ee85"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00042-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011841249780464,
+        "inode": 7696690802447
+      },
+      "sha256": "bd3f5b898b041559a534c81a2f9bb53a8f9744ee8db37ed11b3a5c9fcf848882"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00043-of-00046.safetensors": {
+      "signature": {
+        "size": 3568770544,
+        "mtime_ns": 1777011802956052708,
+        "inode": 7696690802448
+      },
+      "sha256": "85a414c7991c1276e8db780f6a4390ac25b8f2c7fdb3551831993adb9db69430"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00044-of-00046.safetensors": {
+      "signature": {
+        "size": 3590026352,
+        "mtime_ns": 1777011799664388448,
+        "inode": 7696690802449
+      },
+      "sha256": "438b052b8a2d650939e63704f55f1352b946152ba6633cb256c3864ef21d2f62"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00045-of-00046.safetensors": {
+      "signature": {
+        "size": 1059332516,
+        "mtime_ns": 1777011816648686269,
+        "inode": 7696690802450
+      },
+      "sha256": "9a0fd242134e9ebe4e6993a7631692944838e4fdf20067b3219caa48eab68045"
+    },
+    "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash/model-00046-of-00046.safetensors": {
+      "signature": {
+        "size": 3593956092,
+        "mtime_ns": 1777012060896077499,
+        "inode": 7696690802451
+      },
+      "sha256": "f58f722893a6148216a2155cee4a57fe691cea4d3b323135c433a936b932055d"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00001-of-00046.safetensors": {
+      "signature": {
+        "size": 1059061872,
+        "mtime_ns": 1786708304047350968,
+        "inode": 110535506
+      },
+      "sha256": "716d29fbbb1e72f5a7bba319df56038ad0faf5dc926e181bf9a3329e26b42aa2"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00002-of-00046.safetensors": {
+      "signature": {
+        "size": 3566321216,
+        "mtime_ns": 1786708317354227467,
+        "inode": 110535507
+      },
+      "sha256": "5783dc3a279bb74424f3d801e254f11720fe53b18d0c5e1570cb7702e4094298"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00003-of-00046.safetensors": {
+      "signature": {
+        "size": 3566321216,
+        "mtime_ns": 1786708331482095750,
+        "inode": 110535508
+      },
+      "sha256": "4d21afa3e87496cffc1292c94b2523224b73095feca5bbb75a597319200dd74d"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00004-of-00046.safetensors": {
+      "signature": {
+        "size": 3596229296,
+        "mtime_ns": 1786708344091977680,
+        "inode": 110535509
+      },
+      "sha256": "8a6ce7879453792ea6343b74aea61623fd8b4c235f6909be03fe390c2b1092b4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00005-of-00046.safetensors": {
+      "signature": {
+        "size": 2713088208,
+        "mtime_ns": 1786708348663934755,
+        "inode": 110535510
+      },
+      "sha256": "8d50235086d35121f60b9ee924fd3135e0e1d6406cb21029d05ce762a0888982"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00006-of-00046.safetensors": {
+      "signature": {
+        "size": 2734344000,
+        "mtime_ns": 1786708351655906632,
+        "inode": 110535511
+      },
+      "sha256": "090e37a520a411b868e8658671970fbdc9713713f62aed0637e22457397c7af4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00007-of-00046.safetensors": {
+      "signature": {
+        "size": 2713088208,
+        "mtime_ns": 1786708354046884140,
+        "inode": 110535512
+      },
+      "sha256": "7cd7df0356baa23705cbe62c2182d859bc1a0f80a42a08d5b087a055819672a0"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00008-of-00046.safetensors": {
+      "signature": {
+        "size": 2734344000,
+        "mtime_ns": 1786708358988837597,
+        "inode": 110535513
+      },
+      "sha256": "b7b729252c203da54124bb5b89b568390d887aa5b7efa49f5db90a7649b6748f"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00009-of-00046.safetensors": {
+      "signature": {
+        "size": 2713088208,
+        "mtime_ns": 1786708363131798526,
+        "inode": 110535514
+      },
+      "sha256": "32f4afac3ca62540b89914fc3e79b8c589c29d39291dced8512621086f4ce6a1"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00010-of-00046.safetensors": {
+      "signature": {
+        "size": 2734344000,
+        "mtime_ns": 1786708368399748775,
+        "inode": 110535515
+      },
+      "sha256": "ed4656b70d647448b378273491f77887627fc80534fcb347ed1758e1d10eddcb"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00011-of-00046.safetensors": {
+      "signature": {
+        "size": 2713088208,
+        "mtime_ns": 1786708374381692188,
+        "inode": 110535516
+      },
+      "sha256": "02dabecbd58f3af4983e02d927f0051fae4476d716fe5c79ce7a030ed505de2e"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00012-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708382144618607,
+        "inode": 110535517
+      },
+      "sha256": "3a0c84048e5fd0e6ba557b87c283227a176005be8113b42c0f97ab4ae547fc7b"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00013-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708384879592644,
+        "inode": 110535518
+      },
+      "sha256": "df6a11d05f38dc019ef8731107f3db7dcca346a7b88065726298d4fd462ab9e0"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00014-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708387319569465,
+        "inode": 110535519
+      },
+      "sha256": "39d177bf599ccd0e720619df4c164f4236e44911de18fe6a8c874752a1be018f"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00015-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708392707518224,
+        "inode": 110535520
+      },
+      "sha256": "9df5f08ff25fe21941eef013004ea9da560ce6f5611de2b9bfcb4f19b46e8332"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00016-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708397103476359,
+        "inode": 110535521
+      },
+      "sha256": "091d1f63621e4c00c18c111047a61619fda72238b2aa7380c56a743740e6ff01"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00017-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708400337445529,
+        "inode": 110535522
+      },
+      "sha256": "ec4d13c79e9700dc801f0867e5dd2f0ebf763c0580fe3093e7a141df11862bbd"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00018-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708402632423633,
+        "inode": 110535523
+      },
+      "sha256": "aedf3a0ccef160d6dd809aa6b32a7f6b8f9a11f6e082be4c66881dd9a954d07d"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00019-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708405065400406,
+        "inode": 110535524
+      },
+      "sha256": "1d67432a96a32da784b66ce48c4486c9ba29948f919173e635fcdc6def8dc3f7"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00020-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708407740374851,
+        "inode": 110535525
+      },
+      "sha256": "54d9f4a23c38c347521fae12c71d37ad7ed6195820979d0c3ccec152a708cfe5"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00021-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708412050333637,
+        "inode": 110535526
+      },
+      "sha256": "34a7755e4dd9befc7faca8449944b567ab8c0826d48b9149c9873cd9b118319f"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00022-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708419948257990,
+        "inode": 110535527
+      },
+      "sha256": "4281244792a8f66673af1f32b386d3669cc2e6772c3b4b975efcdf1165410ee0"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00023-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708431459147456,
+        "inode": 110535528
+      },
+      "sha256": "8e4da92e6180f6ba4444f2fc780a8b22ed7a59359d665541dc9552a985d9e350"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00024-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708441764048226,
+        "inode": 110535529
+      },
+      "sha256": "a386f802ab6f2ac6996f3cbe6766db059ff091587a8156f3910fc9023e1b3442"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00025-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708454390926287,
+        "inode": 110535530
+      },
+      "sha256": "486dfdb88fab2a0f21a68cc4e51ea03c9b98d21010378273c9bd263040078142"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00026-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708468969785032,
+        "inode": 110535531
+      },
+      "sha256": "164047df5fdac50ce6013c01e0810f5dcbccd70d5156f0e40dc0c5bbbd2726dd"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00027-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708483904639822,
+        "inode": 110535532
+      },
+      "sha256": "535e506ae6483c038d3ab8b5faf0e716bd3353a46c7f536a01a97d68c89b8c6f"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00028-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708579573698460,
+        "inode": 110535533
+      },
+      "sha256": "bf210d6e33ddd5c945dd2d62b47003ff8017e423e4bff27ac2a0f349fc3a5e7c"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00029-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708597073524341,
+        "inode": 110535534
+      },
+      "sha256": "839895bba8670ac9e33a7f830137607f43161449fdc5746b0d6418263230a217"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00030-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708612364371753,
+        "inode": 110535535
+      },
+      "sha256": "d695d86444da994c133d11056b3c99d95a430e626d13db3499344d90b1fc2b0a"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00031-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708627083224490,
+        "inode": 110535536
+      },
+      "sha256": "a1e60eedde28bad2f34270da3a4e60731b75cf4dfcd14f5a6ed1bc5dfc6f56eb"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00032-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708643860056194,
+        "inode": 110535537
+      },
+      "sha256": "bb6d3b00e6d31b1c4a48e461e6d482bd3736a3fd5e8928f7842d57fe64056a81"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00033-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708658326910701,
+        "inode": 110535538
+      },
+      "sha256": "8ccba96bf5545736c8740165c05478e0e915dec90348f28d047a40b14d68761b"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00034-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708670321789818,
+        "inode": 110535539
+      },
+      "sha256": "9c888851786e1e1fcee32355aabccc53b1d27cf66a108b79eb8d18d552f117b1"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00035-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708682484667014,
+        "inode": 110535540
+      },
+      "sha256": "efd7c95b4e1124276dbcd27a98de7e46db300a73a1ee4cdddff7d0f0b0fcab9c"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00036-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708695754532779,
+        "inode": 110535541
+      },
+      "sha256": "339cd57c998effaa88e69640223d40b845c314240e1492fb3df64f39a21f4e78"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00037-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708708649402090,
+        "inode": 110535542
+      },
+      "sha256": "aac998e410ca6a6c51b9cfb23c3ff1e06bb992b8214957b830e347b70445fd6f"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00038-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708722874257644,
+        "inode": 110535543
+      },
+      "sha256": "581fce97d1d38e0d5bd2e8c0b6c12f87b8df1c4bdd913176fd12827082e35541"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00039-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708735561128578,
+        "inode": 110535544
+      },
+      "sha256": "177b278617d9263d13a191538a42a4955bd7508fd6c5aef57d69cb16804542b4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00040-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708747446007472,
+        "inode": 110535545
+      },
+      "sha256": "dc62ab43540a49fb0f4a7c87d52db16e118998ca31b2b5ea271221ea22398154"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00041-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708758773891867,
+        "inode": 110535546
+      },
+      "sha256": "439caf983ebb697e9c19d3b072d9a24474ad29252d9fe4d9e524cd872cf6490d"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00042-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708769185785462,
+        "inode": 110535547
+      },
+      "sha256": "08485c40c357359c9f13b192620dadf974dea7bd7cbb8da78aac341d9f8c5bd0"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00043-of-00046.safetensors": {
+      "signature": {
+        "size": 2713089392,
+        "mtime_ns": 1786708781094663590,
+        "inode": 110535548
+      },
+      "sha256": "00b2ef1c15cadd522805248ed059b8a0ecf157baaf1330c6a3464a8fe58c3dde"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00044-of-00046.safetensors": {
+      "signature": {
+        "size": 2734345192,
+        "mtime_ns": 1786708793928532055,
+        "inode": 110535549
+      },
+      "sha256": "d56344cf72ad80deb7d9e7efcaa6930ba3dfd72aaf0d61ee0f43fdde509336df"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00045-of-00046.safetensors": {
+      "signature": {
+        "size": 1059332532,
+        "mtime_ns": 1786708797913491171,
+        "inode": 110535550
+      },
+      "sha256": "5abac851999bf5eb64afbd081246a5805847cd63ef10d08d439c959bad61e858"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune25-keep192/model-00046-of-00046.safetensors": {
+      "signature": {
+        "size": 3593956108,
+        "mtime_ns": 1786708808777379618,
+        "inode": 110535551
+      },
+      "sha256": "df133a754e466ae100dc6baf1eaabf67b69a9539ada948a1c9fecf870760f9b4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00001-of-00046.safetensors": {
+      "signature": {
+        "size": 1059061872,
+        "mtime_ns": 1786708812342342981,
+        "inode": 110646674
+      },
+      "sha256": "716d29fbbb1e72f5a7bba319df56038ad0faf5dc926e181bf9a3329e26b42aa2"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00002-of-00046.safetensors": {
+      "signature": {
+        "size": 3566321216,
+        "mtime_ns": 1786708838090077941,
+        "inode": 110646676
+      },
+      "sha256": "5783dc3a279bb74424f3d801e254f11720fe53b18d0c5e1570cb7702e4094298"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00003-of-00046.safetensors": {
+      "signature": {
+        "size": 3566321216,
+        "mtime_ns": 1786708862586825092,
+        "inode": 110646678
+      },
+      "sha256": "4d21afa3e87496cffc1292c94b2523224b73095feca5bbb75a597319200dd74d"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00004-of-00046.safetensors": {
+      "signature": {
+        "size": 3596229296,
+        "mtime_ns": 1786708884103602476,
+        "inode": 110646680
+      },
+      "sha256": "8a6ce7879453792ea6343b74aea61623fd8b4c235f6909be03fe390c2b1092b4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00005-of-00046.safetensors": {
+      "signature": {
+        "size": 1857407416,
+        "mtime_ns": 1786708894289496925,
+        "inode": 110646681
+      },
+      "sha256": "45dd3f1913dfabef6f00e373e6c3293564e56a8d80700e7a0197aec6e536028f"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00006-of-00046.safetensors": {
+      "signature": {
+        "size": 1878663208,
+        "mtime_ns": 1786708906300372331,
+        "inode": 110646682
+      },
+      "sha256": "da52cd1b66f5924bda94782f6ab965e212a7a891aeac4e7fbbe0596c34423ea4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00007-of-00046.safetensors": {
+      "signature": {
+        "size": 1857407416,
+        "mtime_ns": 1786708917474256292,
+        "inode": 110646683
+      },
+      "sha256": "a6047993ca4a705dddb23f0a331f844a4cc627091f9bcf3bea9dc167cfb27ea8"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00008-of-00046.safetensors": {
+      "signature": {
+        "size": 1878663208,
+        "mtime_ns": 1786708929581130431,
+        "inode": 110646684
+      },
+      "sha256": "08a3f14030267e04b59048e58c013552b45b5b4079eeb38dc312f22c4a67461d"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00009-of-00046.safetensors": {
+      "signature": {
+        "size": 1857407416,
+        "mtime_ns": 1786708942088000267,
+        "inode": 110646685
+      },
+      "sha256": "46ca41b675a00f8c2d10f1d1e45cbaa3ab5f5fb833af81edfef952ee3af37233"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00010-of-00046.safetensors": {
+      "signature": {
+        "size": 1878663208,
+        "mtime_ns": 1786708961261800444,
+        "inode": 110646686
+      },
+      "sha256": "04b1682495b5d609499905c607dcefe44114ebe998b9ccf36c419554f9069240"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00011-of-00046.safetensors": {
+      "signature": {
+        "size": 1857407416,
+        "mtime_ns": 1786708976428642152,
+        "inode": 110646687
+      },
+      "sha256": "209ca078988c61d274568a1b55b28a5126a1f3a16dab16acef6dace5ab2e6ed3"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00012-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786708988024520997,
+        "inode": 110646688
+      },
+      "sha256": "757c697f8b21407059e0b22b1d92a0deb3ac4eb061ab4b530201453e3d21ffc7"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00013-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786708996305434407,
+        "inode": 110646689
+      },
+      "sha256": "f8e5f5880e41c74455e64f45ddda0dc069bb847091e54f2d3540117bdb407d72"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00014-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709004277350997,
+        "inode": 110646690
+      },
+      "sha256": "ad0f4f3b19a2075689f1844578ce563ea8d84c12a57fa6b4a3e6f22d24a4a1f0"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00015-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709011443275976,
+        "inode": 110646691
+      },
+      "sha256": "d9193cd4e09dda3cd42b703c025d48aa4704f8d7a21a4804eeeda029b4689c8c"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00016-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709021500170620,
+        "inode": 110646692
+      },
+      "sha256": "e17940a09eba8d02d4c7feee618a30d454c2ec8d857674757d5ca49a4e3f38a4"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00017-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709029213089767,
+        "inode": 110646693
+      },
+      "sha256": "7d24b881c76a55ced3656c06ca9e13a6a8af28dd28b6ef4cd619b919c77608be"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00018-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709038199995500,
+        "inode": 110646695
+      },
+      "sha256": "a3719aad1b835cb2f9dbfc67faff2639a620e9d69402ba335bc8750b6272bd6e"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00019-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709047123901835,
+        "inode": 110646696
+      },
+      "sha256": "7e8c7d15cf412c224a5abfc4e78e8eac8509e492469bd6f9a5ca9b8242a18875"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00020-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709056223806262,
+        "inode": 110646697
+      },
+      "sha256": "f1a1ce5349532dfa657f5c231aafff7359105b288374405424a0e7372eb46fde"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00021-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709065218711732,
+        "inode": 110646698
+      },
+      "sha256": "6c4f1d9a02196d39eb2f4981a5216a0413062df390cf315d5ef964f1e9541e57"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00022-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709076690591088,
+        "inode": 110646699
+      },
+      "sha256": "058f909a557ade2d097eac7630532a65e917ff0f8fb2d8a53478dca25693f448"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00023-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709086478488080,
+        "inode": 110646700
+      },
+      "sha256": "caad2a2f54800e3f74d9d40e3a29b3d843588370fa0bfed0890f5c56cd2d0c55"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00024-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709094528403315,
+        "inode": 110646702
+      },
+      "sha256": "0ef019a3b6f7ac729dcec4f569b6d0677e078147687268a1f88c622faac37960"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00025-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709103072313300,
+        "inode": 110646704
+      },
+      "sha256": "6c7cc7edbbf53ff97f11bea40aa712df0ede198fe8b5a70447595d0bd755fef1"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00026-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709112351215485,
+        "inode": 110646707
+      },
+      "sha256": "108be2c4ad3e1bdc890dc5552ab316355251702cc4efc5329fc7d20bbb50bd10"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00027-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709119441140708,
+        "inode": 110646708
+      },
+      "sha256": "e3e4ff11c5d1aa355bc972be442f210313e4a83c577ef7066a19779c21b5e2d3"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00028-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709124173090783,
+        "inode": 110646709
+      },
+      "sha256": "5cf56c572e1d365ead673de2da5d2ad8d260b8075e93bcac683fc9bb8f295014"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00029-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709129801031385,
+        "inode": 110646710
+      },
+      "sha256": "f790a7dc85fc6e7f53aac02e3ba498766a62cdb100192e4a3ea29042cacff011"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00030-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709135015976329,
+        "inode": 110646711
+      },
+      "sha256": "48ba0735b18bbfabcffab91b30f3c600ad0f3c7f074aacaec588e61a94bff8d5"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00031-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709140034923326,
+        "inode": 110646712
+      },
+      "sha256": "dbc14109e642587ab4d9413ab9bac92889c32faec71560063d461d2260b718ab"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00032-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709147153848119,
+        "inode": 110646713
+      },
+      "sha256": "94c99043a39137144f69e2835237e0d3992b998dd49a47e18bc7deda33e023b8"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00033-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709151423802995,
+        "inode": 110646714
+      },
+      "sha256": "9c4c27135f36961aeaf3c3e80e39899b7154d2bbf499ccaa5f16e7569da98214"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00034-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709153898776834,
+        "inode": 110646715
+      },
+      "sha256": "da366b6bb62933e6c2595e88599c4905c4a9ca1a48c6ae1e7893560c2c9fc1c6"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00035-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709155518759709,
+        "inode": 110646716
+      },
+      "sha256": "2875304d5ac77cd6b6e9d76d4b48d45abd8379b03f6a43d7ff4c699f01ab28ed"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00036-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709156977744285,
+        "inode": 110646717
+      },
+      "sha256": "443b64e432dc7f44c842caefdab333875d74fbe99de221e4f419e4df874e6f09"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00037-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709159036722515,
+        "inode": 110646718
+      },
+      "sha256": "308854c27721ffe7313381e2eb9d6a45cbdbea238aff1dd4b33224096efc4d05"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00038-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709161587695540,
+        "inode": 110646719
+      },
+      "sha256": "37cc67344d2be3822a9a42e5df7e88e60aafd018525c54c0f0b089c0a6d8e6a7"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00039-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709163402676345,
+        "inode": 110646720
+      },
+      "sha256": "fd57daafdce53b4f27226192e6a2ebc266867d5440f777326c4ec4c23c21df76"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00040-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709164856660967,
+        "inode": 110646721
+      },
+      "sha256": "de92af4fed4089325020e54324d6d80d6823a41e3d04b283af5f1d8ddbd671bf"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00041-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709167070637548,
+        "inode": 110646722
+      },
+      "sha256": "9335d96a4c68a048a06dcba8f05a0d52424998e7b6bcb8b0c669af8c5a962b3e"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00042-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709169069616401,
+        "inode": 110646723
+      },
+      "sha256": "a27c8d100c2e0f812d83ab418b3fed3a1fc7da492ac876e65970a5b55182420e"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00043-of-00046.safetensors": {
+      "signature": {
+        "size": 1857408216,
+        "mtime_ns": 1786709173248572184,
+        "inode": 110646724
+      },
+      "sha256": "a29f3e3699f0f50a3822e9b2c8ff60acd0671c3680572a373da51b04bac161aa"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00044-of-00046.safetensors": {
+      "signature": {
+        "size": 1878664016,
+        "mtime_ns": 1786709176125541738,
+        "inode": 110646725
+      },
+      "sha256": "11fe64ae338f6ab54d57c4cda045f3cc02fc37cb679d72f0d518246cd76561ad"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00045-of-00046.safetensors": {
+      "signature": {
+        "size": 1059332532,
+        "mtime_ns": 1786709176908533450,
+        "inode": 110646726
+      },
+      "sha256": "5abac851999bf5eb64afbd081246a5805847cd63ef10d08d439c959bad61e858"
+    },
+    "/mnt/docker_data/v4-converted/v4-prune50-keep128/model-00046-of-00046.safetensors": {
+      "signature": {
+        "size": 3593956108,
+        "mtime_ns": 1786709181215487860,
+        "inode": 110646727
+      },
+      "sha256": "df133a754e466ae100dc6baf1eaabf67b69a9539ada948a1c9fecf870760f9b4"
+    }
+  },
+  "updated_at": "2026-08-14T13:02:37.119855+00:00"
+}

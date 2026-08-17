@@ -1,0 +1,23 @@
+Evaluation Python: /opt/easyep-eval/bin/python
+SGLang 0.5.16 EASY-EP mask-routing patch verified: /opt/sglang-v4/lib/python3.11/site-packages/sglang
+DeepSeek-V4-Flash runtime validation (read-only)
+Downloads/installers: disabled
+Hugging Face/Transformers offline mode: enabled
+Active transfer/install process check: none detected
+Physical GPUs: 4,5,6,7 are present
+CUDA compiler: NVCC 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+Python runtime: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+PyTorch: 2.11.0+cu130; CUDA build: 13.0; visible GPUs: 4
+Local model: config plus 46 indexed shard(s) present
+SGLang CLI: required DeepSeek-V4 launch options are available
+Validation passed. No apt, curl, wget, pip, uv, or model download command was executed.
+Traceback (most recent call last):
+  File "/home/jovyan/wangtonghan/EASYEP/evaluation/run_reproduction_matrix.py", line 1937, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/jovyan/wangtonghan/EASYEP/evaluation/run_reproduction_matrix.py", line 1844, in main
+    validate_args(args)
+  File "/home/jovyan/wangtonghan/EASYEP/evaluation/run_reproduction_matrix.py", line 1775, in validate_args
+    raise ValueError("context-length must exceed max-tokens to leave room for the prompt")
+ValueError: context-length must exceed max-tokens to leave room for the prompt

@@ -39,8 +39,9 @@ resolve_python() {
   local requested="$1"
   if [[ "${requested}" == */* ]]; then
     [[ -x "${requested}" ]] || return 1
-    "${V4_PYTHON}" -c \
-      'import os,sys; print(os.path.realpath(sys.argv[1]))' "${requested}"
+    # Keep a virtual environment's bin/python symlink intact. Resolving it
+    # reaches the base interpreter and drops the venv site-packages.
+    printf '%s\n' "${requested}"
   else
     command -v "${requested}"
   fi

@@ -202,6 +202,35 @@ def score_results(records: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], 
     return records, summary
 
 
+def score_record(record: dict[str, Any], evaluator: Any) -> bool:
+    correctness = evaluator.score(
+        [record["prediction"][0]["solution"]], [record["output"]]
+    )
+    if len(correctness) != 1:
+        raise RuntimeError(
+            f"evaluator returned {len(correctness)} scores for one record"
+        )
+    value = bool(correctness[0])
+    record["prediction"][0]["correctness"] = value
+    return value
+
+
+def completion_tokens_per_second(record: dict[str, Any]) -> str:
+    """Return the request-average completion speed for progress logging."""
+    usage = record.get("usage") or {}
+    completion_tokens = usage.get("completion_tokens")
+    latency_seconds = record.get("latency_seconds")
+    if (
+        isinstance(completion_tokens, (int, float))
+        and not isinstance(completion_tokens, bool)
+        and isinstance(latency_seconds, (int, float))
+        and not isinstance(latency_seconds, bool)
+        and latency_seconds > 0
+    ):
+        return f"{completion_tokens / latency_seconds:.2f}"
+    return "unknown"
+
+
 def write_final(path: Path, records: list[dict[str, Any]], summary: dict[str, Any]) -> None:
     temporary = path.with_suffix(path.suffix + ".tmp")
     with temporary.open("w", encoding="utf-8") as handle:
@@ -274,6 +303,7 @@ def main() -> int:
 
     failures: list[str] = []
     if pending:
+        evaluator = MATHEvaluator()
         with partial_path.open("a", encoding="utf-8") as checkpoint, ThreadPoolExecutor(
             max_workers=args.workers
         ) as pool:
@@ -281,16 +311,40 @@ def main() -> int:
             finished = 0
             for future in as_completed(futures):
                 job = futures[future]
+                record: dict[str, Any] | None = None
                 try:
                     record = future.result()
                 except Exception as exc:
                     failures.append(str(exc))
+                    print(
+                        f"question={job['dataset_index'] + 1}/{len(dataset)} "
+                        f"repeat={job['repeat'] + 1}/{args.repeats} "
+                        f"status=error error={exc}",
+                        flush=True,
+                    )
                 else:
+                    assert record is not None
+                    correct = score_record(record, evaluator)
                     completed[record["job_id"]] = record
                     checkpoint.write(json.dumps(record, ensure_ascii=False) + "\n")
                     checkpoint.flush()
                 finished += 1
-                print(f"progress={finished}/{len(pending)} failures={len(failures)}")
+                if record is not None:
+                    usage = record.get("usage") or {}
+                    completion_tokens = usage.get("completion_tokens", "unknown")
+                    average_completion_tokens_per_second = completion_tokens_per_second(record)
+                    print(
+                        f"question={record['dataset_index'] + 1}/{len(dataset)} "
+                        f"repeat={record['repeat'] + 1}/{args.repeats} "
+                        f"correct={'yes' if correct else 'no'} "
+                        f"latency={record['latency_seconds']:.2f}s "
+                        f"completion_tokens={completion_tokens} "
+                        f"token_ps="
+                        f"{average_completion_tokens_per_second} "
+                        f"progress={resumed_jobs + finished}/{len(jobs)} "
+                        f"failures={len(failures)}",
+                        flush=True,
+                    )
 
     if failures:
         for failure in failures:

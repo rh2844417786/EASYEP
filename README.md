@@ -250,3 +250,22 @@ bash evaluation/scripts/run_eval.sh
   year = {2025}
 }
 ```
+## 7. sglang
+/opt/sglang-v4/bin/python -m sglang.launch_server \
+  --trust-remote-code \
+  --model-path /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash \
+  --tp 4 \
+  --moe-runner-backend marlin \
+  --reasoning-parser deepseek-v4 \
+  --tool-call-parser deepseekv4 \
+  --host 127.0.0.1 \
+  --port 60000 \
+  --context-length 65536 \
+  --mem-fraction-static 0.80 \
+  --chunked-prefill-size 8192 \
+  --max-running-requests 32 \
+  --cuda-graph-backend-decode full \
+  --cuda-graph-max-bs-decode 32 \
+  --watchdog-timeout 1800 \
+  --decode-log-interval 10 \
+  --enable-metrics

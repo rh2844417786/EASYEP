@@ -1,0 +1,40 @@
+Evaluation Python: /opt/easyep-eval/bin/python
+SGLang 0.5.16 EASY-EP mask-routing patch verified: /opt/sglang-v4/lib/python3.11/site-packages/sglang
+DeepSeek-V4-Flash runtime validation (read-only)
+Downloads/installers: disabled
+Hugging Face/Transformers offline mode: enabled
+Active transfer/install process check: none detected
+Physical GPUs: 4,5,6,7 are present
+CUDA compiler: NVCC 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+Python runtime: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+PyTorch: 2.11.0+cu130; CUDA build: 13.0; visible GPUs: 4
+Local model: config plus 46 indexed shard(s) present
+SGLang CLI: required DeepSeek-V4 launch options are available
+Validation passed. No apt, curl, wget, pip, uv, or model download command was executed.
+checkpoint payload verification: 46 shard(s), 148.66 GiB
+checkpoint payload verification: 46 shard(s), 116.78 GiB
+checkpoint payload verification: 46 shard(s), 84.90 GiB
+run directory: /home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03
+full: prune=0%, experts=256, checkpoint=148.66 GiB, path=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+prune25: prune=25%, experts=192, checkpoint=116.78 GiB, path=/mnt/docker_data/v4-converted/v4-prune25-keep192
+prune50: prune=50%, experts=128, checkpoint=84.90 GiB, path=/mnt/docker_data/v4-converted/v4-prune50-keep128
+[full] starting
+GPU exclusivity check: PASS (GPUs 4,5,6,7; no compute processes; each uses at most 2048 MiB)
+4, 0
+5, 0
+6, 0
+7, 0
+GPU exclusivity check: PASS (GPUs 4,5,6,7; no compute processes; each uses at most 2048 MiB)
+4, 0
+5, 0
+6, 0
+7, 0
+[server] still loading after 60s; waiting for http://127.0.0.1:60000/v1/models
+[full AIME24] still running after 60s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log
+[full AIME24] still running after 120s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log
+[full AIME24] still running after 180s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log
+[full AIME24] still running after 240s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log
+[full AIME24] still running after 300s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log
+[full AIME24] still running after 360s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log
+[full AIME24] still running after 420s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_03/full/evaluation/AIME24.log

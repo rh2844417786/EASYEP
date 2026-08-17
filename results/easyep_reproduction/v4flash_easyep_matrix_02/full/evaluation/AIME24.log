@@ -1,0 +1,2 @@
+dataset=AIME24 model=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash total=150 resumed=0 pending=150 workers=1 run=1b07c01c74aaaa4a
+progress=1/150 failures=0

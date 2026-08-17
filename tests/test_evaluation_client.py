@@ -38,6 +38,36 @@ class EvaluationClientTests(unittest.TestCase):
         self.assertFalse(scored[1]["prediction"][0]["correctness"])
         self.assertEqual(summary["correct"], 1)
 
+    def test_single_record_scoring_records_correctness(self):
+        record = {
+            "output": "\\boxed{1}",
+            "prediction": [{"solution": "\\boxed{1}"}],
+        }
+        test_case = self
+
+        class FakeEvaluator:
+            def score(self, predictions, references):
+                test_case.assertEqual(predictions, ["\\boxed{1}"])
+                test_case.assertEqual(references, ["\\boxed{1}"])
+                return [True]
+
+        self.assertTrue(run_sglang.score_record(record, FakeEvaluator()))
+        self.assertTrue(record["prediction"][0]["correctness"])
+
+    def test_completion_tokens_per_second(self):
+        self.assertEqual(
+            run_sglang.completion_tokens_per_second(
+                {"usage": {"completion_tokens": 100}, "latency_seconds": 4}
+            ),
+            "25.00",
+        )
+        self.assertEqual(
+            run_sglang.completion_tokens_per_second(
+                {"usage": {}, "latency_seconds": 4}
+            ),
+            "unknown",
+        )
+
     def test_resume_reader_ignores_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "partial.jsonl"

@@ -1,0 +1,58 @@
+dataset=AIME24 model=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash total=30 resumed=0 pending=30 workers=1 run=1b07c01c74aaaa4a
+question=1/30 repeat=1/1 correct=yes latency=13.05s completion_tokens=1462 progress=1/30 failures=0
+question=2/30 repeat=1/1 correct=yes latency=85.78s completion_tokens=9779 progress=2/30 failures=0
+question=3/30 repeat=1/1 correct=yes latency=215.79s completion_tokens=24579 progress=3/30 failures=0
+question=4/30 repeat=1/1 correct=no latency=227.53s completion_tokens=25060 progress=4/30 failures=0
+question=5/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:4 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=6/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:5 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=7/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:6 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=8/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:7 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=9/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:8 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=10/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:9 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=11/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:10 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=12/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:11 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=13/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:12 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=14/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:13 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=15/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:14 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=16/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:15 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=17/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:16 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=18/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:17 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=19/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:18 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=20/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:19 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=21/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:20 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=22/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:21 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=23/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:22 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=24/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:23 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=25/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:24 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=26/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:25 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=27/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:26 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=28/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:27 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=29/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:28 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+question=30/30 repeat=1/1 status=error error=job 1b07c01c74aaaa4a:0:29 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:4 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:5 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:6 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:7 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:8 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:9 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:10 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:11 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:12 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:13 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:14 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:15 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:16 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:17 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:18 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:19 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:20 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:21 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:22 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:23 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:24 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:25 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:26 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:27 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:28 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+[ERROR] job 1b07c01c74aaaa4a:0:29 failed after 3 attempts: Cannot reach http://127.0.0.1:60000/v1/chat/completions: [Errno 111] Connection refused
+Partial results retained at results/easyep_reproduction/v4flash_aime24_32768_highspeed_01/full/evaluation/AIME24.partial.jsonl; rerun the same command to resume

@@ -25,6 +25,7 @@ import socket
 import statistics
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 from typing import Any, Iterable
@@ -487,11 +488,28 @@ def build_variant_specs(
 
 def atomic_write_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    with temporary.open("w", encoding="utf-8") as handle:
-        json.dump(value, handle, indent=2, ensure_ascii=False)
-        handle.write("\n")
-    os.replace(temporary, path)
+    temporary_name: str | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary_name = handle.name
+            json.dump(value, handle, indent=2, ensure_ascii=False)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_name, path)
+    finally:
+        if temporary_name is not None:
+            try:
+                os.unlink(temporary_name)
+            except FileNotFoundError:
+                pass
 
 
 def percentile(values: list[float], fraction: float) -> float | None:
@@ -841,8 +859,6 @@ def fetch_models(port: int, timeout: float = 3.0) -> dict[str, Any]:
 
 def wait_for_server(process: subprocess.Popen[Any], port: int, timeout: float) -> str:
     deadline = time.monotonic() + timeout
-    started = time.monotonic()
-    next_heartbeat = started + 60
     while time.monotonic() < deadline:
         return_code = process.poll()
         if return_code is not None:
@@ -850,14 +866,6 @@ def wait_for_server(process: subprocess.Popen[Any], port: int, timeout: float) -
         try:
             payload = fetch_models(port)
         except (OSError, URLError, ValueError, json.JSONDecodeError):
-            now = time.monotonic()
-            if now >= next_heartbeat:
-                print(
-                    f"[server] still loading after {now - started:.0f}s; "
-                    f"waiting for http://127.0.0.1:{port}/v1/models",
-                    flush=True,
-                )
-                next_heartbeat = now + 60
             time.sleep(10)
             continue
         models = payload.get("data") or []
@@ -986,18 +994,32 @@ def run_logged(
     *,
     timeout: float | None = None,
     label: str = "command",
+    stream_output: bool = False,
 ) -> None:
     log_path.parent.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
-    with log_path.open("w", encoding="utf-8") as handle:
+    with log_path.open("w", encoding="utf-8", buffering=1) as handle:
         process = subprocess.Popen(
             command,
             cwd=REPO_ROOT,
             text=True,
-            stdout=handle,
+            bufsize=1,
+            stdout=subprocess.PIPE if stream_output else handle,
             stderr=subprocess.STDOUT,
             start_new_session=True,
         )
+        forwarder: threading.Thread | None = None
+        if stream_output:
+            assert process.stdout is not None
+
+            def forward_output() -> None:
+                assert process.stdout is not None
+                for line in process.stdout:
+                    handle.write(line)
+                    print(line, end="", flush=True)
+
+            forwarder = threading.Thread(target=forward_output, daemon=True)
+            forwarder.start()
         try:
             while True:
                 elapsed = time.monotonic() - started
@@ -1013,15 +1035,18 @@ def run_logged(
                     return_code = process.wait(timeout=wait_seconds)
                     break
                 except subprocess.TimeoutExpired:
-                    print(
-                        f"[{label}] still running after "
-                        f"{time.monotonic() - started:.0f}s; log={log_path}",
-                        flush=True,
-                    )
+                    # Long generations can legitimately exceed several minutes;
+                    # per-question progress is emitted by the evaluation client.
+                    continue
         except BaseException:
             stop_process_group(process)
             raise
-        stop_process_group(process)
+        finally:
+            stop_process_group(process)
+            if forwarder is not None:
+                forwarder.join(timeout=10)
+                if forwarder.is_alive():
+                    raise RuntimeError(f"{label} log forwarder did not stop")
     if return_code != 0:
         raise RuntimeError(
             f"command failed with status {return_code}: {' '.join(command)}\n"
@@ -1349,6 +1374,7 @@ def run_variant(
                 eval_command,
                 eval_log,
                 label=f"{spec.name} {dataset}",
+                stream_output=True,
             )
             wall_seconds = time.monotonic() - eval_started
             result["datasets"][dataset] = parse_evaluation_output(

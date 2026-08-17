@@ -1,0 +1,147 @@
+Evaluation Python: /opt/easyep-eval/bin/python
+SGLang 0.5.16 EASY-EP mask-routing patch verified: /opt/sglang-v4/lib/python3.11/site-packages/sglang
+DeepSeek-V4-Flash runtime validation (read-only)
+Downloads/installers: disabled
+Hugging Face/Transformers offline mode: enabled
+Active transfer/install process check: none detected
+Physical GPUs: 4,5,6,7 are present
+CUDA compiler: NVCC 13.0 (/usr/local/cuda-13.0/bin/nvcc)
+Python runtime: /opt/sglang-v4/bin/python
+SGLang: 0.5.16 (/opt/sglang-v4/lib/python3.11/site-packages/sglang/__init__.py)
+PyTorch: 2.11.0+cu130; CUDA build: 13.0; visible GPUs: 4
+Local model: config plus 46 indexed shard(s) present
+SGLang CLI: required DeepSeek-V4 launch options are available
+Validation passed. No apt, curl, wget, pip, uv, or model download command was executed.
+checkpoint payload verification: 46 shard(s), 148.66 GiB
+checkpoint payload verification: 46 shard(s), 116.78 GiB
+checkpoint payload verification: 46 shard(s), 84.90 GiB
+run directory: /home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04
+full: prune=0%, experts=256, checkpoint=148.66 GiB, path=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash
+prune25: prune=25%, experts=192, checkpoint=116.78 GiB, path=/mnt/docker_data/v4-converted/v4-prune25-keep192
+prune50: prune=50%, experts=128, checkpoint=84.90 GiB, path=/mnt/docker_data/v4-converted/v4-prune50-keep128
+[full] starting
+GPU exclusivity check: PASS (GPUs 4,5,6,7; no compute processes; each uses at most 2048 MiB)
+4, 0
+5, 0
+6, 0
+7, 0
+GPU exclusivity check: PASS (GPUs 4,5,6,7; no compute processes; each uses at most 2048 MiB)
+4, 0
+5, 0
+6, 0
+7, 0
+[server] still loading after 60s; waiting for http://127.0.0.1:60000/v1/models
+[full AIME24] still running after 60s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 120s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 180s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+dataset=AIME24 model=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash total=30 resumed=0 pending=30 workers=1 run=912e4bb46f754cf5
+question=1/30 repeat=1/1 correct=yes latency=197.72s completion_tokens=1470 progress=1/30 failures=0
+[full AIME24] still running after 240s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 300s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 360s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 420s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 480s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 540s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 600s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 660s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 720s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 780s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 840s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 900s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 960s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1020s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1080s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1140s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1200s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1260s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+question=2/30 repeat=1/1 correct=no latency=1100.75s completion_tokens=8192 progress=2/30 failures=0
+[full AIME24] still running after 1320s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1380s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1440s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1500s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1560s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1620s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1680s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1740s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1800s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1860s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1920s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 1980s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2040s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2100s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2160s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2220s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2280s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2340s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2400s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2460s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+question=3/30 repeat=1/1 correct=no latency=1169.56s completion_tokens=8192 progress=3/30 failures=0
+[full AIME24] still running after 2520s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2580s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2640s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2700s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2760s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2820s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2880s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 2940s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3000s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3060s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3120s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3180s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3240s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3300s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3360s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3420s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3480s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3540s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3600s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3660s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+question=4/30 repeat=1/1 correct=no latency=1212.63s completion_tokens=8192 progress=4/30 failures=0
+[full AIME24] still running after 3720s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3780s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3840s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3900s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 3960s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4020s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4080s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4140s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4200s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4260s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4320s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4380s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4440s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4500s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+question=5/30 repeat=1/1 correct=yes latency=873.30s completion_tokens=6580 progress=5/30 failures=0
+[full AIME24] still running after 4560s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4620s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4680s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4740s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4800s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4860s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4920s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 4980s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5040s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5100s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+question=6/30 repeat=1/1 correct=yes latency=605.27s completion_tokens=4577 progress=6/30 failures=0
+[full AIME24] still running after 5160s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5220s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5280s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5340s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5400s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5460s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5520s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5580s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5640s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5700s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5760s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5820s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5880s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 5940s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 6000s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 6060s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 6120s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 6180s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+question=7/30 repeat=1/1 correct=no latency=1077.09s completion_tokens=8192 progress=7/30 failures=0
+[full AIME24] still running after 6240s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 6300s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log
+[full AIME24] still running after 6360s; log=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_easyep_matrix_04/full/evaluation/AIME24.log

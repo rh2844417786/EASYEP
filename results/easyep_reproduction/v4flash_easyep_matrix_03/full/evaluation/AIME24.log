@@ -1,0 +1,2 @@
+dataset=AIME24 model=/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash total=30 resumed=0 pending=30 workers=1 run=912e4bb46f754cf5
+question=1/30 repeat=1/1 correct=yes latency=167.91s completion_tokens=1248 progress=1/30 failures=0
