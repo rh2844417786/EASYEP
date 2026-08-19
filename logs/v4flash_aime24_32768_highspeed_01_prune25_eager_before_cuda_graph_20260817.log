@@ -1,0 +1,2 @@
+dataset=AIME24 model=/mnt/docker_data/v4-converted/v4-prune25-keep192 total=30 resumed=1 pending=29 workers=1 run=e8618af1dfcfb077
+question=1/30 repeat=1/1 correct=yes latency=160.60s completion_tokens=1192 token_ps=7.42 progress=1/30 failures=0 resumed_checkpoint=yes

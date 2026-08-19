@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "model": "/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash",
+  "elapsed_seconds": 0.222,
+  "content": "READY",
+  "reasoning_content": null,
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 12,
+    "completion_tokens": 3,
+    "prompt_tokens_details": null,
+    "reasoning_tokens": 0
+  }
+}

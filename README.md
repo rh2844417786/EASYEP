@@ -241,6 +241,44 @@ We provide evaluation scripts for math-related tasks. Simply run the script belo
 bash evaluation/scripts/run_eval.sh
 ```
 
+### V4 Agent-OS, GPQA, and KuveCodeBench
+
+The V4 HTTP client also adapts the local Arrow artifacts for three non-MATH
+benchmarks. `kuvecodebench` is the repository name for the bundled
+LiveCodeBench-v3 data. Each sample is logged in the same format as the AIME
+client, including `correct`, `latency`, `completion_tokens`, and `token_ps`:
+
+```bash
+python3 evaluation/run_v4_benchmarks.py \
+  --data-name gpqa \
+  --target-path results/v4_benchmarks/full/evaluation \
+  --base-url http://127.0.0.1:60000/v1 \
+  --model /mnt/public_data/deepseek-ai/DeepSeek-V4-Flash \
+  --max-tokens 32768 --workers 1 --repeats 1 \
+  --temperature 1.0 --top-p 1.0 --thinking
+```
+
+Run one request per dataset on all three checkpoints before a full matrix:
+
+```bash
+python3 scripts/smoke_v4_benchmark_matrix.py
+```
+
+The complete full/prune25/prune50 matrix uses the same TP=4 Marlin and decode
+CUDA-graph settings as the V4 high-speed server:
+
+```bash
+bash scripts/run_v4_benchmark_matrix.sh
+```
+
+GPQA is scored by answer letter. Agent-OS is scored by next-action matching
+against the offline trajectory. The bundled LiveCodeBench artifact does not
+contain hidden judge tests, so the adapter uses public examples: AtCoder rows
+run generated Python against sample stdin/stdout, while LeetCode rows parse
+the `Solution` starter signature and invoke the method for each example.
+Only rows with unparseable or missing public examples are logged as
+`correct=unknown` rather than being counted as failures.
+
 ## 6. Citation
 ```
 @article{EASY-EP,
@@ -269,3 +307,50 @@ bash evaluation/scripts/run_eval.sh
   --watchdog-timeout 1800 \
   --decode-log-interval 10 \
   --enable-metrics
+
+## 8. Start V4 Benchmark Evaluation
+
+Run these commands from the repository root. The scripts reserve physical GPUs
+4-7, start one TP=4 SGLang service at a time with the high-speed Marlin and
+decode CUDA-graph profile, and stop that service before moving to the next
+checkpoint. Ensure that port `60000` is not already serving SGLang.
+
+First verify that the full, 25%-pruned, and 50%-pruned checkpoints can all
+start and answer one sample from each dataset:
+
+```bash
+python3 scripts/smoke_v4_benchmark_matrix.py
+```
+
+Then start the full `full x prune25 x prune50` evaluation matrix in the
+background. It evaluates `agent_os`, `gpqa`, and `kuvecodebench` with
+`max_tokens=32768`, `repeats=1`, and `workers=1`. Set a stable `RUN_ID` so an
+interrupted run can be resumed with the same command.
+
+```bash
+mkdir -p logs
+RUN_ID="v4flash_agentos_gpqa_kuvecodebench_$(date +%Y%m%d_%H%M%S)"
+nohup env RUN_ID="${RUN_ID}" bash scripts/run_v4_benchmark_matrix.sh \
+  >"logs/${RUN_ID}.log" 2>&1 &
+```
+
+The matrix log reports stage transitions. Follow the per-question output from
+all variants and datasets with this command (keep the path on one line so shell
+brace expansion produces nine log files):
+
+```bash
+tail --retry -n 0 -F results/easyep_reproduction/${RUN_ID}/{full,prune25,prune50}/evaluation/{agent_os,gpqa,kuvecodebench}.log \
+  | grep --line-buffered '^question='
+```
+
+Each line has the form below. `token_ps` is completion tokens divided by the
+request latency; `correct=unknown` is used only for KuveCodeBench rows without
+runnable public examples and is excluded from the accuracy denominator.
+
+```text
+question=1/30 repeat=1/1 correct=yes latency=11.89s completion_tokens=1324 token_ps=111.33 progress=1/30 failures=0
+```
+
+To resume after an interruption, make sure the old SGLang service has stopped,
+set `RUN_ID` to the original value, and repeat the `nohup` command. Existing
+`.partial.jsonl` records are reused and completed questions are skipped.

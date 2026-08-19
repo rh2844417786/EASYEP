@@ -109,13 +109,9 @@ MOE_INIT_REPLACEMENT = f"""        self.routed_scaling_factor = config.routed_sc
                         raise ValueError(
                             "EASY-EP mask routing requires --disable-shared-experts-fusion"
                         )
-                    if (
-                        server_args.enable_eplb
-                        or server_args.ep_num_redundant_experts
-                        or not server_args.disable_cuda_graph
-                    ):
+                    if server_args.enable_eplb or server_args.ep_num_redundant_experts:
                         raise ValueError(
-                            "EASY-EP mask routing requires EPLB/redundant experts/CUDA graph disabled"
+                            "EASY-EP mask routing requires EPLB and redundant experts disabled"
                         )
                     a2a_backend = get_moe_a2a_backend()
                     if any(

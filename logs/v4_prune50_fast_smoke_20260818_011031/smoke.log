@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "model": "/mnt/docker_data/v4-converted/v4-prune50-keep128",
+  "elapsed_seconds": 0.226,
+  "content": "READY",
+  "reasoning_content": null,
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 12,
+    "completion_tokens": 3,
+    "prompt_tokens_details": null,
+    "reasoning_tokens": 0
+  }
+}
+[prune50] adapter smoke: agent_os
+dataset=agent_os model=/mnt/docker_data/v4-converted/v4-prune50-keep128 total=1 resumed=0 pending=1 workers=1 run=26c349738d9050ca
+question=1/1 repeat=1/1 correct=yes latency=1.11s completion_tokens=80 token_ps=72.11 progress=1/1 failures=0
+agent_os: 100.0% (1 / 1 scored; 0 unscored); output=/home/jovyan/wangtonghan/EASYEP/logs/v4_prune50_fast_smoke_20260818_011031/evaluation/agent_os.jsonl
+[prune50] adapter smoke: gpqa
+dataset=gpqa model=/mnt/docker_data/v4-converted/v4-prune50-keep128 total=1 resumed=0 pending=1 workers=1 run=0841b197873eba55
+question=1/1 repeat=1/1 correct=no latency=1.36s completion_tokens=128 token_ps=94.09 progress=1/1 failures=0
+gpqa: 0.0% (0 / 1 scored; 0 unscored); output=/home/jovyan/wangtonghan/EASYEP/logs/v4_prune50_fast_smoke_20260818_011031/evaluation/gpqa.jsonl
+[prune50] adapter smoke: kuvecodebench
+dataset=kuvecodebench model=/mnt/docker_data/v4-converted/v4-prune50-keep128 total=1 resumed=0 pending=1 workers=1 run=bc834c695552430d
+question=1/1 repeat=1/1 correct=no latency=1.35s completion_tokens=128 token_ps=94.78 progress=1/1 failures=0
+kuvecodebench: 0.0% (0 / 1 scored; 0 unscored); output=/home/jovyan/wangtonghan/EASYEP/logs/v4_prune50_fast_smoke_20260818_011031/evaluation/kuvecodebench.jsonl

@@ -1,0 +1,30 @@
+dataset=AIME24 model=/mnt/docker_data/v4-converted/v4-prune25-keep192 total=30 resumed=2 pending=28 workers=1 run=e8618af1dfcfb077
+question=3/30 repeat=1/1 correct=no latency=289.97s completion_tokens=32768 token_ps=113.00 progress=3/30 failures=0
+question=4/30 repeat=1/1 correct=no latency=289.61s completion_tokens=32768 token_ps=113.15 progress=4/30 failures=0
+question=5/30 repeat=1/1 correct=yes latency=72.22s completion_tokens=8186 token_ps=113.36 progress=5/30 failures=0
+question=6/30 repeat=1/1 correct=yes latency=66.18s completion_tokens=7499 token_ps=113.31 progress=6/30 failures=0
+question=7/30 repeat=1/1 correct=yes latency=190.16s completion_tokens=21535 token_ps=113.24 progress=7/30 failures=0
+question=8/30 repeat=1/1 correct=yes latency=16.16s completion_tokens=1830 token_ps=113.22 progress=8/30 failures=0
+question=9/30 repeat=1/1 correct=yes latency=30.74s completion_tokens=3439 token_ps=111.87 progress=9/30 failures=0
+question=10/30 repeat=1/1 correct=yes latency=10.46s completion_tokens=1175 token_ps=112.30 progress=10/30 failures=0
+question=11/30 repeat=1/1 correct=yes latency=159.73s completion_tokens=17812 token_ps=111.51 progress=11/30 failures=0
+question=12/30 repeat=1/1 correct=yes latency=27.71s completion_tokens=3136 token_ps=113.16 progress=12/30 failures=0
+question=13/30 repeat=1/1 correct=yes latency=16.06s completion_tokens=1813 token_ps=112.90 progress=13/30 failures=0
+question=14/30 repeat=1/1 correct=yes latency=270.32s completion_tokens=30383 token_ps=112.40 progress=14/30 failures=0
+question=15/30 repeat=1/1 correct=yes latency=141.80s completion_tokens=16064 token_ps=113.29 progress=15/30 failures=0
+question=16/30 repeat=1/1 correct=yes latency=28.88s completion_tokens=3225 token_ps=111.66 progress=16/30 failures=0
+question=17/30 repeat=1/1 correct=yes latency=24.38s completion_tokens=2762 token_ps=113.30 progress=17/30 failures=0
+question=18/30 repeat=1/1 correct=yes latency=218.36s completion_tokens=24711 token_ps=113.17 progress=18/30 failures=0
+question=19/30 repeat=1/1 correct=yes latency=65.38s completion_tokens=7413 token_ps=113.38 progress=19/30 failures=0
+question=20/30 repeat=1/1 correct=yes latency=32.95s completion_tokens=3736 token_ps=113.37 progress=20/30 failures=0
+question=21/30 repeat=1/1 correct=no latency=289.44s completion_tokens=32768 token_ps=113.21 progress=21/30 failures=0
+question=22/30 repeat=1/1 correct=no latency=289.47s completion_tokens=32768 token_ps=113.20 progress=22/30 failures=0
+question=23/30 repeat=1/1 correct=yes latency=90.64s completion_tokens=10273 token_ps=113.34 progress=23/30 failures=0
+question=24/30 repeat=1/1 correct=yes latency=24.89s completion_tokens=2726 token_ps=109.50 progress=24/30 failures=0
+question=25/30 repeat=1/1 correct=yes latency=11.09s completion_tokens=1249 token_ps=112.65 progress=25/30 failures=0
+question=26/30 repeat=1/1 correct=no latency=289.53s completion_tokens=32768 token_ps=113.18 progress=26/30 failures=0
+question=27/30 repeat=1/1 correct=yes latency=30.95s completion_tokens=3506 token_ps=113.28 progress=27/30 failures=0
+question=28/30 repeat=1/1 correct=yes latency=88.11s completion_tokens=9964 token_ps=113.08 progress=28/30 failures=0
+question=29/30 repeat=1/1 correct=yes latency=266.06s completion_tokens=30083 token_ps=113.07 progress=29/30 failures=0
+question=30/30 repeat=1/1 correct=yes latency=117.81s completion_tokens=13198 token_ps=112.03 progress=30/30 failures=0
+AIME24: 83.33% (25 / 30); output=results/easyep_reproduction/v4flash_aime24_32768_highspeed_01/prune25/evaluation/AIME24.jsonl

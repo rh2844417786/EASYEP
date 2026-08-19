@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "model": "/mnt/docker_data/v4-converted/v4-prune25-keep192",
+  "elapsed_seconds": 0.235,
+  "content": "READY",
+  "reasoning_content": null,
+  "usage": {
+    "prompt_tokens": 9,
+    "total_tokens": 12,
+    "completion_tokens": 3,
+    "prompt_tokens_details": null,
+    "reasoning_tokens": 0
+  }
+}

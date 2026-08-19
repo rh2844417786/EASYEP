@@ -1,0 +1,312 @@
+/opt/sglang-v4/lib/python3.11/site-packages/sglang/launch_server.py:56: UserWarning: 'python -m sglang.launch_server' is still supported, but 'sglang serve' is the recommended entrypoint.
+  Example: sglang serve --model-path <model> [options]
+  warnings.warn(
+[2026-08-17 12:24:42] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:42] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:42] Breakable CUDA graph is incompatible with DeepSeek-V4 (heavy capture-pool memory pressure); disabling prefill CUDA graph.
+[2026-08-17 12:24:42] Use dsv4 attention backend for DeepseekV4ForCausalLM, setting page_size to 256.
+[2026-08-17 12:24:42] Setting swa_full_tokens_ratio to 0.1 for DeepseekV4ForCausalLM.
+[2026-08-17 12:24:42] Setting KV cache dtype to fp8_e4m3 for DeepseekV4ForCausalLM.
+[2026-08-17 12:24:43] server_args=ServerArgs(model_path='/mnt/docker_data/v4-converted/v4-prune50-keep128', tokenizer_path='/mnt/docker_data/v4-converted/v4-prune50-keep128', tokenizer_mode='auto', tokenizer_backend='huggingface', tokenizer_worker_num=1, detokenizer_worker_num=1, skip_tokenizer_init=False, load_format='auto', model_loader_extra_config='{}', trust_remote_code=True, context_length=65536, is_embedding=False, enable_multimodal=None, revision=None, model_impl='auto', model_config_parser='auto', json_model_override_args='{}', dtype='auto', quantization=None, quantization_param_path=None, kv_cache_dtype='fp8_e4m3', enable_fp32_lm_head=False, modelopt_quant=None, modelopt_checkpoint_restore_path=None, modelopt_checkpoint_save_path=None, modelopt_export_path=None, quantize_and_serve=False, rl_quant_profile=None, enable_tf32_matmul=False, mem_fraction_static=0.8, max_running_requests=32, max_queued_requests=None, max_total_tokens=None, chunked_prefill_size=8192, enable_dynamic_chunking=False, max_prefill_tokens=16384, prefill_max_requests=None, schedule_policy='fcfs', enable_priority_scheduling=False, disable_priority_preemption=False, default_priority_value=None, abort_on_priority_when_disabled=False, schedule_low_priority_values_first=False, priority_scheduling_preemption_threshold=10, retraction_policy='length', schedule_conservativeness=1.0, page_size=256, swa_full_tokens_ratio=0.1, disable_hybrid_swa_memory=False, radix_eviction_policy='lru', prefill_only_disable_kv_cache=False, disable_radix_cache=False, enable_page_major_kv_layout=False, enable_unified_memory=False, disable_chunked_prefix_cache=False, disable_overlap_schedule=False, num_continuous_decode_steps=1, scheduler_recv_interval=1, enable_mixed_chunk=False, nccl_port=None, dist_timeout=None, dist_init_addr=None, nnodes=1, node_rank=0, tp_size=4, dcp_size=1, pp_size=1, pp_max_micro_batch_size=None, pp_async_batch_depth=0, dp_size=1, load_balance_method='round_robin', attn_cp_size=1, moe_dp_size=1, enable_prefill_cp=False, cp_strategy=None, enable_dsa_cache_layer_split=False, enable_dsa_prefill_context_parallel=False, dsa_prefill_cp_mode='round-robin-split', enable_prefill_context_parallel=False, prefill_cp_mode='in-seq-split', enable_dp_attention=False, enable_dp_attention_local_control_broadcast=False, enable_dp_lm_head=False, enable_attn_tp_input_scattered=False, disable_attn_tp_gather=False, enable_p2p_check=False, device='cuda', base_gpu_id=0, gpu_id_step=1, random_seed=805663713, watchdog_timeout=1800.0, soft_watchdog_timeout=None, sleep_on_idle=False, use_ray=False, custom_sigquit_handler=None, numa_node=None, gc_threshold=None, host='127.0.0.1', port=60000, fastapi_root_path='', smg_grpc_mode=False, grpc_mode=False, grpc_port=None, sidecar=None, sidecar_args=None, skip_server_warmup=False, warmups=None, enable_http2=False, ssl_keyfile=None, ssl_certfile=None, ssl_ca_certs=None, ssl_keyfile_password=None, enable_ssl_refresh=False, api_key=None, admin_api_key=None, served_model_name='/mnt/docker_data/v4-converted/v4-prune50-keep128', weight_version='default', chat_template=None, hf_chat_template_name=None, completion_template=None, file_storage_path='sglang_storage', enable_cache_report=False, reasoning_parser='deepseek-v4', default_chat_template_kwargs=None, strip_thinking_cache=False, enable_strict_thinking=False, tool_call_parser='deepseekv4', tool_server=None, sampling_defaults='model', asr_max_buffer_seconds=60, asr_max_concurrent_sessions=32, preferred_sampling_params=None, allow_auto_truncate=False, stream_interval=1, batch_notify_size=16, stream_response_default_include_usage=False, incremental_streaming_output=False, enable_streaming_session=False, enable_session_radix_cache=False, log_level='info', log_level_http=None, log_requests=False, log_requests_level=2, log_requests_format='text', log_requests_target=None, uvicorn_access_log_exclude_prefixes=[], crash_dump_folder=None, show_time_cost=False, enable_metrics=True, smg_http_sidecar_port=None, enable_mfu_metrics=False, enable_metrics_for_all_schedulers=False, load_snapshot_publish_interval=15, tokenizer_metrics_custom_labels_header='x-custom-labels', tokenizer_metrics_allowed_custom_labels=None, extra_metric_labels=None, bucket_time_to_first_token=None, bucket_inter_token_latency=None, bucket_e2e_request_latency=None, prompt_tokens_buckets=None, generation_tokens_buckets=None, gc_warning_threshold_secs=0.0, decode_log_interval=10, enable_request_time_stats_logging=False, kv_events_config=None, enable_forward_pass_metrics=False, forward_pass_metrics_worker_id='', forward_pass_metrics_ipc_name=None, enable_trace=False, trace_modules='request', otlp_traces_endpoint='localhost:4317', export_metrics_to_file=False, export_metrics_to_file_dir=None, stat_loggers=None, constrained_json_whitespace_pattern=None, constrained_json_disable_any_whitespace=False, attention_backend='dsv4', decode_attention_backend=None, prefill_attention_backend=None, sampling_backend='flashinfer', grammar_backend='xgrammar', radix_cache_backend=None, mm_attention_backend=None, fp8_gemm_runner_backend='auto', fp4_gemm_runner_backend='auto', bf16_gemm_backend='auto', dsa_prefill_backend=None, dsa_decode_backend=None, dsa_paged_mqa_logits_backend='auto', dsa_topk_backend='sgl-kernel', disable_flashinfer_autotune=False, mamba_backend='triton', cuda_graph_config=CudaGraphConfig(decode=PhaseConfig(backend='full', max_bs=32, bs=[1, 2, 4, 8, 12, 16, 24, 32], tc_compiler='eager', full_prefill_max_req=None), prefill=PhaseConfig(backend='disabled', max_bs=8192, bs=[4, 8, 12, 16, 20, 24, 28, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256, 288, 320, 352, 384, 416, 448, 480, 512, 576, 640, 704, 768, 832, 896, 960, 1024, 1280, 1536, 1792, 2048, 2304, 2560, 2816, 3072, 3328, 3584, 3840, 4096, 4608, 5120, 5632, 6144, 6656, 7168, 7680, 8192], tc_compiler='eager', full_prefill_max_req=None)), cuda_graph_backend_decode='full', cuda_graph_backend_prefill=None, cuda_graph_max_bs_decode=32, cuda_graph_max_bs_prefill=None, cuda_graph_bs_decode=None, cuda_graph_bs_prefill=None, cuda_graph_tc_compiler=None, disable_prefill_cuda_graph=False, disable_decode_cuda_graph=False, disable_cuda_graph=False, disable_cuda_graph_padding=False, enable_profile_cuda_graph=False, enable_cudagraph_gc=False, debug_cuda_graph=False, enable_layerwise_nvtx_marker=False, enable_nccl_nvls=False, enable_symm_mem=False, triton_attention_reduce_in_fp32=False, triton_attention_num_kv_splits=8, triton_attention_split_tile_size=None, flashinfer_mla_disable_ragged=False, enable_fused_qk_norm_rope=False, enable_precise_embedding_interpolation=False, enable_fused_moe_sum_all_reduce=False, enable_deepseek_v4_fp4_indexer=False, disable_custom_all_reduce=True, enable_mscclpp=False, enable_torch_symm_mem=False, enable_scattered_sconv=False, pre_warm_nccl=False, enable_quant_communications=False, enable_flashinfer_allreduce_fusion=False, enforce_disable_flashinfer_allreduce_fusion=False, flashinfer_allreduce_fusion_backend=None, enable_aiter_allreduce_fusion=False, enable_torch_compile=False, enable_torch_compile_debug_mode=False, torch_compile_max_bs=32, torchao_config='', speculative_algorithm=None, speculative_draft_model_path=None, speculative_draft_model_revision=None, speculative_draft_load_format=None, speculative_num_steps=None, speculative_eagle_topk=None, speculative_num_draft_tokens=None, speculative_dflash_block_size=None, speculative_dspark_block_size=None, speculative_dspark_sps_table_path=None, speculative_dspark_confidence_sts_path=None, speculative_dspark_align_verify_tokens_to_graph_tier=False, speculative_accept_threshold_single=1.0, speculative_accept_threshold_acc=1.0, speculative_use_rejection_sampling=False, speculative_token_map=None, speculative_attention_mode='prefill', speculative_draft_attention_backend=None, speculative_draft_window_size=None, speculative_moe_runner_backend='marlin', speculative_moe_a2a_backend=None, speculative_draft_model_quantization=None, speculative_skip_dp_mlp_sync=False, enable_multi_layer_eagle=False, speculative_adaptive=False, speculative_adaptive_config=None, decoupled_spec_bind_endpoint=None, decoupled_spec_connect_endpoints=None, decoupled_spec_rank=None, decoupled_spec_role='null', spec_trace_dir=None, speculative_ngram_min_bfs_breadth=1, speculative_ngram_max_bfs_breadth=10, speculative_ngram_match_type='BFS', speculative_ngram_max_trie_depth=18, speculative_ngram_capacity=10000000, speculative_ngram_external_corpus_path=None, speculative_ngram_external_sam_budget=0, speculative_ngram_external_corpus_max_tokens=10000000, ep_size=1, moe_a2a_backend='none', moe_runner_backend='marlin', flashinfer_mxfp4_moe_precision='default', deepep_mode='auto', fuseep_mode=2, deepep_dispatcher_output_dtype='auto', ep_num_redundant_experts=0, ep_dispatch_algorithm=None, init_expert_location='trivial', enable_eplb=False, eplb_algorithm='auto', eplb_rebalance_num_iterations=1000, eplb_rebalance_layers_per_chunk=None, eplb_min_rebalancing_utilization_threshold=1.0, expert_distribution_recorder_mode=None, expert_distribution_recorder_buffer_size=1000, enable_expert_distribution_metrics=False, deepep_config=None, moe_dense_tp_size=None, elastic_ep_backend=None, enable_elastic_expert_backup=False, mooncake_ib_device=None, enable_waterfill=False, ep_join_mode=None, ep_join_rank_offset=0, elastic_ep_initial_size=None, max_ep_size=None, elastic_ep_scale_timeout=600, elastic_ep_rejoin=False, disable_flashinfer_cutlass_moe_fp4_allgather=False, disable_shared_experts_fusion=True, enforce_shared_experts_fusion=False, max_mamba_cache_size=None, mamba_ssm_dtype=None, enable_mamba_cache_stochastic_rounding=False, mamba_cache_philox_rounds=0, mamba_full_memory_ratio=0.9, mamba_radix_cache_strategy='auto', uses_mamba_radix_cache=False, mamba_track_interval=256, enable_int8_mamba_checkpoint=False, int8_mamba_ckpt_size=None, linear_attn_backend='triton', linear_attn_decode_backend=None, linear_attn_prefill_backend=None, enable_linear_replayssm=False, linear_replayssm_cache_len=16, enable_gdn_replayssm_spec=False, enable_hierarchical_cache=False, hicache_ratio=2.0, hicache_size=0, hicache_write_policy='write_through', hicache_io_backend='kernel', hicache_mem_layout='page_first', hicache_storage_backend=None, hicache_storage_prefetch_policy='timeout', hicache_storage_backend_extra_config=None, enable_hisparse=False, hisparse_config=None, enable_broadcast_mm_inputs_process=False, enable_prefix_mm_cache=False, mm_enable_dp_encoder=False, mm_process_config={}, limit_mm_data_per_request=None, enable_mm_global_cache=False, disable_fast_image_processor=False, mm_feature_transport='cpu', keep_mm_feature_on_device=False, enable_lora=None, enable_lora_overlap_loading=None, max_lora_rank=None, lora_target_modules=None, lora_paths=None, max_loaded_loras=None, max_loras_per_batch=8, lora_eviction_policy='lru', lora_backend='csgmv', max_lora_chunk_size=16, experts_shared_outer_loras=None, lora_use_virtual_experts=False, lora_strict_loading=False, lora_drain_wait_threshold=0.0, enable_two_batch_overlap=False, enable_single_batch_overlap=False, tbo_token_distribution_threshold=0.48, cpu_offload_gb=0, offload_group_size=-1, offload_num_in_group=1, offload_prefetch_step=1, offload_mode='cpu', enable_lmcache=False, lmcache_config_file=None, enable_flexkv=False, flexkv_config_file=None, kt_weight_path=None, kt_method='AMXINT4', kt_cpuinfer=None, kt_threadpool_count=2, kt_num_gpu_experts=None, kt_max_deferred_experts_per_token=None, dllm_algorithm=None, dllm_algorithm_config=None, dllm_fdfo=True, disaggregation_mode='null', disaggregation_transfer_backend='mooncake', disaggregation_bootstrap_port=8998, disaggregation_ib_device=None, disaggregation_decode_enable_radix_cache=False, disaggregation_decode_enable_offload_kvcache=False, num_reserved_decode_tokens=512, disaggregation_decode_extra_slots=None, disaggregation_decode_polling_interval=1, optimistic_prefill_attempts=0, encoder_only=False, language_only=False, encoder_transfer_backend='zmq_to_scheduler', encoder_urls=[], encoder_bootstrap_port=8997, encoder_register_urls=[], enable_adaptive_dispatch_to_encoder=False, enable_pdmux=False, pdmux_config_path=None, sm_group_num=8, custom_weight_loader=[], weight_loader_disable_mmap=False, weight_loader_prefetch_checkpoints=False, weight_loader_prefetch_num_threads=4, weight_loader_drop_cache_after_load=False, remote_instance_weight_loader_seed_instance_ip=None, remote_instance_weight_loader_seed_instance_service_port=None, remote_instance_weight_loader_send_weights_group_ports=None, remote_instance_weight_loader_backend='nccl', remote_instance_weight_loader_start_seed_via_transfer_engine=False, engine_info_bootstrap_port=6789, modelexpress_config=None, download_dir=None, model_checksum=None, delete_ckpt_after_loading=False, decrypted_config_file=None, decrypted_draft_config_file=None, checkpoint_engine_wait_weights_before_ready=False, enable_prefill_delayer=False, prefill_delayer_max_delay_passes=30, prefill_delayer_token_usage_low_watermark=None, prefill_delayer_forward_passes_buckets=None, prefill_delayer_wait_seconds_buckets=None, prefill_delayer_queue_min_ratio=None, prefill_delayer_max_delay_ms=None, min_free_slots_delay=None, enable_deterministic_inference=False, rl_on_policy_target=None, kv_canary='none', kv_canary_real_data='none', kv_canary_sweep_interval=0, enable_dynamic_batch_tokenizer=False, dynamic_batch_tokenizer_batch_size=32, dynamic_batch_tokenizer_batch_timeout=0.002, enable_tokenizer_batch_encode=False, disable_tokenizer_batch_decode=False, debug_tensor_dump_output_folder=None, debug_tensor_dump_layers=None, debug_tensor_dump_input_file=None, enable_memory_saver=False, enable_weights_cpu_backup=False, enable_draft_weights_cpu_backup=False, enable_custom_logit_processor=False, enable_return_hidden_states=False, enable_return_routed_experts=False, enable_return_indexer_topk=False, disable_outlines_disk_cache=False, enable_mis=False, forward_hooks=None, msprobe_dump_config=None)
+[2026-08-17 12:24:43] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:43] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:46] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:24:46] No HuggingFace chat template found
+[2026-08-17 12:24:46] No chat template found, defaulting to 'string' content format
+[2026-08-17 12:24:55 TP3] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:55 TP3] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:55 TP1] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:55 TP1] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:55 TP2] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:55 TP2] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:55 TP0] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:55 TP0] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:57 TP3] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:24:57 TP3] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:57 TP3] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:57 TP1] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:24:57 TP2] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:24:58 TP0] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:24:58 TP3] Init torch distributed begin.
+[2026-08-17 12:24:58 TP1] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:58 TP1] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:58 TP2] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:58 TP2] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:58 TP0] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-17 12:24:58 TP0] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-17 12:24:58 TP1] Init torch distributed begin.
+[2026-08-17 12:24:58 TP2] Init torch distributed begin.
+[2026-08-17 12:24:58 TP0] Init torch distributed begin.
+[2026-08-17 12:24:58] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:25:00 TP0] sglang is using nccl==2.28.9
+[2026-08-17 12:25:04 TP1] Init torch distributed ends. elapsed=6.02 s, mem usage=1.26 GB
+[2026-08-17 12:25:04 TP0] Init torch distributed ends. elapsed=5.96 s, mem usage=1.21 GB
+[2026-08-17 12:25:04 TP2] Init torch distributed ends. elapsed=6.00 s, mem usage=1.26 GB
+[2026-08-17 12:25:04 TP3] Init torch distributed ends. elapsed=6.32 s, mem usage=1.03 GB
+[2026-08-17 12:25:05 TP2] Load weight begin. avail mem=77.35 GB
+[2026-08-17 12:25:05 TP1] Load weight begin. avail mem=77.35 GB
+[2026-08-17 12:25:05 TP0] Load weight begin. avail mem=77.40 GB
+[2026-08-17 12:25:05 TP0] Detected fp8 checkpoint.
+[2026-08-17 12:25:05 TP3] Load weight begin. avail mem=77.58 GB
+[2026-08-17 12:25:05 TP2] FlashInfer TRTLLM MoE deferred finalize is disabled (moe_runner_backend=marlin, quant_method=Mxfp4MarlinMoEMethod).
+[2026-08-17 12:25:05 TP1] FlashInfer TRTLLM MoE deferred finalize is disabled (moe_runner_backend=marlin, quant_method=Mxfp4MarlinMoEMethod).
+[2026-08-17 12:25:05 TP0] FlashInfer TRTLLM MoE deferred finalize is disabled (moe_runner_backend=marlin, quant_method=Mxfp4MarlinMoEMethod).
+[2026-08-17 12:25:06 TP3] FlashInfer TRTLLM MoE deferred finalize is disabled (moe_runner_backend=marlin, quant_method=Mxfp4MarlinMoEMethod).
+Multi-thread loading shards:   0% Completed | 0/46 [00:00<?, ?it/s]Multi-thread loading shards:   4% Completed | 2/46 [00:01<00:43,  1.02it/s]Multi-thread loading shards:   7% Completed | 3/46 [00:02<00:34,  1.24it/s]Multi-thread loading shards:  24% Completed | 11/46 [00:03<00:08,  4.16it/s]Multi-thread loading shards:  26% Completed | 12/46 [00:03<00:07,  4.43it/s]Multi-thread loading shards:  41% Completed | 19/46 [00:04<00:04,  6.45it/s]Multi-thread loading shards:  46% Completed | 21/46 [00:04<00:03,  6.50it/s]Multi-thread loading shards:  54% Completed | 25/46 [00:04<00:02,  8.62it/s]Multi-thread loading shards:  59% Completed | 27/46 [00:05<00:03,  6.24it/s]Multi-thread loading shards:  61% Completed | 28/46 [00:05<00:02,  6.45it/s]Multi-thread loading shards:  63% Completed | 29/46 [00:05<00:02,  5.94it/s]Multi-thread loading shards:  65% Completed | 30/46 [00:05<00:02,  6.33it/s]Multi-thread loading shards:  76% Completed | 35/46 [00:06<00:01,  6.48it/s]Multi-thread loading shards:  78% Completed | 36/46 [00:06<00:01,  6.27it/s]Multi-thread loading shards:  80% Completed | 37/46 [00:07<00:01,  6.43it/s]Multi-thread loading shards:  83% Completed | 38/46 [00:07<00:01,  5.74it/s]Multi-thread loading shards:  93% Completed | 43/46 [00:07<00:00, 11.63it/s][2026-08-17 12:25:16 TP3] Execute dequant fp8 wo_a
+Multi-thread loading shards: 100% Completed | 46/46 [00:07<00:00,  6.18it/s]
+[2026-08-17 12:25:16 TP0] Execute dequant fp8 wo_a
+[2026-08-17 12:25:16 TP2] Execute dequant fp8 wo_a
+[2026-08-17 12:25:16 TP1] Execute dequant fp8 wo_a
+[2026-08-17 12:25:58 TP3] DeepSeek V4 MHC prenorm prewarm: 21 n_splits buckets
+[2026-08-17 12:25:58 TP2] DeepSeek V4 MHC prenorm prewarm: 21 n_splits buckets
+[2026-08-17 12:25:58 TP1] DeepSeek V4 MHC prenorm prewarm: 21 n_splits buckets
+[2026-08-17 12:25:58 TP0] DeepSeek V4 MHC prenorm prewarm: 21 n_splits buckets
+[2026-08-17 12:26:01 TP0] DeepSeek V4 MHC prenorm prewarm at load: compile 3.0s, rank sync +0.3s
+[2026-08-17 12:26:01 TP3] DeepSeek V4 MHC prenorm prewarm at load: compile 3.1s, rank sync +0.4s
+[2026-08-17 12:26:01 TP2] DeepSeek V4 MHC prenorm prewarm at load: compile 3.2s, rank sync +0.2s
+[2026-08-17 12:26:01 TP1] DeepSeek V4 MHC prenorm prewarm at load: compile 2.9s, rank sync +0.4s
+[2026-08-17 12:26:01 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.0.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.1.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.2.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.3.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.4.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.5.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.6.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.7.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.8.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.9.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.10.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.11.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.12.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.13.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.14.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.15.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.16.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.17.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.18.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.19.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.20.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.21.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.22.mlp.experts)...
+[2026-08-17 12:26:02 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.23.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.24.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.25.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.26.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.27.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.28.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.29.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.30.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.31.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.32.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.33.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.34.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.35.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.36.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.37.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.38.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.39.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.40.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.41.mlp.experts)...
+[2026-08-17 12:26:03 TP0] Preparing MXFP4 experts for Marlin backend (layer: model.layers.42.mlp.experts)...
+[2026-08-17 12:26:03 TP3] Using FP8 KV cache but no scaling factors provided. Defaulting to scaling factors of 1.0. This may lead to less accurate results!
+[2026-08-17 12:26:03 TP0] Using FP8 KV cache but no scaling factors provided. Defaulting to scaling factors of 1.0. This may lead to less accurate results!
+[2026-08-17 12:26:04 TP1] Using FP8 KV cache but no scaling factors provided. Defaulting to scaling factors of 1.0. This may lead to less accurate results!
+[2026-08-17 12:26:04 TP3] Load weight end. elapsed=58.69 s, type=DeepseekV4ForCausalLM, quant=fp8, fmt=e4m3, avail mem=54.43 GB, mem usage=23.15 GB.
+[2026-08-17 12:26:04 TP2] Using FP8 KV cache but no scaling factors provided. Defaulting to scaling factors of 1.0. This may lead to less accurate results!
+[2026-08-17 12:26:04 TP0] Load weight end. elapsed=58.97 s, type=DeepseekV4ForCausalLM, quant=fp8, fmt=e4m3, avail mem=54.24 GB, mem usage=23.15 GB.
+[2026-08-17 12:26:04 TP1] Load weight end. elapsed=59.44 s, type=DeepseekV4ForCausalLM, quant=fp8, fmt=e4m3, avail mem=54.19 GB, mem usage=23.15 GB.
+[2026-08-17 12:26:05 TP2] Load weight end. elapsed=59.82 s, type=DeepseekV4ForCausalLM, quant=fp8, fmt=e4m3, avail mem=54.19 GB, mem usage=23.15 GB.
+[2026-08-17 12:26:07 TP2] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:26:07 TP1] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:26:07 TP3] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:26:07 TP0] Tokenizer for /mnt/docker_data/v4-converted/v4-prune50-keep128 is still TokenizersBackend after retries with --trust-remote-code. Model-specific tokenizer attributes may be missing.
+[2026-08-17 12:26:08 TP0] DSV4 memory calculation: bytes_per_full_token=7705.45, available_bytes=38.71 GB, c128_state_fixed=0.34 GB, full_token=5347072
+[2026-08-17 12:26:08 TP3] DSV4 memory calculation: bytes_per_full_token=7705.45, available_bytes=38.71 GB, c128_state_fixed=0.34 GB, full_token=5347072
+[2026-08-17 12:26:08 TP0] DSV4 pool sizes: full=5347072, swa=534528, c4=1336768, c128=41774, c4_state=33408, c128_state=0
+[2026-08-17 12:26:08 TP3] DSV4 pool sizes: full=5347072, swa=534528, c4=1336768, c128=41774, c4_state=33408, c128_state=0
+[2026-08-17 12:26:08 TP1] DSV4 memory calculation: bytes_per_full_token=7705.45, available_bytes=38.71 GB, c128_state_fixed=0.34 GB, full_token=5347072
+[2026-08-17 12:26:08 TP2] DSV4 memory calculation: bytes_per_full_token=7705.45, available_bytes=38.71 GB, c128_state_fixed=0.34 GB, full_token=5347072
+[2026-08-17 12:26:08 TP1] DSV4 pool sizes: full=5347072, swa=534528, c4=1336768, c128=41774, c4_state=33408, c128_state=0
+[2026-08-17 12:26:08 TP3] Initialize DeepSeekV4TokenToKVPool with max_num_reqs=32 swa_size=534528 c4_size=1336768 c4_logical_size=1336768 c128_size=41774 c4_state_pool_size=33408 c128_state_pool_size=4224
+[2026-08-17 12:26:08 TP0] Initialize DeepSeekV4TokenToKVPool with max_num_reqs=32 swa_size=534528 c4_size=1336768 c4_logical_size=1336768 c128_size=41774 c4_state_pool_size=33408 c128_state_pool_size=4224
+[2026-08-17 12:26:08 TP2] DSV4 pool sizes: full=5347072, swa=534528, c4=1336768, c128=41774, c4_state=33408, c128_state=0
+[2026-08-17 12:26:08 TP1] Initialize DeepSeekV4TokenToKVPool with max_num_reqs=32 swa_size=534528 c4_size=1336768 c4_logical_size=1336768 c128_size=41774 c4_state_pool_size=33408 c128_state_pool_size=4224
+[2026-08-17 12:26:08 TP2] Initialize DeepSeekV4TokenToKVPool with max_num_reqs=32 swa_size=534528 c4_size=1336768 c4_logical_size=1336768 c128_size=41774 c4_state_pool_size=33408 c128_state_pool_size=4224
+[2026-08-17 12:26:09 TP0] Memory pool end. avail mem=15.45 GB
+[2026-08-17 12:26:09 TP3] Memory pool end. avail mem=15.64 GB
+[2026-08-17 12:26:09 TP1] Memory pool end. avail mem=15.40 GB
+[2026-08-17 12:26:09 TP2] Memory pool end. avail mem=15.40 GB
+[2026-08-17 12:26:09 TP3] Using DeepseekV4AttnBackend for dsv4 attention backend (CUDA).
+[2026-08-17 12:26:09 TP0] Using DeepseekV4AttnBackend for dsv4 attention backend (CUDA).
+[2026-08-17 12:26:09 TP1] Using DeepseekV4AttnBackend for dsv4 attention backend (CUDA).
+[2026-08-17 12:26:09 TP3] Disable prefill CUDA graph because cuda_graph_config resolved prefill.backend='disabled' (e.g. via --cuda-graph-backend-prefill=disabled or auto-disable rules).
+[2026-08-17 12:26:09 TP3] Capture target decode CUDA graph begin. backend=full, num_tokens_per_req=1, bs=[1, 2, 4, 8, 12, 16, 24, 32], avail mem=15.30 GB
+[2026-08-17 12:26:09 TP1] Disable prefill CUDA graph because cuda_graph_config resolved prefill.backend='disabled' (e.g. via --cuda-graph-backend-prefill=disabled or auto-disable rules).
+[2026-08-17 12:26:09 TP0] Disable prefill CUDA graph because cuda_graph_config resolved prefill.backend='disabled' (e.g. via --cuda-graph-backend-prefill=disabled or auto-disable rules).
+[2026-08-17 12:26:09 TP0] Capture target decode CUDA graph begin. backend=full, num_tokens_per_req=1, bs=[1, 2, 4, 8, 12, 16, 24, 32], avail mem=15.11 GB
+[2026-08-17 12:26:09 TP1] Capture target decode CUDA graph begin. backend=full, num_tokens_per_req=1, bs=[1, 2, 4, 8, 12, 16, 24, 32], avail mem=15.07 GB
+[2026-08-17 12:26:09 TP2] Using DeepseekV4AttnBackend for dsv4 attention backend (CUDA).
+[2026-08-17 12:26:09 TP2] Disable prefill CUDA graph because cuda_graph_config resolved prefill.backend='disabled' (e.g. via --cuda-graph-backend-prefill=disabled or auto-disable rules).
+[2026-08-17 12:26:09 TP2] Capture target decode CUDA graph begin. backend=full, num_tokens_per_req=1, bs=[1, 2, 4, 8, 12, 16, 24, 32], avail mem=15.07 GB
+  0%|          | 0/8 [00:00<?, ?it/s]Capturing batches (bs=32 avail_mem=15.11 GB):   0%|          | 0/8 [00:00<?, ?it/s][2026-08-17 12:26:11 TP0] Entering DeepGEMM JIT Pre-Compile session. It may take a long time (typically 10-20 mins) if you have not run `sglang.compile_deep_gemm`. It is recommended to run `sglang.compile_deep_gemm` with same args as `sglang.launch_server` for pre-compilation to reduce the overhead if you have not run it before. For example: `python3 -m sglang.compile_deep_gemm --model deepseek-ai/DeepSeek-V3 --tp 8 --trust-remote-code`
+[2026-08-17 12:26:11 TP0] Try DeepGEMM JIT Compiling for <GEMM_NT_F8F8BF16> N=1536, K=4096, num_groups=1 with all Ms. It only takes a little time (typically 1 sec) if you have run `python3 -m sglang.compile_deep_gemm`. 
+[2026-08-17 12:26:11 TP0] Required memory for warmup: 0.115234375GB, Available memory: 15.09112548828125GB
+
+DeepGEMM warmup:   0%|          | 0/16384 [00:00<?, ?it/s][A
+DeepGEMM warmup:  11%|█         | 1801/16384 [00:00<00:00, 16561.59it/s][A
+DeepGEMM warmup:  21%|██▏       | 3495/16384 [00:00<00:00, 16773.57it/s][A
+DeepGEMM warmup:  35%|███▌      | 5739/16384 [00:00<00:00, 19308.37it/s][A
+DeepGEMM warmup:  47%|████▋     | 7676/16384 [00:00<00:00, 18640.38it/s][A
+DeepGEMM warmup:  58%|█████▊    | 9547/16384 [00:00<00:00, 15744.96it/s][A
+DeepGEMM warmup:  68%|██████▊   | 11184/16384 [00:00<00:00, 13668.53it/s][A
+DeepGEMM warmup:  77%|███████▋  | 12622/16384 [00:00<00:00, 11841.08it/s][A
+DeepGEMM warmup:  85%|████████▍ | 13877/16384 [00:01<00:00, 10900.03it/s][A
+DeepGEMM warmup:  92%|█████████▏| 15014/16384 [00:01<00:00, 9913.82it/s] [A
+DeepGEMM warmup:  98%|█████████▊| 16040/16384 [00:01<00:00, 9132.04it/s][ADeepGEMM warmup: 100%|██████████| 16384/16384 [00:01<00:00, 11984.51it/s]
+[2026-08-17 12:26:13 TP0] Entering DeepGEMM JIT Pre-Compile session. It may take a long time (typically 10-20 mins) if you have not run `sglang.compile_deep_gemm`. It is recommended to run `sglang.compile_deep_gemm` with same args as `sglang.launch_server` for pre-compilation to reduce the overhead if you have not run it before. For example: `python3 -m sglang.compile_deep_gemm --model deepseek-ai/DeepSeek-V3 --tp 8 --trust-remote-code`
+[2026-08-17 12:26:13 TP0] Try DeepGEMM JIT Compiling for <GEMM_NT_F8F8BF16> N=8192, K=1024, num_groups=1 with all Ms. It only takes a little time (typically 1 sec) if you have run `python3 -m sglang.compile_deep_gemm`. 
+[2026-08-17 12:26:13 TP0] Required memory for warmup: 0.2734375GB, Available memory: 15.08721923828125GB
+
+DeepGEMM warmup:   0%|          | 0/16384 [00:00<?, ?it/s][A
+DeepGEMM warmup:  15%|█▍        | 2414/16384 [00:00<00:00, 24135.59it/s][A
+DeepGEMM warmup:  29%|██▉       | 4828/16384 [00:00<00:00, 23613.24it/s][A
+DeepGEMM warmup:  44%|████▍     | 7191/16384 [00:00<00:00, 16363.59it/s][A
+DeepGEMM warmup:  55%|█████▌    | 9019/16384 [00:00<00:00, 12855.18it/s][A
+DeepGEMM warmup:  64%|██████▍   | 10481/16384 [00:00<00:00, 10815.17it/s][A
+DeepGEMM warmup:  71%|███████▏  | 11691/16384 [00:00<00:00, 9406.07it/s] [A
+DeepGEMM warmup:  78%|███████▊  | 12718/16384 [00:01<00:00, 8377.30it/s][A
+DeepGEMM warmup:  83%|████████▎ | 13610/16384 [00:01<00:00, 7583.63it/s][A
+DeepGEMM warmup:  88%|████████▊ | 14399/16384 [00:01<00:00, 6944.85it/s][A
+DeepGEMM warmup:  92%|█████████▏| 15109/16384 [00:01<00:00, 6432.88it/s][A
+DeepGEMM warmup:  96%|█████████▌| 15757/16384 [00:01<00:00, 5995.80it/s][A
+DeepGEMM warmup: 100%|█████████▉| 16355/16384 [00:01<00:00, 5634.29it/s][ADeepGEMM warmup: 100%|██████████| 16384/16384 [00:01<00:00, 8824.57it/s]
+[2026-08-17 12:26:15 TP0] Entering DeepGEMM JIT Pre-Compile session. It may take a long time (typically 10-20 mins) if you have not run `sglang.compile_deep_gemm`. It is recommended to run `sglang.compile_deep_gemm` with same args as `sglang.launch_server` for pre-compilation to reduce the overhead if you have not run it before. For example: `python3 -m sglang.compile_deep_gemm --model deepseek-ai/DeepSeek-V3 --tp 8 --trust-remote-code`
+[2026-08-17 12:26:15 TP0] Try DeepGEMM JIT Compiling for <GEMM_NT_F8F8BF16> N=4096, K=2048, num_groups=1 with all Ms. It only takes a little time (typically 1 sec) if you have run `python3 -m sglang.compile_deep_gemm`. 
+[2026-08-17 12:26:15 TP0] Required memory for warmup: 0.1640625GB, Available memory: 15.05596923828125GB
+
+DeepGEMM warmup:   0%|          | 0/16384 [00:00<?, ?it/s][A
+DeepGEMM warmup:  19%|█▊        | 3041/16384 [00:00<00:00, 30401.48it/s][A
+DeepGEMM warmup:  37%|███▋      | 6082/16384 [00:00<00:00, 21637.45it/s][A
+DeepGEMM warmup:  51%|█████     | 8393/16384 [00:00<00:00, 15903.26it/s][A
+DeepGEMM warmup:  62%|██████▏   | 10162/16384 [00:00<00:00, 12944.14it/s][A
+DeepGEMM warmup:  71%|███████   | 11589/16384 [00:00<00:00, 11004.74it/s][A
+DeepGEMM warmup:  78%|███████▊  | 12778/16384 [00:01<00:00, 9669.51it/s] [A
+DeepGEMM warmup:  84%|████████▍ | 13798/16384 [00:01<00:00, 8649.19it/s][A
+DeepGEMM warmup:  90%|████████▉ | 14691/16384 [00:01<00:00, 7854.41it/s][A
+DeepGEMM warmup:  95%|█████████▍| 15488/16384 [00:01<00:00, 7209.35it/s][A
+DeepGEMM warmup:  99%|█████████▉| 16210/16384 [00:01<00:00, 6699.64it/s][ADeepGEMM warmup: 100%|██████████| 16384/16384 [00:01<00:00, 9906.33it/s]
+[2026-08-17 12:26:17 TP0] Entering DeepGEMM JIT Pre-Compile session. It may take a long time (typically 10-20 mins) if you have not run `sglang.compile_deep_gemm`. It is recommended to run `sglang.compile_deep_gemm` with same args as `sglang.launch_server` for pre-compilation to reduce the overhead if you have not run it before. For example: `python3 -m sglang.compile_deep_gemm --model deepseek-ai/DeepSeek-V3 --tp 8 --trust-remote-code`
+[2026-08-17 12:26:17 TP0] Try DeepGEMM JIT Compiling for <GEMM_NT_F8F8BF16> N=1024, K=4096, num_groups=1 with all Ms. It only takes a little time (typically 1 sec) if you have run `python3 -m sglang.compile_deep_gemm`. 
+[2026-08-17 12:26:17 TP0] Required memory for warmup: 0.09765625GB, Available memory: 15.07354736328125GB
+
+DeepGEMM warmup:   0%|          | 0/16384 [00:00<?, ?it/s][A
+DeepGEMM warmup:  11%|█         | 1813/16384 [00:00<00:00, 18126.39it/s][A
+DeepGEMM warmup:  26%|██▌       | 4257/16384 [00:00<00:00, 21830.46it/s][A
+DeepGEMM warmup:  39%|███▉      | 6440/16384 [00:00<00:00, 20134.80it/s][A
+DeepGEMM warmup:  53%|█████▎    | 8642/16384 [00:00<00:00, 20838.31it/s][A
+DeepGEMM warmup:  66%|██████▌   | 10739/16384 [00:00<00:00, 18145.33it/s][A
+DeepGEMM warmup:  77%|███████▋  | 12608/16384 [00:00<00:00, 16563.57it/s][A
+DeepGEMM warmup:  87%|████████▋ | 14313/16384 [00:00<00:00, 14379.71it/s][A
+DeepGEMM warmup:  97%|█████████▋| 15815/16384 [00:00<00:00, 13205.20it/s][ADeepGEMM warmup: 100%|██████████| 16384/16384 [00:01<00:00, 15633.06it/s]
+[2026-08-17 12:26:18 TP0] Entering DeepGEMM JIT Pre-Compile session. It may take a long time (typically 10-20 mins) if you have not run `sglang.compile_deep_gemm`. It is recommended to run `sglang.compile_deep_gemm` with same args as `sglang.launch_server` for pre-compilation to reduce the overhead if you have not run it before. For example: `python3 -m sglang.compile_deep_gemm --model deepseek-ai/DeepSeek-V3 --tp 8 --trust-remote-code`
+[2026-08-17 12:26:18 TP0] Try DeepGEMM JIT Compiling for <GEMM_NT_F8F8BF16> N=4096, K=512, num_groups=1 with all Ms. It only takes a little time (typically 1 sec) if you have run `python3 -m sglang.compile_deep_gemm`. 
+[2026-08-17 12:26:18 TP0] Required memory for warmup: 0.134765625GB, Available memory: 15.07354736328125GB
+
+DeepGEMM warmup:   0%|          | 0/16384 [00:00<?, ?it/s][A
+DeepGEMM warmup:  17%|█▋        | 2809/16384 [00:00<00:00, 28088.49it/s][A
+DeepGEMM warmup:  36%|███▌      | 5928/16384 [00:00<00:00, 29912.13it/s][A
+DeepGEMM warmup:  54%|█████▍    | 8920/16384 [00:00<00:00, 29791.45it/s][A
+DeepGEMM warmup:  73%|███████▎  | 11900/16384 [00:00<00:00, 24610.87it/s][A
+DeepGEMM warmup:  88%|████████▊ | 14470/16384 [00:00<00:00, 21124.63it/s][ADeepGEMM warmup: 100%|██████████| 16384/16384 [00:00<00:00, 22052.66it/s]
+[rank0]:[W817 12:26:21.805909631 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank1]:[W817 12:26:21.805922501 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank3]:[W817 12:26:21.805920129 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank2]:[W817 12:26:21.805922093 CUDASymmetricMemory.cu:595] Warning: CUDA driver error: the operation cannot be performed in the present state (function init_multicast_for_block)
+[rank0]:[W817 12:26:21.806760690 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[rank1]:[W817 12:26:21.806819483 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[rank3]:[W817 12:26:21.807018022 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[rank2]:[W817 12:26:21.811629892 CUDASymmetricMemory.cu:612] Gracefully skipping multicast initialization.
+[2026-08-17 12:26:21 TP1] multimem all-gather disabled (no multicast for world_size=4)
+[2026-08-17 12:26:21 TP3] multimem all-gather disabled (no multicast for world_size=4)
+[2026-08-17 12:26:21 TP0] multimem all-gather disabled (no multicast for world_size=4)
+[2026-08-17 12:26:21 TP2] multimem all-gather disabled (no multicast for world_size=4)
+Capturing batches (bs=32 avail_mem=15.11 GB):  12%|█▎        | 1/8 [00:12<01:29, 12.73s/it]Capturing batches (bs=24 avail_mem=14.87 GB):  12%|█▎        | 1/8 [00:12<01:29, 12.73s/it]Capturing batches (bs=24 avail_mem=14.87 GB):  25%|██▌       | 2/8 [00:14<00:39,  6.56s/it]Capturing batches (bs=16 avail_mem=14.84 GB):  25%|██▌       | 2/8 [00:14<00:39,  6.56s/it]Capturing batches (bs=16 avail_mem=14.84 GB):  38%|███▊      | 3/8 [00:16<00:20,  4.15s/it]Capturing batches (bs=12 avail_mem=14.80 GB):  38%|███▊      | 3/8 [00:16<00:20,  4.15s/it]Capturing batches (bs=12 avail_mem=14.80 GB):  50%|█████     | 4/8 [00:17<00:12,  3.13s/it]Capturing batches (bs=8 avail_mem=14.76 GB):  50%|█████     | 4/8 [00:17<00:12,  3.13s/it] Capturing batches (bs=8 avail_mem=14.76 GB):  62%|██████▎   | 5/8 [00:19<00:07,  2.51s/it]Capturing batches (bs=4 avail_mem=14.73 GB):  62%|██████▎   | 5/8 [00:19<00:07,  2.51s/it]Capturing batches (bs=4 avail_mem=14.73 GB):  75%|███████▌  | 6/8 [00:20<00:04,  2.08s/it]Capturing batches (bs=2 avail_mem=14.69 GB):  75%|███████▌  | 6/8 [00:20<00:04,  2.08s/it]Capturing batches (bs=2 avail_mem=14.69 GB):  88%|████████▊ | 7/8 [00:21<00:01,  1.84s/it]Capturing batches (bs=1 avail_mem=14.65 GB):  88%|████████▊ | 7/8 [00:21<00:01,  1.84s/it]Capturing batches (bs=1 avail_mem=14.65 GB): 100%|██████████| 8/8 [00:23<00:00,  1.84s/it]Capturing batches (bs=1 avail_mem=14.65 GB): 100%|██████████| 8/8 [00:23<00:00,  2.96s/it]
+[2026-08-17 12:26:34 TP2] Capture target decode CUDA graph end. elapsed=24.70 s, mem usage=0.49 GB, avail mem=14.57 GB.
+[2026-08-17 12:26:34 TP2] Init Unified RadixTree with components (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>)
+[2026-08-17 12:26:34 TP2] Tree cache initialized: source=default impl=UnifiedRadixCache hybrid_swa=True hybrid_ssm=False hierarchical=False streaming_wrapped=False
+[2026-08-17 12:26:34 TP1] Capture target decode CUDA graph end. elapsed=24.91 s, mem usage=0.49 GB, avail mem=14.57 GB.
+[2026-08-17 12:26:34 TP1] Init Unified RadixTree with components (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>)
+[2026-08-17 12:26:34 TP1] Tree cache initialized: source=default impl=UnifiedRadixCache hybrid_swa=True hybrid_ssm=False hierarchical=False streaming_wrapped=False
+[2026-08-17 12:26:34 TP3] Capture target decode CUDA graph end. elapsed=24.93 s, mem usage=0.49 GB, avail mem=14.81 GB.
+[2026-08-17 12:26:34 TP3] Init Unified RadixTree with components (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>)
+[2026-08-17 12:26:34 TP3] Tree cache initialized: source=default impl=UnifiedRadixCache hybrid_swa=True hybrid_ssm=False hierarchical=False streaming_wrapped=False
+[2026-08-17 12:26:34 TP0] Capture target decode CUDA graph end. elapsed=24.95 s, mem usage=0.49 GB, avail mem=14.62 GB.
+[2026-08-17 12:26:34 TP0] max_total_num_tokens=5347072, chunked_prefill_size=8192, max_prefill_tokens=16384, max_running_requests=32, context_len=65536, available_gpu_mem=14.62 GB
+[2026-08-17 12:26:34 TP0] Init Unified RadixTree with components (<ComponentType.FULL: 0>, <ComponentType.SWA: 1>)
+[2026-08-17 12:26:34 TP0] Tree cache initialized: source=default impl=UnifiedRadixCache hybrid_swa=True hybrid_ssm=False hierarchical=False streaming_wrapped=False
+[2026-08-17 12:26:34] INFO:     Started server process [79716]
+[2026-08-17 12:26:34] INFO:     Waiting for application startup.
+[2026-08-17 12:26:34] Using default chat sampling params from model generation config: {'temperature': 1.0, 'top_p': 1.0}
+[2026-08-17 12:26:34] INFO:     Application startup complete.
+[2026-08-17 12:26:34] INFO:     Uvicorn running on http://127.0.0.1:60000 (Press CTRL+C to quit)
+[2026-08-17 12:26:35] INFO:     127.0.0.1:33670 - "GET /model_info HTTP/1.1" 200 OK
+[2026-08-17 12:26:37 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 75.10
+[2026-08-17 12:26:37] INFO:     127.0.0.1:33676 - "POST /generate HTTP/1.1" 200 OK
+[2026-08-17 12:26:37] The server is fired up and ready to roll!
+[2026-08-17 12:27:04 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 9.63
+[2026-08-17 12:27:04] INFO:     127.0.0.1:40854 - "GET /health HTTP/1.1" 200 OK
+[2026-08-17 12:27:06 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 126.15
+[2026-08-17 12:27:06 TP0] Decode batch, #running-req: 1, #full token: 0, full token usage: 0.00, #swa token: 0, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 0.31, #queue-req: 0
+[2026-08-17 12:27:07] INFO:     127.0.0.1:40860 - "GET /health HTTP/1.1" 200 OK
+/opt/sglang-v4/lib/python3.11/site-packages/fastapi/routing.py:144: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+[2026-08-17 12:27:16] INFO:     127.0.0.1:46270 - "GET /v1/models HTTP/1.1" 200 OK
+[2026-08-17 12:27:16 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 25.07
+[2026-08-17 12:27:16] INFO:     127.0.0.1:46274 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[2026-08-17 12:40:45 TP0] Prefill batch, #new-seq: 1, #new-token: 768, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 0.95
+[2026-08-17 12:40:45 TP0] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 0.01, #queue-req: 0
+[2026-08-17 12:40:46 TP0] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.13, #queue-req: 0
+[2026-08-17 12:40:46] INFO:     127.0.0.1:40222 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[2026-08-17 12:40:46 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 288.62
+[2026-08-17 12:40:46] INFO:     127.0.0.1:40232 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[2026-08-17 12:40:47 TP0] Prefill batch, #new-seq: 1, #new-token: 512, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 719.13
+[2026-08-17 12:40:47 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 6.76, #queue-req: 0
+[2026-08-17 12:40:47 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.55, #queue-req: 0
+[2026-08-17 12:40:47 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.68, #queue-req: 0
+[2026-08-17 12:40:47 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 114.64, #queue-req: 0
+[2026-08-17 12:40:47 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.88, #queue-req: 0
+[2026-08-17 12:40:47 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 114.19, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.86, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.92, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.95, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.93, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 114.34, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.83, #queue-req: 0
+[2026-08-17 12:40:48 TP0] Decode batch, #running-req: 1, #full token: 512, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 113.89, #queue-req: 0
+[2026-08-17 12:40:48] INFO:     127.0.0.1:54436 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[2026-08-17 12:44:49] INFO:     127.0.0.1:54136 - "GET /v1/models HTTP/1.1" 200 OK
+[2026-08-17 12:44:50 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 1.05
+[2026-08-17 12:44:50 TP0] Decode batch, #running-req: 1, #full token: 256, full token usage: 0.00, #swa token: 256, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 0.04, #queue-req: 0
+[2026-08-17 12:44:50] INFO:     127.0.0.1:54148 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[2026-08-17 12:44:50 TP0] Decode batch, #running-req: 1, #full token: 0, full token usage: 0.00, #swa token: 0, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 112.98, #queue-req: 0
+[2026-08-17 12:46:17 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 512, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 2.93
+[2026-08-17 12:46:17 TP0] Decode batch, #running-req: 1, #full token: 768, full token usage: 0.00, #swa token: 512, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 0.11, #queue-req: 0
+[2026-08-17 12:46:17] INFO:     127.0.0.1:49776 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[2026-08-17 12:46:32 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 17.14
+[2026-08-17 12:46:33] INFO:     127.0.0.1:42914 - "GET /health HTTP/1.1" 200 OK
+[2026-08-17 12:46:33] INFO:     127.0.0.1:42924 - "GET /health HTTP/1.1" 200 OK
+[2026-08-17 12:47:09 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 6.97
+[2026-08-17 12:47:10] INFO:     127.0.0.1:34984 - "GET /health HTTP/1.1" 200 OK
+[2026-08-17 12:47:22 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 19.51
+[2026-08-17 12:47:23] INFO:     127.0.0.1:59548 - "GET /health HTTP/1.1" 200 OK
+[2026-08-18 01:08:29 TP0] Prefill batch, #new-seq: 1, #new-token: 256, #cached-token: 0, full token usage: 0.00, swa token usage: 0.00, #running-req: 0, #queue-req: 0, #pending-token: 0, cuda graph: False, input throughput (token/s): 0.01
+[2026-08-18 01:08:29 TP0] Decode batch, #running-req: 1, #full token: 0, full token usage: 0.00, #swa token: 0, swa token usage: 0.00, cuda graph: True, gen throughput (token/s): 0.00, #queue-req: 0
+[2026-08-18 01:08:30] INFO:     127.0.0.1:59612 - "GET /health HTTP/1.1" 200 OK
+[2026-08-18 01:08:45] INFO:     127.0.0.1:36014 - "GET /v1/models HTTP/1.1" 200 OK
+[2026-08-18 01:08:45] INFO:     127.0.0.1:36026 - "GET /model_info HTTP/1.1" 200 OK
+[2026-08-18 01:09:31] SIGTERM received. signum=None frame=None. Draining requests and shutting down...
+[2026-08-18 01:09:32] Subprocess scheduler_0 (pid=79859) crashed with exit code -15. Triggering SIGQUIT for cleanup...
+[2026-08-18 01:09:32] SIGQUIT received. signum=None, frame=None. It usually means one child failed.
+[2026-08-18 01:09:32] Sleeping 5 seconds before crash diagnostics to let GPU activity settle.
+[2026-08-18 01:09:37] No live scheduler processes found; skipping py-spy and CUDA coredump.
+[2026-08-18 01:09:37] kill_process_tree called: parent_pid=79716, include_parent=True, pid=79716

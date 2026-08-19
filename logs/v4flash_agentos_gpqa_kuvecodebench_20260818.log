@@ -1,0 +1,22 @@
+[full] evaluating agent_os
+[full] evaluating gpqa
+[full] evaluating kuvecodebench
+Terminated
+server Python unavailable: /opt/sglang-v4/bin/python
+[full] evaluating agent_os
+[full] evaluating gpqa
+Terminated
+[full] evaluating agent_os
+[full] evaluating gpqa
+[full] evaluating kuvecodebench
+Terminated
+[full] evaluating agent_os
+[full] evaluating gpqa
+[full] evaluating kuvecodebench
+[prune25] evaluating agent_os
+[prune25] evaluating gpqa
+[prune25] evaluating kuvecodebench
+[prune50] evaluating agent_os
+[prune50] evaluating gpqa
+[prune50] evaluating kuvecodebench
+Complete: /home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_agentos_gpqa_kuvecodebench_20260818

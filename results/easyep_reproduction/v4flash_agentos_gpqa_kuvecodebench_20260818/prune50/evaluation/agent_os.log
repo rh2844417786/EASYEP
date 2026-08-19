@@ -1,0 +1,29 @@
+[prune50] evaluating agent_os
+dataset=agent_os model=/mnt/docker_data/v4-converted/v4-prune50-keep128 total=26 resumed=0 pending=26 workers=1 run=3c6396cab0678f44
+question=1/26 repeat=1/1 correct=no latency=0.65s completion_tokens=22 token_ps=33.99 progress=1/26 failures=0
+question=2/26 repeat=1/1 correct=yes latency=1.31s completion_tokens=128 token_ps=97.86 progress=2/26 failures=0
+question=3/26 repeat=1/1 correct=yes latency=1.93s completion_tokens=201 token_ps=104.15 progress=3/26 failures=0
+question=4/26 repeat=1/1 correct=yes latency=10.38s completion_tokens=1171 token_ps=112.86 progress=4/26 failures=0
+question=5/26 repeat=1/1 correct=yes latency=5.26s completion_tokens=584 token_ps=111.06 progress=5/26 failures=0
+question=6/26 repeat=1/1 correct=yes latency=0.77s completion_tokens=69 token_ps=89.76 progress=6/26 failures=0
+question=7/26 repeat=1/1 correct=no latency=6.25s completion_tokens=701 token_ps=112.09 progress=7/26 failures=0
+question=8/26 repeat=1/1 correct=no latency=32.36s completion_tokens=3680 token_ps=113.74 progress=8/26 failures=0
+question=9/26 repeat=1/1 correct=no latency=1.33s completion_tokens=133 token_ps=99.66 progress=9/26 failures=0
+question=10/26 repeat=1/1 correct=no latency=288.70s completion_tokens=32768 token_ps=113.50 progress=10/26 failures=0
+question=11/26 repeat=1/1 correct=no latency=36.77s completion_tokens=4182 token_ps=113.73 progress=11/26 failures=0
+question=12/26 repeat=1/1 correct=no latency=25.26s completion_tokens=2872 token_ps=113.69 progress=12/26 failures=0
+question=13/26 repeat=1/1 correct=yes latency=1.55s completion_tokens=160 token_ps=102.91 progress=13/26 failures=0
+question=14/26 repeat=1/1 correct=yes latency=32.24s completion_tokens=3661 token_ps=113.56 progress=14/26 failures=0
+question=15/26 repeat=1/1 correct=yes latency=33.92s completion_tokens=3859 token_ps=113.78 progress=15/26 failures=0
+question=16/26 repeat=1/1 correct=no latency=0.41s completion_tokens=28 token_ps=68.01 progress=16/26 failures=0
+question=17/26 repeat=1/1 correct=no latency=288.40s completion_tokens=32768 token_ps=113.62 progress=17/26 failures=0
+question=18/26 repeat=1/1 correct=no latency=14.30s completion_tokens=1620 token_ps=113.29 progress=18/26 failures=0
+question=19/26 repeat=1/1 correct=yes latency=20.98s completion_tokens=2382 token_ps=113.51 progress=19/26 failures=0
+question=20/26 repeat=1/1 correct=yes latency=4.46s completion_tokens=493 token_ps=110.57 progress=20/26 failures=0
+question=21/26 repeat=1/1 correct=yes latency=1.26s completion_tokens=127 token_ps=100.47 progress=21/26 failures=0
+question=22/26 repeat=1/1 correct=no latency=288.43s completion_tokens=32768 token_ps=113.61 progress=22/26 failures=0
+question=23/26 repeat=1/1 correct=no latency=17.79s completion_tokens=2019 token_ps=113.51 progress=23/26 failures=0
+question=24/26 repeat=1/1 correct=yes latency=94.30s completion_tokens=10735 token_ps=113.84 progress=24/26 failures=0
+question=25/26 repeat=1/1 correct=yes latency=86.41s completion_tokens=9835 token_ps=113.81 progress=25/26 failures=0
+question=26/26 repeat=1/1 correct=no latency=288.43s completion_tokens=32768 token_ps=113.61 progress=26/26 failures=0
+agent_os: 50.0% (13 / 26 scored; 0 unscored); output=/home/jovyan/wangtonghan/EASYEP/results/easyep_reproduction/v4flash_agentos_gpqa_kuvecodebench_20260818/prune50/evaluation/agent_os.jsonl
