@@ -378,3 +378,56 @@ question=1/30 repeat=1/1 correct=yes latency=11.89s completion_tokens=1324 token
 To resume after an interruption, make sure the old SGLang service has stopped,
 set `RUN_ID` to the original value, and repeat the `nohup` command. Existing
 `.partial.jsonl` records are reused and completed questions are skipped.
+
+## 9. Local Models And Runtime Environment
+
+The following paths and versions were verified on the local H100 server on
+2026-08-20. They document the environment used for the V4 experiments in this
+repository; they are not a requirement to download or redistribute any model.
+
+### Shared V4 Model Paths
+
+`/mnt/public_data` is mounted into the inference container. The V4 checkpoints
+relevant to this repository are:
+
+| Checkpoint | Local path | Use in this repository |
+| --- | --- | --- |
+| DeepSeek-V4-Flash | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash` | Canonical unpruned checkpoint for evaluation and pruning baselines. |
+| DeepSeek-V4-Flash-0731 | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash-0731` | Alternate Flash release used by the AI-Infra serving baseline. |
+| DeepSeek-V4-Flash-DSpark | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash-DSpark` | DSpark-oriented Flash checkpoint; not used by the default SGLang matrix. |
+| DeepSeek-V4-Pro | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Pro` | Available V4-Pro checkpoint; not used by the default evaluation matrix. |
+| DeepSeek-V4-Pro-0813 | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Pro-0813` | Available V4-Pro release; not used by the default evaluation matrix. |
+
+The physically pruned V4-Flash checkpoints are created outside this shared
+model mount and default to:
+
+```text
+/mnt/docker_data/v4-converted/v4-prune25-keep192
+/mnt/docker_data/v4-converted/v4-prune50-keep128
+```
+
+### `wth333` Container Snapshot
+
+The SGLang experiments run in Docker container `wth333` with the following
+verified environment:
+
+| Item | Value |
+| --- | --- |
+| Image | `pytorch/pytorch:2.3.1-cuda12.1-cudnn8-devel` |
+| OS | Ubuntu 22.04.3 LTS (Jammy) |
+| Network / runtime | Host network / NVIDIA runtime |
+| Shared memory | 64 GiB |
+| Mounted project | `/home/jovyan/wangtonghan/EASYEP` |
+| Mounted shared models | `/mnt/public_data` |
+| System Python | Python 3.10.14 |
+| SGLang Python | `/opt/sglang-v4/bin/python`, Python 3.11.15 |
+| SGLang | 0.5.16 |
+| PyTorch | 2.11.0+cu130 (CUDA 13.0) |
+| GPUs | 8 x NVIDIA H100 80GB HBM3 (81,559 MiB each) |
+| NVIDIA driver | 580.173.02 |
+
+For the default V4 matrix, use only GPUs 4-7 with TP=4. The high-speed server
+profile uses Marlin MoE, FP8 KV cache, decode CUDA Graph (`full`, max batch
+size 32), `--max-running-requests 32`, and `--context-length 65536`. The
+SWE-bench Arena matrix uses the same profile with `--context-length 262144` to
+accept its longest requests.
