@@ -385,18 +385,16 @@ The following paths and versions were verified on the local H100 server on
 2026-08-20. They document the environment used for the V4 experiments in this
 repository; they are not a requirement to download or redistribute any model.
 
-### Shared V4 Model Paths
+### Shared Model Inventory
 
-`/mnt/public_data` is mounted into the inference container. The V4 checkpoints
-relevant to this repository are:
+`/mnt/public_data` is mounted into the inference container. The complete
+inventory of detected Hugging Face model roots, including the exact
+`config.json` for every entry, is maintained in
+[PUBLIC_DATA_MODEL_REPORT.md](PUBLIC_DATA_MODEL_REPORT.md). Regenerate it with:
 
-| Checkpoint | Local path | Use in this repository |
-| --- | --- | --- |
-| DeepSeek-V4-Flash | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash` | Canonical unpruned checkpoint for evaluation and pruning baselines. |
-| DeepSeek-V4-Flash-0731 | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash-0731` | Alternate Flash release used by the AI-Infra serving baseline. |
-| DeepSeek-V4-Flash-DSpark | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Flash-DSpark` | DSpark-oriented Flash checkpoint; not used by the default SGLang matrix. |
-| DeepSeek-V4-Pro | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Pro` | Available V4-Pro checkpoint; not used by the default evaluation matrix. |
-| DeepSeek-V4-Pro-0813 | `/mnt/public_data/deepseek-ai/DeepSeek-V4-Pro-0813` | Available V4-Pro release; not used by the default evaluation matrix. |
+```bash
+python3 scripts/generate_public_data_model_report.py
+```
 
 The physically pruned V4-Flash checkpoints are created outside this shared
 model mount and default to:
