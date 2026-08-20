@@ -221,6 +221,32 @@ TOKEN_STATS=expert_statistics/token_information/aime_v4.jsonl \
 该入口分别生成动态层 keep-192/keep-128 mask，并把前三个 hash 层强制设为
 全 1。不要直接使用会把 43 层统一裁成 128 的旧命令。
 
+同一次 calibration 统计也可以生成任意离散保留数量，并在一次 CPU 聚合中同时
+输出多份 mask：
+
+```bash
+TARGET_EXPERTS=224,192,160,128 \
+PRUNE_PERCENTAGES=10,30,50 \
+  bash scripts/prepare_easyep_masks.sh
+```
+
+若还要实体化并逐一验证这些比例，使用：
+
+```bash
+TARGET_EXPERTS=224,192,160,128 \
+MODEL_OUTPUT_ROOT=/mnt/docker_data/v4-converted \
+  bash scripts/prepare_v4_pruned_checkpoints_any.sh
+
+MASK_MANIFEST=expert_statistics/expert_mask/aime_v4_mask_manifest.json \
+MODEL_OUTPUT_ROOT=/mnt/docker_data/v4-converted \
+  bash scripts/validate_v4_pruned_checkpoints_any_gpus_4_7.sh
+```
+
+比例会受专家离散数量约束。百分比入口向上取整保留数量，保证实际删除比例不超过
+请求值；例如请求 30% 会保留 180/256，实际删除 29.6875%。前三个 hash 层仍然
+完整保留，且动态层保留数不得小于模型的 per-token Top-K。详见
+`docs/arbitrary_v4_pruning.md`。
+
 混合域：
 
 ```bash
@@ -237,8 +263,8 @@ python pruning/expert_selection_mix_domain.py \
 本仓库采用论文式 mask 路由，不裁剪 router 参数：
 
 - layer 0–2：保留全部 256 个专家、gate weight 和 `tid2eid`；
-- layer 3–42：只删除未保留的专家权重，并把保留专家连续重编号到 0–191 或
-  0–127；gate weight 和 correction bias 仍完整保留 256 行；
+- layer 3–42：只删除未保留的专家权重，并把任意合法数量的保留专家连续重编号到
+  `0..K-1`；gate weight 和 correction bias 仍完整保留 256 行；
 - MTP：保持原样；
 - config：全局 `n_routed_experts` 保持 256，写入完整的
   `easyep_expert_mask_by_layer` 和带哈希的 `easyep_pruning` provenance；

@@ -164,6 +164,30 @@ If the V4 statistics are absent, this entrypoint first collects them on physical
 GPUs 4–7 from local files. It does not download dependencies/models or convert
 weights. Existing statistics, masks, and completed checkpoint shards are reused.
 
+One V4 calibration probe can also produce any number of discrete pruning
+targets without another model forward pass. Provide exact retained counts,
+requested percentages, or both; percentages round the retained count upward so
+the actual pruning rate never exceeds the request. For example, 30% maps to
+keep-180 (29.6875% actual dynamic-layer pruning):
+
+```bash
+TARGET_EXPERTS=224,192,160,128 \
+PRUNE_PERCENTAGES=10,30,50 \
+MODEL_OUTPUT_ROOT=/mnt/docker_data/v4-converted \
+  bash scripts/prepare_v4_pruned_checkpoints_any.sh
+
+MASK_MANIFEST=expert_statistics/expert_mask/aime_v4_mask_manifest.json \
+MODEL_OUTPUT_ROOT=/mnt/docker_data/v4-converted \
+  bash scripts/validate_v4_pruned_checkpoints_any_gpus_4_7.sh
+```
+
+The score aggregation runs once for all targets in the command. Hash layers
+0–2 always retain 256 experts; only layers 3–42 use the requested count. The
+retained count must be at least the model's per-token router Top-K. See
+[`docs/arbitrary_v4_pruning.md`](docs/arbitrary_v4_pruning.md) for artifact
+naming, rounding, reuse boundaries, and the distinction between dynamic-layer
+and whole-model pruning percentages.
+
 For the current four-H100 server, the local conversion, statistics, pruning,
 reload validation, and evaluation sequence is also available as one fail-fast
 command. It stores MP=4 and both pruned checkpoints below

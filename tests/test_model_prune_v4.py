@@ -64,6 +64,40 @@ class V4PhysicalPruningTests(unittest.TestCase):
             1 - (3 * 256 + 40 * 192) / (43 * 256),
         )
 
+    def test_layout_accepts_arbitrary_dynamic_expert_count(self) -> None:
+        layout = MODULE.build_layout(v4_config(), mask_for(160), 160)
+
+        self.assertEqual(layout.counts_by_layer[:3], (256, 256, 256))
+        self.assertEqual(set(layout.counts_by_layer[3:]), {160})
+        self.assertAlmostEqual(layout.dynamic_prune_fraction, 0.375)
+
+    def test_layout_accepts_valid_boundaries(self) -> None:
+        for target in (6, 256):
+            with self.subTest(target=target):
+                layout = MODULE.build_layout(v4_config(), mask_for(target), target)
+                self.assertEqual(set(layout.counts_by_layer[3:]), {target})
+
+    def test_layout_rejects_less_than_router_topk(self) -> None:
+        with self.assertRaisesRegex(ValueError, r"per-token Top-K \(6\)"):
+            MODULE.build_layout(v4_config(), mask_for(5), 5)
+        with self.assertRaisesRegex(ValueError, "and 256"):
+            MODULE.build_layout(v4_config(), mask_for(257), 257)
+
+    def test_parser_accepts_non_historical_target(self) -> None:
+        args = MODULE.build_parser().parse_args(
+            [
+                "--input-dir",
+                "/tmp/input",
+                "--output-dir",
+                "/tmp/output",
+                "--mask-json",
+                "/tmp/mask.json",
+                "--target-experts",
+                "160",
+            ]
+        )
+        self.assertEqual(args.target_experts, 160)
+
     def test_hash_layer_mask_change_is_rejected(self) -> None:
         mask = mask_for(128)
         mask[1][255] = 0

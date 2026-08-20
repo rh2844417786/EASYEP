@@ -76,7 +76,9 @@ MOE_INIT_ANCHOR = """        self.routed_scaling_factor = config.routed_scaling_
             )
 """
 
-MOE_INIT_REPLACEMENT = f"""        self.routed_scaling_factor = config.routed_scaling_factor
+# Retained only so --apply can upgrade servers patched by the previous
+# fixed-128/192 release in place. New installations use MOE_INIT_REPLACEMENT.
+LEGACY_MOE_INIT_REPLACEMENT = f"""        self.routed_scaling_factor = config.routed_scaling_factor
         self.n_shared_experts = config.n_shared_experts
 
         # {MARKER}: the router remains 256-wide. Only expert storage is compact.
@@ -181,6 +183,24 @@ MOE_INIT_REPLACEMENT = f"""        self.routed_scaling_factor = config.routed_sc
             )
 """
 
+MOE_INIT_REPLACEMENT = LEGACY_MOE_INIT_REPLACEMENT.replace(
+    """                    if len(selected) not in (128, 192):
+                        raise ValueError(
+                            f"dynamic layer {layer_id} must retain 128 or 192 experts"
+                        )
+""",
+    """                    minimum_experts = int(config.num_experts_per_tok)
+                    if not minimum_experts <= len(selected) <= config.n_routed_experts:
+                        raise ValueError(
+                            f"dynamic layer {layer_id} must retain between "
+                            f"{minimum_experts} and {config.n_routed_experts} experts; "
+                            f"found {len(selected)}"
+                        )
+""",
+)
+if MOE_INIT_REPLACEMENT == LEGACY_MOE_INIT_REPLACEMENT:
+    raise RuntimeError("internal EASY-EP patch template upgrade failed")
+
 HELPER_ANCHOR = """    def _can_dual_stream_graph(
         self, hidden_states: torch.Tensor, server_args=None
     ) -> bool:
@@ -252,6 +272,14 @@ def patch_specs(package_root: Path):
     }
 
 
+def upgrade_specs(package_root: Path):
+    return {
+        package_root / MOE_RELATIVE: [
+            (LEGACY_MOE_INIT_REPLACEMENT, MOE_INIT_REPLACEMENT),
+        ],
+    }
+
+
 def discover_package_root() -> Path:
     version = importlib.metadata.version("sglang")
     if version != EXPECTED_VERSION:
@@ -310,10 +338,18 @@ def apply(package_root: Path) -> None:
             raise FileNotFoundError(f"SGLang source file is missing: {path}")
         source = path.read_text(encoding="utf-8")
         if MARKER in source:
-            if any(replacement not in source for _, replacement, _ in specs):
+            updated = source
+            for legacy, replacement in upgrade_specs(package_root).get(path, []):
+                if replacement not in updated and legacy in updated:
+                    updated = updated.replace(legacy, replacement, 1)
+            if any(replacement not in updated for _, replacement, _ in specs):
                 raise RuntimeError(f"EASY-EP mask-routing patch is incomplete in {path}")
-            compile_source(path, source)
-            print(f"already patched: {path}")
+            compile_source(path, updated)
+            if updated == source:
+                print(f"already patched: {path}")
+            else:
+                planned.append((path, updated))
+                print(f"upgrading existing EASY-EP patch: {path}")
             continue
         planned.append((path, patched_source(path, source, specs)))
 

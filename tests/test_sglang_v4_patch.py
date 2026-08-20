@@ -82,6 +82,8 @@ class SglangV4PatchTests(unittest.TestCase):
             moe_source = (package / MODULE.MOE_RELATIVE).read_text(encoding="utf-8")
             self.assertIn("_apply_easyep_expert_mask", moe_source)
             self.assertIn("self.gate = MoEGate", moe_source)
+            self.assertIn("minimum_experts", moe_source)
+            self.assertNotIn("must retain 128 or 192 experts", moe_source)
 
             MODULE.restore(package)
             for path in MODULE.patch_specs(package):
@@ -115,6 +117,26 @@ class SglangV4PatchTests(unittest.TestCase):
                 MODULE.check(package)
             with self.assertRaisesRegex(RuntimeError, "patch is incomplete"):
                 MODULE.apply(package)
+
+    def test_apply_upgrades_existing_fixed_ratio_patch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            package = self._package(Path(tmp))
+            MODULE.apply(package)
+            model = package / MODULE.MOE_RELATIVE
+            source = model.read_text(encoding="utf-8").replace(
+                MODULE.MOE_INIT_REPLACEMENT,
+                MODULE.LEGACY_MOE_INIT_REPLACEMENT,
+                1,
+            )
+            model.write_text(source, encoding="utf-8")
+
+            with self.assertRaisesRegex(RuntimeError, "patch is incomplete"):
+                MODULE.check(package)
+            MODULE.apply(package)
+            MODULE.check(package)
+            upgraded = model.read_text(encoding="utf-8")
+            self.assertIn(MODULE.MOE_INIT_REPLACEMENT, upgraded)
+            self.assertNotIn(MODULE.LEGACY_MOE_INIT_REPLACEMENT, upgraded)
 
 
 if __name__ == "__main__":

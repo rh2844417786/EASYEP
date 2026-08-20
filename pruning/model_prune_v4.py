@@ -2,10 +2,11 @@
 """Physically prune only the 40 dynamic-MoE layers of DeepSeek-V4-Flash.
 
 Layers 0..2 are hash-routed. Their 256 experts, gate weights, and tid2eid tables
-are preserved byte-for-byte. Layers 3..42 are pruned to a uniform expert count
-and their retained expert weights are renumbered contiguously. Every router
-weight/bias tensor remains complete; the runtime applies the EASY-EP mask and
-maps selected router IDs to the compact physical expert IDs.
+are preserved byte-for-byte. Layers 3..42 can be pruned to any uniform expert
+count that still satisfies the model's per-token Top-K requirement, and their
+retained expert weights are renumbered contiguously. Every router weight/bias
+tensor remains complete; the runtime applies the EASY-EP mask and maps selected
+router IDs to the compact physical expert IDs.
 
 The output config keeps the global n_routed_experts=256 and stores the exact
 per-layer EASY-EP mask for the patched SGLang v0.5.16 runtime.
@@ -149,8 +150,14 @@ def build_layout(
             f"43 layers / 3 hash layers / 256 experts; found "
             f"{num_layers} / {hash_layers} / {original_experts}"
         )
-    if target_experts not in (128, 192):
-        raise ValueError("target-experts must be 192 (25%) or 128 (50%)")
+    active_experts = config_int(
+        config, "num_experts_per_tok", "n_activated_experts"
+    )
+    if not active_experts <= target_experts <= original_experts:
+        raise ValueError(
+            "target-experts must be between the model's per-token Top-K "
+            f"({active_experts}) and {original_experts}; found {target_experts}"
+        )
     if len(mask) != num_layers:
         raise ValueError(f"mask has {len(mask)} rows; expected {num_layers}")
 
@@ -630,7 +637,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--input-dir", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--mask-json", type=Path, required=True)
-    parser.add_argument("--target-experts", type=int, choices=(128, 192), required=True)
+    parser.add_argument(
+        "--target-experts",
+        type=int,
+        required=True,
+        help=(
+            "uniform retained expert count for dynamic layers; must be at least "
+            "the model's per-token Top-K and at most n_routed_experts"
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--verify-only", action="store_true")
     parser.add_argument("--skip-disk-check", action="store_true")
